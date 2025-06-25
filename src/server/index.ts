@@ -25,16 +25,3 @@ export function stopServer() {
     server.close((err) => (err ? reject(err) : resolve()));
   });
 }
-
-// Read all files, filter by prefix
-// Should I check for expired? But it's impossible, as each key may have different ttl.
-// app.get('/get-all/:prefix', (req, res) => {
-//   const prefix = req.params.prefix;
-//   const result: Record<string, any> = {};
-//   for (const [key, entry] of Object.entries(storage)) {
-//     if (key.startsWith(prefix) && (!entry.expiresAt || Date.now() <= entry.expiresAt)) {
-//       result[key] = entry.value;
-//     }
-//   }
-//   res.json(result);
-// });

@@ -1,5 +1,5 @@
 import { env } from './env';
-import { type GetValueParams } from './server/routes/get';
+import { type GetValueQuery } from './server/routes/get';
 import { type SetValueParams } from './server/routes/set';
 import { TTL } from './server/ttl';
 import { debug, QueryParams } from './utils';
@@ -31,9 +31,7 @@ export class GlobalStorage {
       env.runId = this.config.runId || randomUUID();
     }
 
-    if (this.config.namespace) {
-      env.namespace = this.config.namespace;
-    }
+    env.namespace = this.config.namespace || 'default';
 
     if (this.config.url) {
       env.serverUrl = this.config.url;
@@ -69,14 +67,9 @@ export class GlobalStorage {
   }
 
   private async fetchValue(key: string, { ttl }: KeyParams) {
-    const params: QueryParams<GetValueParams> = {
-      namespace: env.namespace,
-      runId: env.runId,
-      compute: '1',
-      ttl,
-    };
+    const params: QueryParams<GetValueQuery> = { compute: '1', ttl };
     const searchParams = new URLSearchParams(params);
-    const url = `${env.serverUrl}/get/${encodeURIComponent(key)}?${searchParams}`;
+    const url = `${buildKeyUrl(key)}?${searchParams}`;
     const res = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
@@ -120,15 +113,13 @@ export class GlobalStorage {
     value: unknown;
     error: Error | undefined;
   }) {
+    const url = buildKeyUrl(key);
     const reqBody: SetValueParams = {
-      namespace: env.namespace,
-      runId: env.runId,
       persist: Boolean(params.ttl),
       value,
       error: error ? error.stack : undefined,
     };
 
-    const url = `${env.serverUrl}/set/${encodeURIComponent(key)}`;
     const res = await fetch(url, {
       method: 'POST',
       headers: {
@@ -166,4 +157,9 @@ function resolveArgs<T>(args: GetOrCallArgs<T>) {
   return args.length === 2
     ? { key: args[0], params: {}, fn: args[1] }
     : { key: args[0], params: args[1], fn: args[2] };
+}
+
+function buildKeyUrl(key: string) {
+  const pathname = [env.namespace, env.runId, key].map(encodeURIComponent).join('/');
+  return `${env.serverUrl}/${pathname}`;
 }

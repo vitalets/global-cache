@@ -1,35 +1,27 @@
 import { Router } from 'express';
 import { getMemoryStore } from '../storage/memory';
 import { getFileSystemStore } from '../storage/fs';
-import { QueryParams } from '../../utils';
 import { isExpired, TTL } from '../ttl';
 
 const router = Router();
 export default router;
 
-export type GetValueParams = {
-  namespace?: string;
-  runId: string;
+export type GetValueQuery = {
   compute?: boolean;
   ttl?: TTL;
 };
 
-router.get('/get/:key', async (req, res) => {
+router.get('/:namespace/:runId/:key', async (req, res) => {
   try {
-    const key = req.params.key;
-    const {
-      namespace,
-      runId,
-      compute: computeStr,
-      ttl: ttlStr,
-    } = req.query as QueryParams<GetValueParams>;
-    if (!runId) throw new Error('Missing runId in query parameters');
+    const { namespace, runId, key } = req.params;
+    const query: GetValueQuery = req.query;
 
-    const { missing, value } = await getValue(key, {
+    const { missing, value } = await getValue({
+      key,
       namespace,
       runId,
-      compute: Boolean(computeStr),
-      ttl: ttlStr as TTL,
+      compute: Boolean(query.compute),
+      ttl: query.ttl as TTL,
     });
 
     if (missing) {
@@ -44,7 +36,19 @@ router.get('/get/:key', async (req, res) => {
 });
 
 // eslint-disable-next-line visual/complexity, max-statements
-async function getValue(key: string, { namespace, runId, compute, ttl }: GetValueParams) {
+async function getValue({
+  key,
+  namespace,
+  runId,
+  compute,
+  ttl,
+}: {
+  key: string;
+  namespace: string;
+  runId: string;
+  compute: boolean;
+  ttl: TTL;
+}) {
   const memoryStore = getMemoryStore(namespace, runId);
 
   let valueInfo = memoryStore.get(key);
