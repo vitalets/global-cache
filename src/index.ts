@@ -6,9 +6,10 @@ import { debug, QueryParams } from './utils';
 import { randomUUID } from 'node:crypto';
 
 export type KeyParams = {
-  key: string;
   ttl?: TTL;
 };
+
+export type GetOrCallArgs<T> = [string, () => T] | [string, KeyParams, () => T];
 
 export type GlobalStorageConfig = {
   namespace?: string;
@@ -39,32 +40,35 @@ export class GlobalStorage {
     }
   }
 
-  // eslint-disable-next-line visual/complexity
-  async getOrCall<T>(key: string | KeyParams, fn: () => T): Promise<T> {
-    if (this.config.disabled) return fn();
+  // eslint-disable-next-line visual/complexity, max-statements
+  async getOrCall<T>(...args: GetOrCallArgs<T>): Promise<T> {
+    const { key, params, fn } = resolveArgs(args);
 
-    const keyParams: KeyParams = typeof key === 'string' ? { key } : key;
+    if (this.config.disabled) {
+      debug(`"${key}": Storage disabled. Computing...`);
+      return fn();
+    }
 
     // todo: check worker memory for faster access
 
-    debug(`"${keyParams.key}": checking...`);
-    const { value: existingValue, missing } = await this.fetchValue(keyParams);
-    debug(`"${keyParams.key}": ${missing ? 'computing...' : 're-used.'}`);
+    debug(`"${key}": Accessing...`);
+    const { value: existingValue, missing } = await this.fetchValue(key, params);
+    debug(`"${key}": ${missing ? 'Missing. Computing...' : 'Value re-used.'}`);
 
     if (!missing) return existingValue;
 
     const { value, error } = await this.computeValue(fn);
-    debug(`"${keyParams.key}": ${error?.message || 'computed.'}`);
+    debug(`"${key}": ${error?.message || 'Computed.'}`);
 
-    await this.storeValue(keyParams, value, error);
-    debug(`"${keyParams.key}": saved.`);
+    await this.storeValue({ key, params, value, error });
+    debug(`"${key}": Saved.`);
 
     if (error) throw error;
 
     return value;
   }
 
-  private async fetchValue({ key, ttl }: KeyParams) {
+  private async fetchValue(key: string, { ttl }: KeyParams) {
     const params: QueryParams<GetValueParams> = {
       namespace: env.namespace,
       runId: env.runId,
@@ -105,11 +109,21 @@ export class GlobalStorage {
     }
   }
 
-  private async storeValue({ key, ttl }: KeyParams, value: unknown, error: Error | undefined) {
+  private async storeValue({
+    key,
+    params,
+    value,
+    error,
+  }: {
+    key: string;
+    params: KeyParams;
+    value: unknown;
+    error: Error | undefined;
+  }) {
     const reqBody: SetValueParams = {
       namespace: env.namespace,
       runId: env.runId,
-      persist: Boolean(ttl),
+      persist: Boolean(params.ttl),
       value,
       error: error ? error.stack : undefined,
     };
@@ -146,4 +160,10 @@ export class GlobalStorage {
 
   // todo: has
   // todo: delete
+}
+
+function resolveArgs<T>(args: GetOrCallArgs<T>) {
+  return args.length === 2
+    ? { key: args[0], params: {}, fn: args[1] }
+    : { key: args[0], params: args[1], fn: args[2] };
 }

@@ -5,7 +5,8 @@ test.use({
   storageState: async ({ browser }, use) => {
     // authenticate once, then re-use the storage state in all tests in this file.
     const storageState = await globalStorage.getOrCall(
-      { key: 'storageState', ttl: '1h' },
+      'storageState',
+      { ttl: '5 minute' },
       async () => {
         const loginPage = await browser.newPage();
         await loginPage.goto('https://authenticationtest.com/simpleFormAuth/');
