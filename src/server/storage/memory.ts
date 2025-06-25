@@ -26,7 +26,7 @@ export function getMemoryStore(namespace: string | undefined, runId: string) {
   return memoryStores.get(storeKey)!;
 }
 
-class MemoryStore {
+export class MemoryStore {
   private map = new Map<string, ValueInfo>();
 
   get(key: string) {

@@ -1,11 +1,10 @@
 import { Router } from 'express';
-import { getMemoryStore } from '../storage/memory';
+import { getMemoryStore, MemoryStore } from '../storage/memory';
 import { getFileSystemStore } from '../storage/fs';
 
-const router = Router();
-export default router;
+export const router = Router();
 
-export type SetValueParams = {
+export type SetValueReqBody = {
   persist?: boolean;
   value?: unknown;
   error?: string;
@@ -14,8 +13,10 @@ export type SetValueParams = {
 router.post('/:namespace/:runId/:key', async (req, res) => {
   try {
     const { namespace, runId, key } = req.params;
-    const params: SetValueParams = req.body;
-    new Setter(key, namespace, runId, params).setValue();
+    const params: SetValueReqBody = req.body;
+
+    new Setter(key, namespace, runId).setValue(params);
+
     res.json({ success: true });
   } catch (error) {
     const message = (error as Error)?.message || String(error);
@@ -24,36 +25,33 @@ router.post('/:namespace/:runId/:key', async (req, res) => {
 });
 
 class Setter {
-  // eslint-disable-next-line max-params
+  private memoryStore: MemoryStore;
+
   constructor(
-    private key: string,
     private namespace: string,
-    private runId: string,
-    private params: SetValueParams,
-  ) {}
+    runId: string,
+    private key: string,
+  ) {
+    this.memoryStore = getMemoryStore(namespace, runId);
+  }
 
-  setValue() {
-    this.setMemoryValue();
-    if (this.params.persist) {
-      this.setPersistentValue();
+  setValue({ persist, value, error }: SetValueReqBody) {
+    this.setMemoryValue(value, error);
+    if (persist) {
+      this.setPersistentValue(value, error);
     }
   }
 
-  private setMemoryValue() {
-    const { value, error } = this.params;
-    const memoryStore = getMemoryStore(this.namespace, this.runId);
-
+  private setMemoryValue(value: unknown, error?: string) {
     if (error) {
-      memoryStore.setError(this.key, error);
+      this.memoryStore.setError(this.key, error);
     } else {
-      memoryStore.setValue(this.key, value);
+      this.memoryStore.setValue(this.key, value);
     }
   }
 
-  private setPersistentValue() {
-    const { value, error } = this.params;
+  private setPersistentValue(value: unknown, error?: string) {
     const filesystemStore = getFileSystemStore(this.namespace);
-
     if (error) {
       filesystemStore.delete(this.key);
     } else {

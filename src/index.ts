@@ -1,6 +1,6 @@
 import { env } from './env';
 import { type GetValueQuery } from './server/routes/get';
-import { type SetValueParams } from './server/routes/set';
+import { type SetValueReqBody } from './server/routes/set';
 import { TTL } from './server/ttl';
 import { debug, QueryParams } from './utils';
 import { randomUUID } from 'node:crypto';
@@ -114,7 +114,7 @@ export class GlobalStorage {
     error: Error | undefined;
   }) {
     const url = buildKeyUrl(key);
-    const reqBody: SetValueParams = {
+    const reqBody: SetValueReqBody = {
       persist: Boolean(params.ttl),
       value,
       error: error ? error.stack : undefined,

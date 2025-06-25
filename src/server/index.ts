@@ -1,7 +1,7 @@
 import http from 'node:http';
 import express from 'express';
-import routeGet from './routes/get';
-import routeSet from './routes/set';
+import { router as routeGet } from './routes/get';
+import { router as routeSet } from './routes/set';
 
 const app = express();
 app.use(express.json());

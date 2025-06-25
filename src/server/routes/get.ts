@@ -1,14 +1,13 @@
 import { Router } from 'express';
-import { getMemoryStore } from '../storage/memory';
+import { getMemoryStore, MemoryStore, ValueInfo } from '../storage/memory';
 import { getFileSystemStore } from '../storage/fs';
 import { isExpired, TTL } from '../ttl';
 
-const router = Router();
-export default router;
+export const router = Router();
 
 export type GetValueQuery = {
-  compute?: boolean;
-  ttl?: TTL;
+  compute?: string;
+  ttl?: string;
 };
 
 router.get('/:namespace/:runId/:key', async (req, res) => {
@@ -16,18 +15,16 @@ router.get('/:namespace/:runId/:key', async (req, res) => {
     const { namespace, runId, key } = req.params;
     const query: GetValueQuery = req.query;
 
-    const { missing, value } = await getValue({
-      key,
-      namespace,
-      runId,
-      compute: Boolean(query.compute),
+    const getter = new Getter(namespace, runId, key);
+    await getter.loadValue({
       ttl: query.ttl as TTL,
+      compute: Boolean(query.compute),
     });
 
-    if (missing) {
+    if (getter.isMissing) {
       res.status(404).end();
     } else {
-      res.json(value);
+      res.json(getter.value);
     }
   } catch (error) {
     const message = (error as Error)?.message || String(error);
@@ -35,53 +32,72 @@ router.get('/:namespace/:runId/:key', async (req, res) => {
   }
 });
 
-// eslint-disable-next-line visual/complexity, max-statements
-async function getValue({
-  key,
-  namespace,
-  runId,
-  compute,
-  ttl,
-}: {
-  key: string;
-  namespace: string;
-  runId: string;
-  compute: boolean;
-  ttl: TTL;
-}) {
-  const memoryStore = getMemoryStore(namespace, runId);
+class Getter {
+  isMissing?: boolean;
+  value?: unknown;
+  private memoryStore: MemoryStore;
+  private valueInfo?: ValueInfo;
 
-  let valueInfo = memoryStore.get(key);
+  constructor(
+    private namespace: string,
+    runId: string,
+    private key: string,
+  ) {
+    this.memoryStore = getMemoryStore(namespace, runId);
+  }
 
-  if (ttl) {
-    const fileSystemStore = getFileSystemStore(namespace);
+  // eslint-disable-next-line visual/complexity
+  async loadValue({ ttl, compute }: { ttl?: TTL; compute: boolean }) {
+    this.loadFromMemory();
 
-    if (valueInfo && isExpired(valueInfo.computedAt, ttl)) {
-      memoryStore.delete(key);
-      valueInfo = undefined;
+    if (ttl) {
+      this.clearIfExpired(ttl);
     }
 
-    if (!valueInfo) {
-      valueInfo = await fileSystemStore.load(key, ttl);
-      // store valuein emory as well for faster access during this test run
-      if (valueInfo) memoryStore.set(key, valueInfo); // eslint-disable-line max-depth
+    if (ttl && !this.valueInfo) {
+      await this.loadFromFileSystem(ttl);
+    }
+
+    if (!this.valueInfo) {
+      this.handleMissing(compute);
+    } else if (this.valueInfo.pending) {
+      await this.waitForCompute();
+    } else {
+      this.value = this.valueInfo.value;
     }
   }
 
-  if (!valueInfo) {
-    if (compute) memoryStore.setValue(key, { key, pending: true });
-    return { missing: true };
+  private loadFromMemory() {
+    this.valueInfo = this.memoryStore.get(this.key);
   }
 
-  if (valueInfo.pending) {
-    // todo: timeout
-    const value = await new Promise((resolve, reject) => {
+  private async loadFromFileSystem(ttl: TTL) {
+    const fileSystemStore = getFileSystemStore(this.namespace);
+    this.valueInfo = await fileSystemStore.load(this.key, ttl);
+    // store value in memory as well for faster access
+    if (this.valueInfo) this.memoryStore.set(this.key, this.valueInfo);
+  }
+
+  private clearIfExpired(ttl: TTL) {
+    if (this.valueInfo && isExpired(this.valueInfo.computedAt, ttl)) {
+      this.memoryStore.delete(this.key);
+      this.valueInfo = undefined;
+    }
+  }
+
+  private handleMissing(compute: boolean) {
+    if (compute) {
+      this.memoryStore.setValue(this.key, { key: this.key, pending: true });
+    }
+    this.isMissing = true;
+  }
+
+  private async waitForCompute() {
+    const valueInfo = this.valueInfo!;
+    this.value = await new Promise((resolve, reject) => {
       valueInfo.listeners = valueInfo.listeners || [];
       valueInfo.listeners.push({ resolve, reject });
-      memoryStore.setValue(key, valueInfo);
+      this.memoryStore.setValue(this.key, valueInfo);
     });
-    return { value };
   }
-
-  return { value: valueInfo.value };
 }
