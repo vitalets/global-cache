@@ -7,7 +7,7 @@ export type ValueInfo = {
   key: string;
   pending?: boolean;
   value?: unknown;
-  updatedAt?: number;
+  computedAt?: number;
   listeners?: Listener[];
 };
 
@@ -33,7 +33,15 @@ class MemoryStore {
     return this.map.get(key);
   }
 
-  set(key: string, value: unknown) {
+  set(key: string, valueInfo: ValueInfo) {
+    this.map.set(key, valueInfo);
+  }
+
+  delete(key: string) {
+    this.map.delete(key);
+  }
+
+  setValue(key: string, value: unknown) {
     const valueInfo = this.map.get(key);
 
     if (!valueInfo?.pending) {
@@ -42,7 +50,7 @@ class MemoryStore {
       );
     }
 
-    this.map.set(key, { key, value, updatedAt: Date.now() });
+    this.map.set(key, { key, value, computedAt: Date.now() });
 
     valueInfo?.listeners?.forEach(({ resolve }) => resolve(value));
   }
@@ -52,16 +60,12 @@ class MemoryStore {
 
     if (!valueInfo?.pending) {
       debug(
-        `Setting value for key "${key}" that is not in pending state. This might indicate an issue.`,
+        `Setting error for key "${key}" that is not in pending state. This might indicate an issue.`,
       );
     }
 
-    this.delete(key);
+    this.map.delete(key);
 
     valueInfo?.listeners?.forEach(({ reject }) => reject(error));
-  }
-
-  delete(key: string) {
-    this.map.delete(key);
   }
 }

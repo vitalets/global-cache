@@ -21,7 +21,8 @@ export type GlobalStorageConfig = {
 export class GlobalStorage {
   protected config: GlobalStorageConfig = {};
 
-  configure(config: GlobalStorageConfig) {
+  // eslint-disable-next-line visual/complexity
+  defineConfig(config: GlobalStorageConfig) {
     this.config = config;
     if (this.config.disabled) return;
 
@@ -38,24 +39,25 @@ export class GlobalStorage {
     }
   }
 
-  async getOrCall(key: string | KeyParams, fn: () => unknown) {
+  // eslint-disable-next-line visual/complexity
+  async getOrCall<T>(key: string | KeyParams, fn: () => T): Promise<T> {
     if (this.config.disabled) return fn();
 
     const keyParams: KeyParams = typeof key === 'string' ? { key } : key;
 
     // todo: check worker memory for faster access
 
-    debug(`"${keyParams.key}": fetching...`);
+    debug(`"${keyParams.key}": checking...`);
     const { value: existingValue, missing } = await this.fetchValue(keyParams);
-    debug(`"${keyParams.key}": ${missing ? 'computing...' : 're-use'}`);
+    debug(`"${keyParams.key}": ${missing ? 'computing...' : 're-used.'}`);
 
     if (!missing) return existingValue;
 
     const { value, error } = await this.computeValue(fn);
-    debug(`"${keyParams.key}": ${error?.message || 'computed'}`);
+    debug(`"${keyParams.key}": ${error?.message || 'computed.'}`);
 
     await this.storeValue(keyParams, value, error);
-    debug(`"${keyParams.key}": saved`);
+    debug(`"${keyParams.key}": saved.`);
 
     if (error) throw error;
 
@@ -93,7 +95,7 @@ export class GlobalStorage {
     return { missing: true };
   }
 
-  private async computeValue(fn: () => unknown) {
+  private async computeValue<T>(fn: () => T) {
     try {
       const value = await fn();
       return { value };

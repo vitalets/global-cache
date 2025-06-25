@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { isExpired, TTL } from '../ttl';
+import { ValueInfo } from './memory';
 
 const fsStores = new Map<string | undefined, FileSystemStore>();
 
@@ -19,25 +20,28 @@ class FileSystemStore {
     this.baseDir = `.global-storage/${filenamify(namespace)}`;
   }
 
-  async load(key: string, ttl: TTL) {
+  async load(key: string, ttl: TTL): Promise<ValueInfo | undefined> {
     const filePath = this.getFilePath(key);
     const fileExists = fs.existsSync(filePath);
-    const updatedAt = fileExists ? fs.statSync(filePath).mtimeMs : 0;
+    const computedAt = fileExists ? fs.statSync(filePath).mtimeMs : 0;
 
-    if (!updatedAt || isExpired(updatedAt, ttl)) {
+    if (!computedAt || isExpired(computedAt, ttl)) {
       this.delete(key);
       return;
     }
 
-    const value: unknown = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    const content = fs.readFileSync(filePath, 'utf8');
+    const value: unknown = content ? JSON.parse(content) : undefined;
 
-    return { key, value, updatedAt };
+    return { key, value, computedAt };
   }
 
   save(key: string, value: unknown) {
     const filePath = this.getFilePath(key);
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
-    fs.writeFileSync(filePath, JSON.stringify(value, null, 2), 'utf8');
+    // undefined values are stored as empty files
+    const content = JSON.stringify(value, null, 2) || '';
+    fs.writeFileSync(filePath, content, 'utf8');
   }
 
   delete(key: string) {

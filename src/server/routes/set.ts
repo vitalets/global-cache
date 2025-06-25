@@ -42,7 +42,7 @@ function setValue(key: string, { namespace, runId, persist, value, error }: SetV
   if (error) {
     memoryStore.setError(key, error);
   } else {
-    memoryStore.set(key, value);
+    memoryStore.setValue(key, value);
   }
 
   if (persist) {

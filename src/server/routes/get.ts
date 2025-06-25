@@ -43,6 +43,7 @@ router.get('/get/:key', async (req, res) => {
   }
 });
 
+// eslint-disable-next-line visual/complexity, max-statements
 async function getValue(key: string, { namespace, runId, compute, ttl }: GetValueParams) {
   const memoryStore = getMemoryStore(namespace, runId);
 
@@ -51,19 +52,20 @@ async function getValue(key: string, { namespace, runId, compute, ttl }: GetValu
   if (ttl) {
     const fileSystemStore = getFileSystemStore(namespace);
 
-    if (valueInfo && isExpired(valueInfo.updatedAt, ttl)) {
+    if (valueInfo && isExpired(valueInfo.computedAt, ttl)) {
       memoryStore.delete(key);
       valueInfo = undefined;
     }
 
     if (!valueInfo) {
       valueInfo = await fileSystemStore.load(key, ttl);
-      if (valueInfo) memoryStore.set(key, valueInfo);
+      // store valuein emory as well for faster access during this test run
+      if (valueInfo) memoryStore.set(key, valueInfo); // eslint-disable-line max-depth
     }
   }
 
   if (!valueInfo) {
-    if (compute) memoryStore.set(key, { key, pending: true });
+    if (compute) memoryStore.setValue(key, { key, pending: true });
     return { missing: true };
   }
 
@@ -72,7 +74,7 @@ async function getValue(key: string, { namespace, runId, compute, ttl }: GetValu
     const value = await new Promise((resolve, reject) => {
       valueInfo.listeners = valueInfo.listeners || [];
       valueInfo.listeners.push({ resolve, reject });
-      memoryStore.set(key, valueInfo);
+      memoryStore.setValue(key, valueInfo);
     });
     return { value };
   }
