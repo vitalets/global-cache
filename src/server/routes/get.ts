@@ -1,7 +1,8 @@
-import { Router } from 'express';
+import { Express, Router } from 'express';
 import { getMemoryStore, MemoryStore, ValueInfo } from '../storage/memory';
 import { getFileSystemStore } from '../storage/fs';
 import { isExpired, TTL } from '../ttl';
+import { getConfig } from '../config';
 
 export const router = Router();
 
@@ -14,15 +15,15 @@ router.get('/:namespace/:runId/:key', async (req, res) => {
   try {
     const { namespace, runId, key } = req.params;
     const query: GetValueQuery = req.query;
+    const { basePath } = getConfig(req.app as Express);
 
-    const getter = new Getter(namespace, runId, key);
+    const getter = new Getter(namespace, runId, key, basePath);
     await getter.loadValue({
-      ttl: query.ttl as TTL,
+      ttl: query.ttl as TTL | undefined,
       compute: Boolean(query.compute),
     });
-
     if (getter.isMissing) {
-      res.status(404).end();
+      res.sendStatus(404);
     } else {
       res.json(getter.value);
     }
@@ -38,10 +39,12 @@ class Getter {
   private memoryStore: MemoryStore;
   private valueInfo?: ValueInfo;
 
+  // eslint-disable-next-line max-params
   constructor(
     private namespace: string,
     runId: string,
     private key: string,
+    private basePath: string,
   ) {
     this.memoryStore = getMemoryStore(namespace, runId);
   }
@@ -72,7 +75,7 @@ class Getter {
   }
 
   private async loadFromFileSystem(ttl: TTL) {
-    const fileSystemStore = getFileSystemStore(this.namespace);
+    const fileSystemStore = getFileSystemStore(this.basePath, this.namespace);
     this.valueInfo = await fileSystemStore.load(this.key, ttl);
     // store value in memory as well for faster access
     if (this.valueInfo) this.memoryStore.set(this.key, this.valueInfo);
@@ -87,7 +90,7 @@ class Getter {
 
   private handleMissing(compute: boolean) {
     if (compute) {
-      this.memoryStore.setValue(this.key, { key: this.key, pending: true });
+      this.memoryStore.set(this.key, { key: this.key, pending: true });
     }
     this.isMissing = true;
   }
@@ -97,7 +100,7 @@ class Getter {
     this.value = await new Promise((resolve, reject) => {
       valueInfo.listeners = valueInfo.listeners || [];
       valueInfo.listeners.push({ resolve, reject });
-      this.memoryStore.setValue(this.key, valueInfo);
+      this.memoryStore.set(this.key, valueInfo);
     });
   }
 }

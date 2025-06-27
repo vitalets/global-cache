@@ -5,19 +5,18 @@ import { ValueInfo } from './memory';
 
 const fsStores = new Map<string | undefined, FileSystemStore>();
 
-export function getFileSystemStore(namespace: string | undefined) {
+export function getFileSystemStore(basePath: string, namespace: string) {
   if (!fsStores.has(namespace)) {
-    fsStores.set(namespace, new FileSystemStore(namespace));
+    fsStores.set(namespace, new FileSystemStore(basePath, namespace));
   }
   return fsStores.get(namespace)!;
 }
 
 class FileSystemStore {
-  private baseDir: string;
+  private namespacePath: string;
 
-  constructor(namespace = 'default') {
-    // todo: configure base dir
-    this.baseDir = `.global-storage/${filenamify(namespace)}`;
+  constructor(basePath: string, namespace: string) {
+    this.namespacePath = path.join(basePath, filenamify(namespace));
   }
 
   async load(key: string, ttl: TTL): Promise<ValueInfo | undefined> {
@@ -53,7 +52,7 @@ class FileSystemStore {
 
   private getFilePath(key: string) {
     const sanitizedKey = filenamify(key);
-    return `${this.baseDir}/${sanitizedKey}.json`;
+    return `${this.namespacePath}/${sanitizedKey}.json`;
   }
 }
 

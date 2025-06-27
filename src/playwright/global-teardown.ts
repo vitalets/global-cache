@@ -1,9 +1,13 @@
-import { stopServer } from '../server';
+import { globalConfig } from '../global-config';
 import { debug } from '../utils';
+import { globalStorageServer } from './global-setup';
+// import { globalStorage } from '.';
 
 export default async function globalTeardown() {
-  debug('Stopping server in global teardown...');
-  // todo: clear memory storage
-  await stopServer();
-  debug('Server stopped.');
+  debug('Running global teardown...');
+  if (globalConfig.ownRunId) {
+    // fetch request to clear memory
+    // await globalStorageServer.clearMemory(globalConfig.ownRunId);
+  }
+  await globalStorageServer.stop();
 }

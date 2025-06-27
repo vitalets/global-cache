@@ -1,6 +1,7 @@
-import { Router } from 'express';
+import { Express, Router } from 'express';
 import { getMemoryStore, MemoryStore } from '../storage/memory';
 import { getFileSystemStore } from '../storage/fs';
+import { getConfig } from '../config';
 
 export const router = Router();
 
@@ -13,9 +14,10 @@ export type SetValueReqBody = {
 router.post('/:namespace/:runId/:key', async (req, res) => {
   try {
     const { namespace, runId, key } = req.params;
+    const { basePath } = getConfig(req.app as Express);
     const params: SetValueReqBody = req.body;
 
-    new Setter(key, namespace, runId).setValue(params);
+    new Setter(namespace, runId, key, basePath).setValue(params);
 
     res.json({ success: true });
   } catch (error) {
@@ -27,10 +29,12 @@ router.post('/:namespace/:runId/:key', async (req, res) => {
 class Setter {
   private memoryStore: MemoryStore;
 
+  // eslint-disable-next-line max-params
   constructor(
     private namespace: string,
     runId: string,
     private key: string,
+    private basePath: string,
   ) {
     this.memoryStore = getMemoryStore(namespace, runId);
   }
@@ -51,7 +55,7 @@ class Setter {
   }
 
   private setPersistentValue(value: unknown, error?: string) {
-    const filesystemStore = getFileSystemStore(this.namespace);
+    const filesystemStore = getFileSystemStore(this.basePath, this.namespace);
     if (error) {
       filesystemStore.delete(this.key);
     } else {

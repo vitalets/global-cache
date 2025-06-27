@@ -1,12 +1,13 @@
-import { AddressInfo } from 'net';
-import { startServer } from '../server';
+import { globalConfig } from '../global-config';
+import { GlobalStorageServer } from '../server';
 import { debug } from '../utils';
-import { env } from '../env';
+
+export const globalStorageServer = new GlobalStorageServer({
+  basePath: globalConfig.basePath,
+});
 
 export default async function globalSetup() {
-  debug('Starting server in global setup...');
-  const server = await startServer();
-  const { port } = server.address() as AddressInfo;
-  env.serverUrl = `http://localhost:${port}`;
-  debug('Server started:', env.serverUrl);
+  debug('Global setup...');
+  await globalStorageServer.start();
+  globalConfig.update({ serverUrl: globalStorageServer.url });
 }

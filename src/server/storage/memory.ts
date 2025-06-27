@@ -18,12 +18,17 @@ export type Listener = {
 
 const memoryStores = new Map<string | undefined, MemoryStore>();
 
-export function getMemoryStore(namespace: string | undefined, runId: string) {
-  const storeKey = `${namespace}-${runId}`;
+export function getMemoryStore(namespace: string, runId: string) {
+  const storeKey = getMemoryStoreKey(namespace, runId);
   if (!memoryStores.has(storeKey)) {
     memoryStores.set(storeKey, new MemoryStore());
   }
   return memoryStores.get(storeKey)!;
+}
+
+export function clearMemoryStore(namespace: string, runId: string) {
+  const storeKey = getMemoryStoreKey(namespace, runId);
+  memoryStores.delete(storeKey);
 }
 
 export class MemoryStore {
@@ -68,4 +73,8 @@ export class MemoryStore {
 
     valueInfo?.listeners?.forEach(({ reject }) => reject(error));
   }
+}
+
+function getMemoryStoreKey(namespace: string, runId: string) {
+  return `${namespace}-${runId}`;
 }
