@@ -48,6 +48,21 @@ export class GlobalStorage {
     return value;
   }
 
+  /**
+   * Clears memory srorage for current runId
+   */
+  async clearMemory() {
+    const { namespace, runId, serverUrl } = globalConfig;
+    const pathname = [namespace, runId].map(encodeURIComponent).join('/');
+    const url = new URL(pathname, serverUrl).toString();
+    const res = await fetch(url, { method: 'DELETE' });
+    if (!res.ok) {
+      throw new Error(
+        `Failed to clear memory for runId "${runId}": ${res.status} ${res.statusText} ${await res.text()}`,
+      );
+    }
+  }
+
   private async fetchValue(key: string, { ttl }: KeyParams) {
     const searchParams = new URLSearchParams();
     searchParams.set('compute', '1');
@@ -64,7 +79,8 @@ export class GlobalStorage {
 
     // cache hit
     if (res.status === 200) {
-      const value = await res.json();
+      const text = await res.text();
+      const value = text ? JSON.parse(text) : undefined;
       return { value };
     }
 

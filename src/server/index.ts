@@ -4,7 +4,7 @@ import express from 'express';
 import { debug } from '../utils';
 import { router as routeGet } from './routes/get';
 import { router as routeSet } from './routes/set';
-import { router as routeClear } from './routes/set';
+import { router as routeClear } from './routes/clear';
 import { GlobalStorageServerConfig, setConfig } from './config';
 
 export class GlobalStorageServer {
