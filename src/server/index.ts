@@ -5,13 +5,13 @@ import { debug } from '../utils';
 import { router as routeGet } from './routes/get';
 import { router as routeSet } from './routes/set';
 import { router as routeClear } from './routes/clear';
-import { GlobalStorageServerConfig, setConfig } from './config';
+import { getConfig, GlobalStorageServerConfig, setConfig } from './config';
 
 export class GlobalStorageServer {
   private app = express();
   private server: http.Server | null = null;
 
-  constructor(config: GlobalStorageServerConfig = {}) {
+  constructor(providedConfig: GlobalStorageServerConfig = {}) {
     this.app.use(express.json());
     this.app.use('/', routeGet);
     this.app.use('/', routeSet);
@@ -19,13 +19,17 @@ export class GlobalStorageServer {
     // this.app.get('/', (req, res) => {
     //   res.send('Global Storage Server is running.');
     // });
-    setConfig(this.app, config);
+    setConfig(this.app, providedConfig);
   }
 
   get url() {
     if (!this.server) return '';
     const { port } = this.server.address() as AddressInfo;
     return `http://localhost:${port}`;
+  }
+
+  get config() {
+    return getConfig(this.app);
   }
 
   // See: https://github.com/nodejs/node/issues/21482#issuecomment-626025579
