@@ -1,21 +1,22 @@
 import fs from 'node:fs';
 import { beforeAll, afterAll, test, expect } from 'vitest';
-import { GlobalStorage, GlobalStorageServer } from '../src';
+import { GlobalStorage } from '../src';
+import { GlobalStorageServer } from '../src/server';
 
 const globalStorage = new GlobalStorage();
-const globalStorageServer = new GlobalStorageServer({
-  basePath: './test/.global-storage',
-});
-
+const globalStorageServer = new GlobalStorageServer();
+const basePath = './test/.global-storage';
 const values = [42, 'hello', true, { foo: 'bar' }, [1, 2, 3], null, undefined];
 
 beforeAll(async () => {
-  if (fs.existsSync(globalStorageServer.config.basePath)) {
-    fs.rmSync(globalStorageServer.config.basePath, { recursive: true });
+  await globalStorageServer.start({ basePath });
+
+  if (fs.existsSync(basePath)) {
+    fs.rmSync(basePath, { recursive: true });
   }
-  await globalStorageServer.start();
+
   globalStorage.defineConfig({
-    serverUrl: globalStorageServer.url,
+    serverUrl: `http://localhost:${globalStorageServer.port}`,
   });
 });
 

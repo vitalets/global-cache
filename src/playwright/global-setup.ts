@@ -1,13 +1,15 @@
-import { globalConfig } from '../global-config';
-import { GlobalStorageServer } from '../server';
 import { debug } from '../utils';
-
-export const globalStorageServer = new GlobalStorageServer({
-  basePath: globalConfig.basePath,
-});
+import { globalConfig } from '../global-config';
+import { globalStorageServer } from '../server';
 
 export default async function globalSetup() {
   debug('Global setup...');
-  await globalStorageServer.start();
-  globalConfig.update({ serverUrl: globalStorageServer.url });
+
+  await globalStorageServer.start({
+    basePath: globalConfig.basePath,
+  });
+
+  globalConfig.update({
+    serverUrl: `http://localhost:${globalStorageServer.port}`,
+  });
 }

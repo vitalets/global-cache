@@ -6,11 +6,17 @@ import { getConfig } from '../config';
 export const router = Router();
 
 export type SetValueReqBody = {
+  /* Persist the value to the file system. */
   persist?: boolean;
+  /* The value to set. */
   value?: unknown;
+  /* An error occured during value computing. */
   error?: string;
 };
 
+/**
+ * Route for setting a value.
+ */
 router.post('/:namespace/:runId/:key', async (req, res) => {
   try {
     const { namespace, runId, key } = req.params;

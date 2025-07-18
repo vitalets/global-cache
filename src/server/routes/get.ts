@@ -7,10 +7,15 @@ import { getConfig } from '../config';
 export const router = Router();
 
 export type GetValueQuery = {
+  /* Will value be computed on the client if not found. */
   compute?: string;
+  /* Time to live for the value: if set, value is stored on the filesystem. */
   ttl?: string;
 };
 
+/**
+ * Route for geting a value.
+ */
 router.get('/:namespace/:runId/:key', async (req, res) => {
   try {
     const { namespace, runId, key } = req.params;
@@ -77,7 +82,7 @@ class Getter {
   private async loadFromFileSystem(ttl: TTL) {
     const fileSystemStore = getFileSystemStore(this.basePath, this.namespace);
     this.valueInfo = await fileSystemStore.load(this.key, ttl);
-    // store value in memory as well for faster access
+    // store value in memory as well for faster access next time
     if (this.valueInfo) this.memoryStore.set(this.key, this.valueInfo);
   }
 

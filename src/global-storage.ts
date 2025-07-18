@@ -1,4 +1,4 @@
-import { globalConfig, GlobalConfigProvided } from './global-config';
+import { globalConfig, GlobalConfigInput } from './global-config';
 import { type SetValueReqBody } from './server/routes/set';
 import { TTL } from './server/ttl';
 import { debug } from './utils';
@@ -9,11 +9,11 @@ export type KeyParams = {
 
 export type GetOrCallArgs<T> = [string, () => T] | [string, KeyParams, () => T];
 
-export type GlobalStorageConfig = GlobalConfigProvided;
+export type GlobalStorageConfig = GlobalConfigInput;
 
 export class GlobalStorage {
   /**
-   * Helper method to set global config on global storage instance.
+   * Set global config via global storage instance (for conveniency).
    */
   defineConfig(config: GlobalStorageConfig) {
     globalConfig.update(config);
@@ -27,8 +27,6 @@ export class GlobalStorage {
       debug(`"${key}": Global storage disabled. Computing...`);
       return fn();
     }
-
-    // todo: check worker memory for faster access
 
     debug(`"${key}": Fetching value...`);
     const { value: existingValue, missing } = await this.fetchValue(key, params);
@@ -137,12 +135,25 @@ export class GlobalStorage {
     }
   }
 
-  // async get(key: string) {
-  //   const res = await fetch(`${env.serverUrl}/get/${key}`);
-  //   if (!res.ok) {
-  //     throw new Error(`Failed to get key ${key}: ${res.statusText}`);
-  //   }
-  // }
+  /**
+   * Fetch value without computing.
+   * What about persistence?
+   */
+  async get(key: string) {
+    const url = buildKeyUrl(key);
+    const res = await fetch(url);
+
+    if (res.status === 404) return;
+
+    if (!res.ok) {
+      throw new Error(
+        `Failed to get key "${key}": ${res.status} ${res.statusText} ${await res.text()}`,
+      );
+    }
+
+    const text = await res.text();
+    return text ? JSON.parse(text) : undefined;
+  }
 
   // async getAll({ prefix }: { prefix: string }) {
   //   const res = await fetch(`${env.serverUrl}/get-all/${prefix}`);
@@ -168,3 +179,5 @@ function buildKeyUrl(key: string) {
   const pathname = [namespace, runId, key].map(encodeURIComponent).join('/');
   return new URL(pathname, serverUrl).toString();
 }
+
+export const globalStorage = new GlobalStorage();

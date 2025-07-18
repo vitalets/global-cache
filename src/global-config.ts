@@ -3,40 +3,43 @@
  */
 import { randomUUID } from 'node:crypto';
 
-export type GlobalConfigData = {
-  serverUrl: string;
-  namespace: string;
-  runId: string;
-  ownRunId?: string;
-  /* where to store files, ignored if serverUrl is set */
+export type GlobalConfigInput = {
+  /* Namespace for the global storage, used to separate different projects */
+  /* when working with standalone server */
+  namespace?: string;
+  /* Where to store files, ignored if serverUrl is set */
   basePath?: string;
+  /* Disables global storage, all values will be computed each time */
   disabled?: boolean;
+  /* URL of the standalone storage server */
+  serverUrl?: string;
+  /* External run ID, used for sharded run */
+  externalRunId?: string;
 };
 
-// No way to pass runId to the config:
-// runId can be provided by env variable or generated automatically.
-// If passing runId manually - there will be no way to distinguish
-// from generated runId, to finally decide, should we clear the run session or not.
-// E.g.:
-// globalConfig.update({ runId: process.env.MY_RUN_ID });
-// vs
-// globalConfig.update({ runId: Math.random() });
-export type GlobalConfigProvided = Omit<Partial<GlobalConfigData>, 'runId' | 'ownRunId'>;
+type GlobalConfigResolved = GlobalConfigInput & {
+  namespace: string;
+  runId: string;
+};
 
 export class GlobalConfig {
-  private config: GlobalConfigData = {
-    serverUrl: '',
+  private config: GlobalConfigResolved = {
     namespace: 'default',
     runId: '',
   };
 
   constructor() {
     Object.assign(this.config, getConfigFromEnv());
-    this.setupRunId();
+    this.ensureRunId();
   }
 
-  update(providedConfig: GlobalConfigProvided) {
-    Object.assign(this.config, providedConfig);
+  update(config: GlobalConfigInput) {
+    Object.assign(this.config, config);
+
+    if (config?.externalRunId) {
+      this.config.runId = config.externalRunId;
+    }
+
     saveConfigToEnv(this.config);
   }
 
@@ -52,8 +55,8 @@ export class GlobalConfig {
     return this.config.runId;
   }
 
-  get ownRunId() {
-    return this.config.ownRunId;
+  get externalRunId() {
+    return this.config.externalRunId;
   }
 
   get basePath() {
@@ -64,55 +67,22 @@ export class GlobalConfig {
     return Boolean(this.config.disabled);
   }
 
-  private setupRunId() {
-    if (this.config.runId) return;
-
-    // For sharded runs user can set runId for all shards.
-    const externalRunId = process.env.GLOBAL_STORAGE_RUN_ID;
-
-    if (externalRunId) {
-      this.config.runId = externalRunId;
-    } else {
-      this.config.runId = this.config.ownRunId = randomUUID();
+  private ensureRunId() {
+    if (!this.config.runId) {
+      this.config.runId = randomUUID();
+      saveConfigToEnv(this.config);
     }
   }
 }
 
 function getConfigFromEnv() {
-  return JSON.parse(process.env.GLOBAL_STORAGE_CONFIG || '{}');
+  const configFromEnv = process.env.GLOBAL_STORAGE_CONFIG;
+  return configFromEnv ? (JSON.parse(configFromEnv) as GlobalConfigResolved) : undefined;
 }
 
-function saveConfigToEnv(config: GlobalConfigData) {
+function saveConfigToEnv(config: GlobalConfigResolved) {
   process.env.GLOBAL_STORAGE_CONFIG = JSON.stringify(config);
 }
 
+/* Export singleton instance */
 export const globalConfig = new GlobalConfig();
-
-/*
-
-export const globalConfig = initGlobalConfig();
-
-export function updateGlobalConfig(providedConfig: GlobalConfigProvided) {
-  Object.assign(globalConfig, providedConfig);
-  saveConfigToEnv(globalConfig);
-}
-
-function initGlobalConfig() {
-  const config = Object.assign({}, defaults, getConfigFromEnv());
-  setupRunId(config);
-  return config as GlobalConfigData;
-}
-
-function setupRunId(config: GlobalConfigData) {
-  if (config.runId) return;
-
-  // For sharded runs user can set runId for all shards.
-  const externalRunId = process.env.GLOBAL_STORAGE_RUN_ID;
-
-  if (externalRunId) {
-    config.runId = externalRunId;
-  } else {
-    config.runId = config.ownRunId = randomUUID();
-  }
-}
-*/

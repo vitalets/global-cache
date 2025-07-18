@@ -1,3 +1,8 @@
+/**
+ * Global Storage Server.
+ * An HTTP server that provides a simple key-value storage.
+ * Can be launched locally or on a dedicated environment (standalone).
+ */
 import http from 'node:http';
 import { AddressInfo } from 'net';
 import express from 'express';
@@ -5,43 +10,45 @@ import { debug } from '../utils';
 import { router as routeGet } from './routes/get';
 import { router as routeSet } from './routes/set';
 import { router as routeClear } from './routes/clear';
-import { getConfig, GlobalStorageServerConfig, setConfig } from './config';
+import { GlobalStorageServerConfig, setConfig } from './config';
 
 export class GlobalStorageServer {
   private app = express();
   private server: http.Server | null = null;
 
-  constructor(providedConfig: GlobalStorageServerConfig = {}) {
+  constructor() {
     this.app.use(express.json());
     this.app.use('/', routeGet);
     this.app.use('/', routeSet);
     this.app.use('/', routeClear);
+    // todo:
     // this.app.get('/', (req, res) => {
     //   res.send('Global Storage Server is running.');
     // });
-    setConfig(this.app, providedConfig);
   }
 
-  get url() {
-    if (!this.server) return '';
-    const { port } = this.server.address() as AddressInfo;
-    return `http://localhost:${port}`;
+  get port() {
+    const { port = 0 } = this.server ? (this.server.address() as AddressInfo) : {};
+    return port;
   }
 
-  get config() {
-    return getConfig(this.app);
+  get listening() {
+    return Boolean(this.server?.listening);
   }
 
-  // See: https://github.com/nodejs/node/issues/21482#issuecomment-626025579
-  async start() {
+  /**
+   * Start server.
+   * See: https://github.com/nodejs/node/issues/21482#issuecomment-626025579
+   */
+  async start(config: GlobalStorageServerConfig = {}) {
     debug('Starting server...');
-    const { port = 0 } = this.app.locals.config;
+    setConfig(this.app, config);
     await new Promise<void>((resolve, reject) => {
-      this.server = this.app.listen(port);
+      this.server = this.app.listen(config.port || 0);
       this.server.once('listening', resolve);
       this.server.once('error', reject);
     });
-    debug(`Server started: ${this.url}`);
+    debug(`Server started on port: ${this.port}`);
   }
 
   async stop() {
@@ -55,3 +62,6 @@ export class GlobalStorageServer {
     }
   }
 }
+
+/* Export a singleton instance of GlobalStorageServer for easy access */
+export const globalStorageServer = new GlobalStorageServer();
