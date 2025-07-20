@@ -2,6 +2,8 @@
  * Global Storage Server.
  * An HTTP server that provides a simple key-value storage.
  * Can be launched locally or on a dedicated environment (standalone).
+ *
+ * This file is exported separately from the main index file, to not be loaded in workers.
  */
 import http from 'node:http';
 import { AddressInfo } from 'net';

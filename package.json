@@ -1,20 +1,21 @@
 {
   "name": "global-storage",
-  "description": "Share data across Playwright workers",
+  "description": "Share data across e2e test workers in Playwright",
   "version": "0.1.0",
   "type": "commonjs",
   "repository": {
     "type": "git",
     "url": "git://github.com/vitalets/global-storage.git"
   },
+  "main": "dist/index.js",
   "exports": {
     ".": "./dist/index.js",
-    "./playwright": "./dist/playwright/index.js"
+    "./server": "./dist/server/index.js"
   },
   "typesVersions": {
     "*": {
-      "playwright": [
-        "./dist/playwright/index.d.ts"
+      "server": [
+        "./dist/server/index.d.ts"
       ]
     }
   },
@@ -33,7 +34,7 @@
     "knip": "knip -c knip.config.ts",
     "prettier": "prettier --check --ignore-unknown .",
     "prettier:w": "prettier --write --ignore-unknown .",
-    "test": "vitest run --no-cache --testTimeout 5000 --dir ./test",
+    "test": "npm run build && vitest run --no-cache --testTimeout 5000 --dir ./test",
     "test:d": "DEBUG=global-storage npm t",
     "pw": "npm i --no-save @playwright/test@$PW",
     "pw:install": "PLAYWRIGHT_SKIP_BROWSER_GC=1 npx playwright install chromium",
@@ -71,9 +72,9 @@
     "vitest": "^3.2.4"
   },
   "keywords": [
-    "playwright",
     "global storage",
     "global setup",
+    "playwright",
     "workers",
     "testing",
     "e2e",

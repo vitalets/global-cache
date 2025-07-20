@@ -19,6 +19,14 @@ export class GlobalStorage {
     globalConfig.update(config);
   }
 
+  get setup() {
+    return require.resolve('./setup.js');
+  }
+
+  get teardown() {
+    return require.resolve('./teardown.js');
+  }
+
   // eslint-disable-next-line visual/complexity, max-statements
   async getOrCall<T>(...args: GetOrCallArgs<T>): Promise<T> {
     const { key, params, fn } = resolveArgs(args);
@@ -166,8 +174,6 @@ export class GlobalStorage {
   // todo: delete
 }
 
-// export const GlobalStorage
-
 function resolveArgs<T>(args: GetOrCallArgs<T>) {
   return args.length === 2
     ? { key: args[0], params: {}, fn: args[1] }
@@ -180,4 +186,5 @@ function buildKeyUrl(key: string) {
   return new URL(pathname, serverUrl).toString();
 }
 
+// Global storage instance.
 export const globalStorage = new GlobalStorage();
