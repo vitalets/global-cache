@@ -13,8 +13,8 @@ export type GlobalConfigInput = {
   disabled?: boolean;
   /* URL of the standalone storage server */
   serverUrl?: string;
-  /* External run ID, used for sharded run */
-  externalRunId?: string;
+  /* Consistent run ID for multiple shards */
+  shardedRunId?: string;
 };
 
 type GlobalConfigResolved = GlobalConfigInput & {
@@ -36,8 +36,8 @@ export class GlobalConfig {
   update(config: GlobalConfigInput) {
     Object.assign(this.config, config);
 
-    if (config?.externalRunId) {
-      this.config.runId = config.externalRunId;
+    if (config?.shardedRunId) {
+      this.config.runId = config.shardedRunId;
     }
 
     saveConfigToEnv(this.config);
@@ -55,8 +55,8 @@ export class GlobalConfig {
     return this.config.runId;
   }
 
-  get externalRunId() {
-    return this.config.externalRunId;
+  get shardedRunId() {
+    return this.config.shardedRunId;
   }
 
   get basePath() {

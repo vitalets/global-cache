@@ -1,7 +1,7 @@
 import { defineConfig } from '@playwright/test';
-import { globalStorage } from 'global-storage/playwright';
+import { globalStorage } from 'global-storage';
 
-// Uncomment to compare without global storage
+// Uncomment to provide global storage configuration
 // globalStorage.defineConfig({
 //   disabled: true,
 // });

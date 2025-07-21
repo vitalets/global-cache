@@ -6,8 +6,8 @@ import { globalStorageServer } from './server';
 export default async function globalTeardown() {
   debug('Running global teardown...');
 
-  if (!globalConfig.externalRunId) {
-    await globalStorage.clearMemory();
+  if (!globalConfig.shardedRunId) {
+    await globalStorage.cleanupRun();
   }
 
   if (globalStorageServer.listening) {

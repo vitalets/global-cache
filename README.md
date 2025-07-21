@@ -195,21 +195,25 @@ After the test run, you may need to cleanup the created resources. For example, 
 ```ts
 // playwright.config.ts
 import { defineConfig } from '@playwright/test';
-import { globalStorage } from 'global-storage/playwright';
+import { globalStorage } from 'global-storage';
 
 export default defineConfig({
   globalSetup: globalStorage.setup,
-  globalTeardown: require.resolve('./global-teardown'), // <-- custom teardown script
+  globalTeardown: [
+    /* custom teardown script before globalStorage.teardown */
+    require.resolve('./global-teardown'),
+    globalStorage.teardown,
+  ],
   // ...
 });
 ```
 
-2. Leverage `globalStorage.get()` to check stored value and run appropriate actions:
+2. In `global-teardown.js` leverage `globalStorage.get()` to check stored value and run appropriate actions:
 
 ```ts
-// global-teardown.ts
+// global-teardown.js
 import { defineConfig } from '@playwright/test';
-import { globalStorage } from 'global-storage/playwright';
+import { globalStorage } from 'global-storage';
 
 export default async function() {
     const userId = await globalStorage.get('userId');
@@ -219,7 +223,7 @@ export default async function() {
 }
 ```
 
-> If you use **persistent** storage, clearing data may break your tests on the next run. 
+> Note that for **persistent** values clearing data may break your tests on the next run!
 
 ### Cleanup multiple values
 
@@ -237,6 +241,8 @@ export default async function() {
     }
 }
 ```
+
+
 
 ## Configuration
 

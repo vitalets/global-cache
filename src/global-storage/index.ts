@@ -1,7 +1,7 @@
-import { globalConfig, GlobalConfigInput } from './global-config';
-import { type SetValueReqBody } from './server/routes/set';
-import { TTL } from './server/ttl';
-import { debug } from './utils';
+import { globalConfig, GlobalConfigInput } from '../global-config';
+import { type SetValueReqBody } from '../server/routes/set';
+import { TTL } from '../server/ttl';
+import { debug } from '../utils';
 
 export type KeyParams = {
   ttl?: TTL;
@@ -20,16 +20,16 @@ export class GlobalStorage {
   }
 
   get setup() {
-    return require.resolve('./setup.js');
+    return require.resolve('../setup.js');
   }
 
   get teardown() {
-    return require.resolve('./teardown.js');
+    return require.resolve('../teardown.js');
   }
 
   // eslint-disable-next-line visual/complexity, max-statements
   async getOrCall<T>(...args: GetOrCallArgs<T>): Promise<T> {
-    const { key, params, fn } = resolveArgs(args);
+    const { key, params, fn } = resolveGetOrCallArgs(args);
 
     if (globalConfig.disabled) {
       debug(`"${key}": Global storage disabled. Computing...`);
@@ -55,9 +55,9 @@ export class GlobalStorage {
   }
 
   /**
-   * Clears memory srorage for current runId
+   * Clears memory storage for current runId
    */
-  async clearMemory() {
+  async cleanupRun() {
     const { namespace, runId, serverUrl } = globalConfig;
     const pathname = [namespace, runId].map(encodeURIComponent).join('/');
     const url = new URL(pathname, serverUrl).toString();
@@ -174,7 +174,7 @@ export class GlobalStorage {
   // todo: delete
 }
 
-function resolveArgs<T>(args: GetOrCallArgs<T>) {
+function resolveGetOrCallArgs<T>(args: GetOrCallArgs<T>) {
   return args.length === 2
     ? { key: args[0], params: {}, fn: args[1] }
     : { key: args[0], params: args[1], fn: args[2] };
