@@ -7,7 +7,7 @@ export type KeyParams = {
   ttl?: TTL;
 };
 
-export type GetOrCallArgs<T> = [string, () => T] | [string, KeyParams, () => T];
+export type GetOrComputeArgs<T> = [string, () => T] | [string, KeyParams, () => T];
 
 export type GlobalStorageConfig = GlobalConfigInput;
 
@@ -28,8 +28,8 @@ export class GlobalStorage {
   }
 
   // eslint-disable-next-line visual/complexity, max-statements
-  async getOrCall<T>(...args: GetOrCallArgs<T>): Promise<T> {
-    const { key, params, fn } = resolveGetOrCallArgs(args);
+  async getOrCompute<T>(...args: GetOrComputeArgs<T>): Promise<T> {
+    const { key, params, fn } = resolveGetOrComputeArgs(args);
 
     if (globalConfig.disabled) {
       debug(`"${key}": Global storage disabled. Computing...`);
@@ -174,7 +174,7 @@ export class GlobalStorage {
   // todo: delete
 }
 
-function resolveGetOrCallArgs<T>(args: GetOrCallArgs<T>) {
+function resolveGetOrComputeArgs<T>(args: GetOrComputeArgs<T>) {
   return args.length === 2
     ? { key: args[0], params: {}, fn: args[1] }
     : { key: args[0], params: args[1], fn: args[2] };

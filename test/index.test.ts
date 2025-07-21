@@ -21,12 +21,12 @@ afterAll(async () => {
   await globalTeardown();
 });
 
-describe('getOrCall', () => {
+describe('getOrCompute', () => {
   test('compute, store and return different value types (memory)', async () => {
     for (const value of values) {
       let callCount = 0;
       const fn = () =>
-        globalStorage.getOrCall(`memory-${JSON.stringify(value)}`, async () => {
+        globalStorage.getOrCompute(`memory-${JSON.stringify(value)}`, async () => {
           callCount++;
           return value;
         });
@@ -46,7 +46,7 @@ describe('getOrCall', () => {
     for (const value of values) {
       let callCount = 0;
       const fn = () =>
-        globalStorage.getOrCall(`fs-${JSON.stringify(value)}`, { ttl: `${ttl}ms` }, async () => {
+        globalStorage.getOrCompute(`fs-${JSON.stringify(value)}`, { ttl: `${ttl}ms` }, async () => {
           callCount++;
           return value;
         });
@@ -69,7 +69,7 @@ describe('getOrCall', () => {
 
   test('error while computing value', async () => {
     const fn = () =>
-      globalStorage.getOrCall(`error-key`, async () => {
+      globalStorage.getOrCompute(`error-key`, async () => {
         throw new Error('foo');
       });
 
@@ -84,7 +84,7 @@ describe('get', () => {
   test('get value without computing', async () => {
     const key = 'get-without-computing';
     const value1 = await globalStorage.get(key);
-    const value2 = await globalStorage.getOrCall(key, () => 42);
+    const value2 = await globalStorage.getOrCompute(key, () => 42);
     const value3 = await globalStorage.get(key);
 
     expect(value1).toEqual(undefined);
