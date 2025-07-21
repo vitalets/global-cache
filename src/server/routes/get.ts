@@ -1,9 +1,10 @@
 import { Express, Router } from 'express';
-import { getMemoryStore, MemoryStore, ValueInfo } from '../storage/memory';
+import { getMemoryStore, MemoryStore } from '../storage/memory';
 import { getFileSystemStore } from '../storage/fs';
 import { isExpired, TTL } from '../ttl';
 import { getConfig } from '../config';
 import { listeners } from '../listeners';
+import { ValueInfo } from '../value-info';
 
 export const router = Router();
 

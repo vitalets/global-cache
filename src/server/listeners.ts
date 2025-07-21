@@ -1,5 +1,7 @@
 /**
  * Map of listeners for computed value.
+ * Stores listeners for each key and notifies them when the value is computed or an error occurs.
+ * This allows multiple requests to wait for the same computation without duplicating it.
  */
 
 type Listener = {

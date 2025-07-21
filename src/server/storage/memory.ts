@@ -3,13 +3,7 @@
  */
 import { debug } from '../../utils';
 import { listeners } from '../listeners';
-
-export type ValueInfo = {
-  key: string;
-  pending?: boolean;
-  value?: unknown;
-  computedAt?: number;
-};
+import { ValueInfo } from '../value-info';
 
 const memoryStores = new Map<string | undefined, MemoryStore>();
 

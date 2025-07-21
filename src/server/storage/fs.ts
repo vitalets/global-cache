@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { isExpired, TTL } from '../ttl';
-import { ValueInfo } from './memory';
+import { ValueInfo } from '../value-info';
 
 const fsStores = new Map<string | undefined, FileSystemStore>();
 
