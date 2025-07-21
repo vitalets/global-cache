@@ -3,11 +3,12 @@ import { getMemoryStore, MemoryStore, ValueInfo } from '../storage/memory';
 import { getFileSystemStore } from '../storage/fs';
 import { isExpired, TTL } from '../ttl';
 import { getConfig } from '../config';
+import { listeners } from '../listeners';
 
 export const router = Router();
 
 export type GetValueQuery = {
-  /* Will value be computed on the client if not found. */
+  /* Value will be computed on the client (if not exist) */
   compute?: string;
   /* Time to live for the value: if set, value is stored on the filesystem. */
   ttl?: string;
@@ -69,7 +70,7 @@ class Getter {
     if (!this.valueInfo) {
       this.handleMissing(compute);
     } else if (this.valueInfo.pending) {
-      await this.waitForCompute();
+      this.value = await listeners.wait(this.key);
     } else {
       this.value = this.valueInfo.value;
     }
@@ -98,14 +99,5 @@ class Getter {
       this.memoryStore.set(this.key, { key: this.key, pending: true });
     }
     this.isMissing = true;
-  }
-
-  private async waitForCompute() {
-    const valueInfo = this.valueInfo!;
-    this.value = await new Promise((resolve, reject) => {
-      valueInfo.listeners = valueInfo.listeners || [];
-      valueInfo.listeners.push({ resolve, reject });
-      this.memoryStore.set(this.key, valueInfo);
-    });
   }
 }
