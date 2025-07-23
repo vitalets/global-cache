@@ -1,11 +1,6 @@
 import { globalConfig, GlobalConfigInput } from '../global-config';
-import { TTL } from '../server/ttl';
 import { debug } from '../utils';
-import { ValueFetcher } from './value-fetcher';
-
-export type KeyParams = {
-  ttl?: TTL;
-};
+import { KeyParams, ValueFetcher } from './value-fetcher';
 
 export type GetOrComputeArgs<T> = [string, () => T] | [string, KeyParams, () => T];
 

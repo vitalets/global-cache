@@ -1,9 +1,13 @@
 // todo
 
-import { KeyParams } from '.';
 import { globalConfig } from '../global-config';
 import { SetValueReqBody } from '../server/routes/set';
+import { TTL } from '../server/ttl';
 import { parseValue } from '../utils';
+
+export type KeyParams = {
+  ttl?: TTL;
+};
 
 const headers = {
   'Content-Type': 'application/json',
