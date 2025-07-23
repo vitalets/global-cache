@@ -1,5 +1,5 @@
 import { globalConfig, GlobalConfigInput } from '../global-config';
-import { debug } from '../utils';
+import { prefixedDebug } from '../utils';
 import { KeyParams, ValueFetcher } from './value-fetcher';
 
 export type GetOrComputeArgs<T> = [string, () => T] | [string, KeyParams, () => T];
@@ -25,25 +25,30 @@ export class GlobalStorage {
   // eslint-disable-next-line visual/complexity, max-statements
   async getOrCompute<T>(...args: GetOrComputeArgs<T>): Promise<T> {
     const { key, params, fn } = resolveGetOrComputeArgs(args);
+    const debug = prefixedDebug(`"${key}":`);
 
     if (globalConfig.disabled) {
-      debug(`"${key}": Global storage disabled. Computing...`);
+      debug(`Global storage disabled. Computing...`);
       return fn();
     }
 
+    if (globalConfig.ignoreTTL) {
+      delete params.ttl;
+    }
+
     const valueFetcher = new ValueFetcher(key, params);
-    debug(`"${key}": Fetching value...`);
+    debug(`Fetching value...`);
     const { value: existingValue, missing } = await valueFetcher.load();
-    debug(`"${key}": ${missing ? 'Missing. Computing...' : 'Value re-used.'}`);
+    debug(`${missing ? 'Missing. Computing...' : 'Value re-used.'}`);
 
     if (!missing) return existingValue as T;
 
     const { value, error } = await this.computeValue(fn);
-    debug(`"${key}": ${error?.message || 'Computed.'}`);
+    debug(`${error?.message || 'Computed.'}`);
 
-    debug(`"${key}": Saving value...`);
+    debug(`Saving value...`);
     await valueFetcher.save({ value, error });
-    debug(`"${key}": Saved.`);
+    debug(`Saved.`);
 
     if (error) throw error;
 
@@ -66,9 +71,10 @@ export class GlobalStorage {
    * - for persistent keys it would be the old value if it was changed during this run
    */
   async getStale(key: string) {
-    debug(`"${key}": Fetching stale value...`);
+    const debug = prefixedDebug(`"${key}":`);
+    debug(`Fetching stale value...`);
     const value = await new ValueFetcher(key).getStale();
-    debug(`"${key}": Fetched.`);
+    debug(`Fetched.`);
     return value;
   }
 
@@ -86,7 +92,7 @@ export class GlobalStorage {
 function resolveGetOrComputeArgs<T>(args: GetOrComputeArgs<T>) {
   return args.length === 2
     ? { key: args[0], params: {}, fn: args[1] }
-    : { key: args[0], params: args[1], fn: args[2] };
+    : { key: args[0], params: { ...args[1] }, fn: args[2] };
 }
 
 // Global storage instance.

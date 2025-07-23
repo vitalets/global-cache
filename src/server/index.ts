@@ -12,6 +12,7 @@ import { debug } from '../utils';
 import { router as routeGet } from './routes/get';
 import { router as routeGetStale } from './routes/get-stale';
 import { router as routeSet } from './routes/set';
+import { errorHandler } from './error-handler';
 import { GlobalStorageServerConfig, setConfig } from './config';
 
 export class GlobalStorageServer {
@@ -27,6 +28,8 @@ export class GlobalStorageServer {
     // this.app.get('/', (req, res) => {
     //   res.send('Global Storage Server is running.');
     // });
+    // Must be after all other middleware and routes
+    this.app.use(errorHandler);
   }
 
   get port() {

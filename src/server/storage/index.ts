@@ -55,6 +55,15 @@ export class Storage {
       await fsStorage(basePath).delete(key);
     }
   }
+
+  /**
+   * Clears all values in memory.
+   * Currently it is used for testing, to emulate server restart.
+   * In the future it may be used to clear session values on standalone server.
+   */
+  clearSession() {
+    this.data.clear();
+  }
 }
 
 export const storage = new Storage();

@@ -1,6 +1,10 @@
 import Debug from 'debug';
 
 export const debug = Debug('global-storage');
+export const prefixedDebug =
+  (prefix: string) =>
+  (...args: unknown[]) =>
+    debug(prefix, ...args);
 
 export type QueryParams<T> = {
   [K in keyof T]?: string;
