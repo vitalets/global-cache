@@ -1,10 +1,7 @@
 import Debug from 'debug';
 
 export const debug = Debug('global-storage');
-export const prefixedDebug =
-  (prefix: string) =>
-  (...args: unknown[]) =>
-    debug(prefix, ...args);
+export const debugForKey = (key: string) => Debug(`global-storage:${key}`);
 
 export type QueryParams<T> = {
   [K in keyof T]?: string;
@@ -17,4 +14,15 @@ export function stringifyValue(value: unknown): string {
 
 export function parseValue(content: string) {
   return content ? JSON.parse(content) : undefined;
+}
+
+export function previewValue(value: unknown) {
+  try {
+    if (value === undefined) return '<undefined>';
+    const strValue = JSON.stringify(value);
+    return strValue.length > 50 ? `${strValue.slice(0, 50)}...` : strValue;
+  } catch {
+    // Fallback for non-serializable values
+    return `<non-serializable>`;
+  }
 }

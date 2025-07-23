@@ -1,5 +1,5 @@
 import { globalConfig, GlobalConfigInput } from '../global-config';
-import { prefixedDebug } from '../utils';
+import { debugForKey, previewValue } from '../utils';
 import { KeyParams, ValueFetcher } from './value-fetcher';
 
 export type GetOrComputeArgs<T> = [string, () => T] | [string, KeyParams, () => T];
@@ -25,7 +25,7 @@ export class GlobalStorage {
   // eslint-disable-next-line visual/complexity, max-statements
   async getOrCompute<T>(...args: GetOrComputeArgs<T>): Promise<T> {
     const { key, params, fn } = resolveGetOrComputeArgs(args);
-    const debug = prefixedDebug(`"${key}":`);
+    const debug = debugForKey(key);
 
     if (globalConfig.disabled) {
       debug(`Global storage disabled. Computing...`);
@@ -39,12 +39,12 @@ export class GlobalStorage {
     const valueFetcher = new ValueFetcher(key, params);
     debug(`Fetching value...`);
     const { value: existingValue, missing } = await valueFetcher.load();
-    debug(`${missing ? 'Missing. Computing...' : 'Value re-used.'}`);
+    debug(missing ? 'Missing. Computing...' : `Value re-used: ${previewValue(existingValue)}`);
 
     if (!missing) return existingValue as T;
 
     const { value, error } = await this.computeValue(fn);
-    debug(`${error?.message || 'Computed.'}`);
+    debug(error ? error.message : `Computed: ${previewValue(value)}`);
 
     debug(`Saving value...`);
     await valueFetcher.save({ value, error });
@@ -71,10 +71,10 @@ export class GlobalStorage {
    * - for persistent keys it would be the old value if it was changed during this run
    */
   async getStale(key: string) {
-    const debug = prefixedDebug(`"${key}":`);
+    const debug = debugForKey(key);
     debug(`Fetching stale value...`);
     const value = await new ValueFetcher(key).getStale();
-    debug(`Fetched.`);
+    debug(`Fetched: ${previewValue(value)}`);
     return value;
   }
 
