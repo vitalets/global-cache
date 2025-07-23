@@ -1,58 +1,46 @@
+/**
+ * File system storage implementation.
+ */
 import fs from 'node:fs';
 import path from 'node:path';
-import { isExpired, TTL } from '../ttl';
 import { ValueInfo } from '../value-info';
+import { parseValue, stringifyValue } from '../../utils';
 
-const fsStores = new Map<string | undefined, FileSystemStore>();
-
-export function getFileSystemStore(basePath: string, namespace: string) {
-  if (!fsStores.has(namespace)) {
-    fsStores.set(namespace, new FileSystemStore(basePath, namespace));
-  }
-  return fsStores.get(namespace)!;
+export function fsStorage(basePath: string) {
+  return new FileSystemStorage(basePath);
 }
 
-class FileSystemStore {
-  private namespacePath: string;
+class FileSystemStorage {
+  constructor(private basePath: string) {}
 
-  constructor(basePath: string, namespace: string) {
-    this.namespacePath = path.join(basePath, filenamify(namespace));
-  }
-
-  async load(key: string, ttl: TTL): Promise<ValueInfo | undefined> {
+  async get(key: string): Promise<ValueInfo | undefined> {
     const filePath = this.getFilePath(key);
     const fileExists = fs.existsSync(filePath);
-    const computedAt = fileExists ? fs.statSync(filePath).mtimeMs : 0;
+    if (!fileExists) return;
 
-    if (!computedAt || isExpired(computedAt, ttl)) {
-      this.delete(key);
-      return;
-    }
+    const { mtimeMs: computedAt } = await fs.promises.stat(filePath);
+    const content = await fs.promises.readFile(filePath, 'utf8');
+    const value = parseValue(content);
 
-    const content = fs.readFileSync(filePath, 'utf8');
-    const value: unknown = content ? JSON.parse(content) : undefined;
-
-    return { key, value, computedAt };
+    return { key, value, computedAt, persistent: true, state: 'computed' };
   }
 
-  save(key: string, value: unknown) {
+  async set(key: string, value: unknown) {
     const filePath = this.getFilePath(key);
-    fs.mkdirSync(path.dirname(filePath), { recursive: true });
-    // undefined values are stored as empty files
-    const content = JSON.stringify(value, null, 2) || '';
-    fs.writeFileSync(filePath, content, 'utf8');
+    await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
+    const content = stringifyValue(value);
+    await fs.promises.writeFile(filePath, content, 'utf8');
   }
 
-  delete(key: string) {
+  async delete(key: string) {
     const filePath = this.getFilePath(key);
     if (fs.existsSync(filePath)) {
-      fs.rmSync(filePath);
+      await fs.promises.rm(filePath);
     }
   }
 
   private getFilePath(key: string) {
-    const sanitizedKey = filenamify(key);
-    return `${this.namespacePath}/${sanitizedKey}.json`;
+    return path.join(this.basePath, `${filenamify(key)}.json`);
   }
 }
 

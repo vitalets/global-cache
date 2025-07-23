@@ -4,17 +4,17 @@
  * This allows multiple requests to wait for the same computation without duplicating it.
  */
 
-type Listener = {
+type ValueListener = {
   resolve: (value: unknown) => void;
-  reject: (error: Error | string) => void;
+  reject: (errorMessage: string) => void;
 };
 
-export class ComputeListeners {
-  private listeners = new Map<string, Listener[]>();
+export class ValueListeners {
+  private listeners = new Map<string, ValueListener[]>();
 
   wait(key: string) {
     return new Promise((resolve, reject) => {
-      const listener: Listener = { resolve, reject };
+      const listener: ValueListener = { resolve, reject };
       const listeners = this.listeners.get(key) || [];
       listeners.push(listener);
       this.listeners.set(key, listeners);
@@ -22,23 +22,22 @@ export class ComputeListeners {
   }
 
   notifyValue(key: string, value: unknown) {
-    const listeners = this.listeners.get(key) || [];
+    const listeners = this.listeners.get(key);
     try {
-      listeners.forEach(({ resolve }) => resolve(value));
+      listeners?.forEach(({ resolve }) => resolve(value));
     } finally {
       this.listeners.delete(key);
     }
   }
 
-  notifyError(key: string, errorOrMessage: Error | string) {
-    const listeners = this.listeners.get(key) || [];
-    const error = errorOrMessage instanceof Error ? errorOrMessage : new Error(errorOrMessage);
+  notifyError(key: string, errorMessage: string) {
+    const listeners = this.listeners.get(key);
     try {
-      listeners.forEach(({ reject }) => reject(error));
+      listeners?.forEach(({ reject }) => reject(errorMessage));
     } finally {
       this.listeners.delete(key);
     }
   }
 }
 
-export const listeners = new ComputeListeners();
+export const listeners = new ValueListeners();

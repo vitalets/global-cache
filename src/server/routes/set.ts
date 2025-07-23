@@ -1,39 +1,54 @@
 import { Express, Router } from 'express';
-import { getMemoryStore, MemoryStore } from '../storage/memory';
-import { getFileSystemStore } from '../storage/fs';
 import { getConfig } from '../config';
+import { listeners } from '../listeners';
+import { storage } from '../storage';
+import { setError, setValue } from '../value-info';
+import { parseTTL } from '../ttl';
+
+/* eslint-disable max-statements */
 
 export const router = Router();
 
 export type SetValueReqBody = {
-  /* Persist the value to the file system. */
-  persist?: boolean;
   /* The value to set. */
   value?: unknown;
   /* An error occured during value computing. */
   error?: string;
+  /* Time to live for the value, if set, value is stored on the filesystem. */
+  ttl?: string | number;
 };
 
 /**
  * Route for setting a value.
  */
-router.post('/:namespace/:runId/:key', async (req, res) => {
+router.post('/:key', async (req, res) => {
   try {
-    const { namespace, runId, key } = req.params;
+    const { key } = req.params;
+    const { value, error, ttl: ttlParam }: SetValueReqBody = req.body;
     const { basePath } = getConfig(req.app as Express);
-    const params: SetValueReqBody = req.body;
+    const ttl = parseTTL(ttlParam);
 
-    new Setter(namespace, runId, key, basePath).setValue(params);
+    const valueInfo = await storage.load({ basePath, key, ttl });
 
-    res.json({ success: true });
+    if (error) {
+      setError(valueInfo);
+      listeners.notifyError(key, error);
+    } else {
+      setValue(valueInfo, value);
+      listeners.notifyValue(key, value);
+    }
+
+    await storage.save({ basePath, valueInfo, ttl });
+    res.json(valueInfo);
   } catch (error) {
     const message = (error as Error)?.message || String(error);
     res.status(500).send(message);
   }
 });
 
+/*
 class Setter {
-  private memoryStore: MemoryStore;
+  private memoryStore: MemoryStorage;
 
   // eslint-disable-next-line max-params
   constructor(
@@ -69,3 +84,4 @@ class Setter {
     }
   }
 }
+*/

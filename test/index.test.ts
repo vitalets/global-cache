@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import { beforeAll, afterAll, test, expect, describe } from 'vitest';
-import { globalStorage } from '..';
+import { globalStorage } from '../src';
 
 const basePath = './test/.global-storage';
 const values = [42, 'hello', true, { foo: 'bar' }, [1, 2, 3], null, undefined];
@@ -12,12 +12,14 @@ beforeAll(async () => {
 
   globalStorage.defineConfig({ basePath });
 
-  const { default: globalSetup } = await import(globalStorage.setup);
+  const { default: globalSetup } = await import('../src/setup.js');
+  // @ts-expect-error callable
   await globalSetup();
 });
 
 afterAll(async () => {
-  const { default: globalTeardown } = await import(globalStorage.teardown);
+  const { default: globalTeardown } = await import('../src/teardown.js');
+  // @ts-expect-error callable
   await globalTeardown();
 });
 
@@ -55,15 +57,12 @@ describe('getOrCompute', () => {
       const value3 = await fn();
       await new Promise((r) => setTimeout(r, ttl + 10)); // wait for value to expire
       const value4 = await fn();
-      await globalStorage.cleanupRun(); // clear memory to re-read from file
-      const value5 = await fn();
 
       expect(callCount).toEqual(2);
       expect(value1).toEqual(value);
       expect(value2).toEqual(value);
       expect(value3).toEqual(value);
       expect(value4).toEqual(value);
-      expect(value5).toEqual(value);
     }
   });
 
@@ -80,15 +79,31 @@ describe('getOrCompute', () => {
   });
 });
 
-describe('get', () => {
-  test('get value without computing', async () => {
-    const key = 'get-without-computing';
-    const value1 = await globalStorage.get(key);
+describe('getStale', () => {
+  test('non persistent', async () => {
+    const key = 'get-stale-non-persistent';
+    const value1 = await globalStorage.getStale(key);
     const value2 = await globalStorage.getOrCompute(key, () => 42);
-    const value3 = await globalStorage.get(key);
+    const value3 = await globalStorage.getStale(key);
 
     expect(value1).toEqual(undefined);
     expect(value2).toEqual(42);
     expect(value3).toEqual(42);
+  });
+
+  test('persistent', async () => {
+    const key = 'get-stale-persistent';
+    const value1 = await globalStorage.getStale(key);
+    const value2 = await globalStorage.getOrCompute(key, { ttl: 50 }, () => 123);
+    const value3 = await globalStorage.getStale(key);
+    await new Promise((r) => setTimeout(r, 60));
+    const value4 = await globalStorage.getOrCompute(key, { ttl: 50 }, () => 456);
+    const value5 = await globalStorage.getStale(key);
+
+    expect(value1).toEqual(undefined);
+    expect(value2).toEqual(123);
+    expect(value3).toEqual(undefined); // undefined is expected, as value can be re-used in future runs
+    expect(value4).toEqual(456);
+    expect(value5).toEqual(123); // stale value is the old one
   });
 });

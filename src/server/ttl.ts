@@ -1,14 +1,19 @@
 import ms, { StringValue } from 'ms';
 
-// time to live, can be a string like "1h" or "forever"
-export type TTL = StringValue | 'forever';
+// time to live, can be a number of milliseconds, a string like "1h" or "infinite".
+export type TTL = number | StringValue | 'infinite';
 
-export function isExpired(updatedAt: number | undefined, ttl: TTL) {
-  const ttlMs = toMs(ttl);
-  if (!updatedAt || !ttlMs || ttlMs === -1) return false;
-  return Date.now() > updatedAt + ttlMs;
-}
+// export function isExpired(updatedAt: number | undefined, ttl: number) {
+//   if (!updatedAt || ttl === -1) return false;
+//   return Date.now() > updatedAt + ttl;
+// }
 
-function toMs(ttl?: TTL) {
-  return ttl === 'forever' ? -1 : ttl ? ms(ttl) : undefined;
+/**
+ * TTL can be a stringified number or a string like "1h" or "infinite".
+ */
+export function parseTTL(ttl: string | number | undefined) {
+  if (ttl === '' || ttl === undefined) return undefined;
+  if (ttl === 'infinite') return -1;
+  const ttlNumber = Number(ttl);
+  return Number.isNaN(ttlNumber) ? ms(ttl as StringValue) : ttlNumber;
 }

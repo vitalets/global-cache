@@ -1,104 +1,48 @@
 import { Express, Router } from 'express';
-import { getMemoryStore, MemoryStore } from '../storage/memory';
-import { getFileSystemStore } from '../storage/fs';
-import { isExpired, TTL } from '../ttl';
+import { parseTTL } from '../ttl';
 import { getConfig } from '../config';
 import { listeners } from '../listeners';
-import { ValueInfo } from '../value-info';
+import { storage } from '../storage';
+
+/* eslint-disable max-statements */
 
 export const router = Router();
 
 export type GetValueQuery = {
   /* Value will be computed on the client (if not exist) */
   compute?: string;
-  /* Time to live for the value: if set, value is stored on the filesystem. */
+  /* Time to live for the value, if set, value is stored on the filesystem. */
   ttl?: string;
 };
 
 /**
  * Route for geting a value.
  */
-router.get('/:namespace/:runId/:key', async (req, res) => {
+// eslint-disable-next-line visual/complexity
+router.get('/:key', async (req, res) => {
   try {
-    const { namespace, runId, key } = req.params;
-    const query: GetValueQuery = req.query;
+    const { key } = req.params;
+    const { ttl: ttlParam, compute }: GetValueQuery = req.query;
     const { basePath } = getConfig(req.app as Express);
+    const ttl = parseTTL(ttlParam);
 
-    const getter = new Getter(namespace, runId, key, basePath);
-    await getter.loadValue({
-      ttl: query.ttl as TTL | undefined,
-      compute: Boolean(query.compute),
-    });
-    if (getter.isMissing) {
-      res.sendStatus(404);
+    const valueInfo = await storage.load({ basePath, key, ttl });
+
+    if (valueInfo.state === 'missing') {
+      // eslint-disable-next-line max-depth
+      if (compute) {
+        valueInfo.state = 'computing';
+        // Pass ttl: 0 to avoid saving to fs
+        // todo: improve this place
+        await storage.save({ basePath, valueInfo, ttl: 0 });
+      }
+      res.status(404).json(valueInfo);
     } else {
-      res.json(getter.value);
+      const value = valueInfo.state === 'computing' ? await listeners.wait(key) : valueInfo.value;
+      res.json(value);
     }
   } catch (error) {
     const message = (error as Error)?.message || String(error);
     res.status(500).send(message);
   }
 });
-
-class Getter {
-  isMissing?: boolean;
-  value?: unknown;
-  private memoryStore: MemoryStore;
-  private valueInfo?: ValueInfo;
-
-  // eslint-disable-next-line max-params
-  constructor(
-    private namespace: string,
-    runId: string,
-    private key: string,
-    private basePath: string,
-  ) {
-    this.memoryStore = getMemoryStore(namespace, runId);
-  }
-
-  // eslint-disable-next-line visual/complexity
-  async loadValue({ ttl, compute }: { ttl?: TTL; compute: boolean }) {
-    this.loadFromMemory();
-
-    if (ttl) {
-      this.clearIfExpired(ttl);
-    }
-
-    if (ttl && !this.valueInfo) {
-      await this.loadFromFileSystem(ttl);
-    }
-
-    if (!this.valueInfo) {
-      this.handleMissing(compute);
-    } else if (this.valueInfo.pending) {
-      this.value = await listeners.wait(this.key);
-    } else {
-      this.value = this.valueInfo.value;
-    }
-  }
-
-  private loadFromMemory() {
-    this.valueInfo = this.memoryStore.get(this.key);
-  }
-
-  private async loadFromFileSystem(ttl: TTL) {
-    const fileSystemStore = getFileSystemStore(this.basePath, this.namespace);
-    this.valueInfo = await fileSystemStore.load(this.key, ttl);
-    // store value in memory as well for faster access next time
-    if (this.valueInfo) this.memoryStore.set(this.key, this.valueInfo);
-  }
-
-  private clearIfExpired(ttl: TTL) {
-    if (this.valueInfo && isExpired(this.valueInfo.computedAt, ttl)) {
-      this.memoryStore.delete(this.key);
-      this.valueInfo = undefined;
-    }
-  }
-
-  private handleMissing(compute: boolean) {
-    if (compute) {
-      this.memoryStore.set(this.key, { key: this.key, pending: true });
-    }
-    this.isMissing = true;
-  }
-}

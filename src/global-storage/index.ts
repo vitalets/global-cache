@@ -1,7 +1,7 @@
 import { globalConfig, GlobalConfigInput } from '../global-config';
-import { type SetValueReqBody } from '../server/routes/set';
 import { TTL } from '../server/ttl';
 import { debug } from '../utils';
+import { ValueFetcher } from './value-fetcher';
 
 export type KeyParams = {
   ttl?: TTL;
@@ -36,68 +36,23 @@ export class GlobalStorage {
       return fn();
     }
 
+    const valueFetcher = new ValueFetcher(key, params);
     debug(`"${key}": Fetching value...`);
-    const { value: existingValue, missing } = await this.fetchValue(key, params);
+    const { value: existingValue, missing } = await valueFetcher.load();
     debug(`"${key}": ${missing ? 'Missing. Computing...' : 'Value re-used.'}`);
 
-    if (!missing) return existingValue;
+    if (!missing) return existingValue as T;
 
     const { value, error } = await this.computeValue(fn);
     debug(`"${key}": ${error?.message || 'Computed.'}`);
 
     debug(`"${key}": Saving value...`);
-    await this.storeValue({ key, params, value, error });
+    await valueFetcher.save({ value, error });
     debug(`"${key}": Saved.`);
 
     if (error) throw error;
 
     return value;
-  }
-
-  /**
-   * Clears memory storage for current runId
-   */
-  async cleanupRun() {
-    const { namespace, runId, serverUrl } = globalConfig;
-    const pathname = [namespace, runId].map(encodeURIComponent).join('/');
-    const url = new URL(pathname, serverUrl).toString();
-    const res = await fetch(url, { method: 'DELETE' });
-    if (!res.ok) {
-      throw new Error(
-        `Failed to clear memory for runId "${runId}": ${res.status} ${res.statusText} ${await res.text()}`,
-      );
-    }
-  }
-
-  private async fetchValue(key: string, { ttl }: KeyParams) {
-    const searchParams = new URLSearchParams();
-    searchParams.set('compute', '1');
-    if (ttl) searchParams.set('ttl', ttl);
-
-    const url = `${buildKeyUrl(key)}?${searchParams}`;
-
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    // cache hit
-    if (res.status === 200) {
-      const text = await res.text();
-      const value = text ? JSON.parse(text) : undefined;
-      return { value };
-    }
-
-    // if not 404, something went wrong
-    if (res.status !== 404) {
-      throw new Error(
-        `Failed to get key "${key}": ${res.status} ${res.statusText} ${await res.text()}`,
-      );
-    }
-
-    return { missing: true };
   }
 
   private async computeValue<T>(fn: () => T) {
@@ -110,57 +65,16 @@ export class GlobalStorage {
     }
   }
 
-  private async storeValue({
-    key,
-    params,
-    value,
-    error,
-  }: {
-    key: string;
-    params: KeyParams;
-    value: unknown;
-    error: Error | undefined;
-  }) {
-    const url = buildKeyUrl(key);
-    const reqBody: SetValueReqBody = {
-      persist: Boolean(params.ttl),
-      value,
-      error: error ? error.stack : undefined,
-    };
-
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(reqBody),
-    });
-
-    if (!res.ok) {
-      throw new Error(
-        `Failed to save key "${key}": ${res.status} ${res.statusText} ${await res.text()}`,
-      );
-    }
-  }
-
   /**
-   * Fetch value without computing.
-   * What about persistence?
+   * Fetch stale value.
+   * - for non-persistant keys it would be current value in memory
+   * - for persistent keys it would be the old value if it was changed during this run
    */
-  async get(key: string) {
-    const url = buildKeyUrl(key);
-    const res = await fetch(url);
-
-    if (res.status === 404) return;
-
-    if (!res.ok) {
-      throw new Error(
-        `Failed to get key "${key}": ${res.status} ${res.statusText} ${await res.text()}`,
-      );
-    }
-
-    const text = await res.text();
-    return text ? JSON.parse(text) : undefined;
+  async getStale(key: string) {
+    debug(`"${key}": Fetching stale value...`);
+    const value = await new ValueFetcher(key).getStale();
+    debug(`"${key}": Fetched.`);
+    return value;
   }
 
   // async getAll({ prefix }: { prefix: string }) {
@@ -178,12 +92,6 @@ function resolveGetOrComputeArgs<T>(args: GetOrComputeArgs<T>) {
   return args.length === 2
     ? { key: args[0], params: {}, fn: args[1] }
     : { key: args[0], params: args[1], fn: args[2] };
-}
-
-function buildKeyUrl(key: string) {
-  const { namespace, runId, serverUrl } = globalConfig;
-  const pathname = [namespace, runId, key].map(encodeURIComponent).join('/');
-  return new URL(pathname, serverUrl).toString();
 }
 
 // Global storage instance.

@@ -1,45 +1,32 @@
 /**
- * Global config shared across host and all workers, uses env variables.
+ * Global config shared across host and all workers via env variables.
  */
-import { randomUUID } from 'node:crypto';
 
 export type GlobalConfigInput = {
-  /* Namespace for the global storage, used to separate different projects */
-  /* when working with standalone server */
-  namespace?: string;
+  /* Forces all values to be non-persistent, usefull for CI */
+  ignoreTTL?: boolean;
   /* Where to store files, ignored if serverUrl is set */
   basePath?: string;
   /* Disables global storage, all values will be computed each time */
   disabled?: boolean;
-  /* URL of the standalone storage server */
-  serverUrl?: string;
-  /* Consistent run ID for multiple shards */
-  shardedRunId?: string;
 };
 
 type GlobalConfigResolved = GlobalConfigInput & {
-  namespace: string;
-  runId: string;
+  serverUrl: string;
 };
 
 export class GlobalConfig {
   private config: GlobalConfigResolved = {
-    namespace: 'default',
-    runId: '',
+    serverUrl: '', // serverUrl will be set later, when server starts.
   };
 
   constructor() {
     Object.assign(this.config, getConfigFromEnv());
-    this.ensureRunId();
   }
 
-  update(config: GlobalConfigInput) {
+  update(config: Partial<GlobalConfigResolved>) {
+    // todo: remove undefined props from config
     Object.assign(this.config, config);
-
-    if (config?.shardedRunId) {
-      this.config.runId = config.shardedRunId;
-    }
-
     saveConfigToEnv(this.config);
   }
 
@@ -47,16 +34,8 @@ export class GlobalConfig {
     return this.config.serverUrl;
   }
 
-  get namespace() {
-    return this.config.namespace;
-  }
-
-  get runId() {
-    return this.config.runId;
-  }
-
-  get shardedRunId() {
-    return this.config.shardedRunId;
+  get ignoreTTL() {
+    return Boolean(this.config.ignoreTTL);
   }
 
   get basePath() {
@@ -66,21 +45,14 @@ export class GlobalConfig {
   get disabled() {
     return Boolean(this.config.disabled);
   }
-
-  private ensureRunId() {
-    if (!this.config.runId) {
-      this.config.runId = randomUUID();
-      saveConfigToEnv(this.config);
-    }
-  }
 }
 
 function getConfigFromEnv() {
   const configFromEnv = process.env.GLOBAL_STORAGE_CONFIG;
-  return configFromEnv ? (JSON.parse(configFromEnv) as GlobalConfigResolved) : undefined;
+  return configFromEnv ? (JSON.parse(configFromEnv) as GlobalConfigInput) : undefined;
 }
 
-function saveConfigToEnv(config: GlobalConfigResolved) {
+function saveConfigToEnv(config: GlobalConfigInput) {
   process.env.GLOBAL_STORAGE_CONFIG = JSON.stringify(config);
 }
 
