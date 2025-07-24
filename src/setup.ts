@@ -1,5 +1,5 @@
 import { debug } from './utils/debug';
-import { globalConfig } from './global-config';
+import { globalConfig } from './config';
 import { globalStorageServer } from './server';
 
 export default async function globalSetup() {

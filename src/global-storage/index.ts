@@ -1,4 +1,4 @@
-import { globalConfig, GlobalConfigInput } from '../global-config';
+import { globalConfig, GlobalConfigInput } from '../config';
 import { debugKey } from '../utils/debug';
 import { previewValue } from '../utils/value';
 import { StorageApi } from './api';
