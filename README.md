@@ -19,9 +19,9 @@ A package for Playwright that lets you share data between tests, workers and eve
     });
     ```
 
-2. Wrap heavy operations with `globalStorage.getOrCompute()` to compute value once and re-use in all tests:
+2. Wrap heavy operations with `globalStorage.get()` to compute value once and re-use in all tests:
     ```ts
-    const value = await globalStorage.getOrCompute('some-key', async () => {
+    const value = await globalStorage.get('some-key', async () => {
         const value = /* heavy operation */
         return value;
     });
@@ -39,7 +39,7 @@ A package for Playwright that lets you share data between tests, workers and eve
 If your function depends on some variables, you should add these variables to the key for propper data separation:
 
 ```ts
-const value = await globalStorage.getOrCompute(`some-key-${id}`, async () => {
+const value = await globalStorage.get(`some-key-${id}`, async () => {
     const value = /* heavy operation that depends on `id` */
     return value;
 });
@@ -59,7 +59,7 @@ import { globalStorage } from 'global-storage/playwright';
 
 test.use({ 
     storageState: async ({ context }, use) => {
-        const storageState = await globalStorage.getOrCompute('auth', async () => {
+        const storageState = await globalStorage.get('auth', async () => {
             const loginPage = await context.newPage();
             await loginPage.goto('https://example.com');
             await loginPage.getByLabel('Username').fill('admin');
@@ -88,7 +88,7 @@ const username = process.env.TEST_USER;
 
 test.use({ 
     storageState: async ({ context }, use) => {
-        const storageState = await globalStorage.getOrCompute(`auth-${username}`, async () => {
+        const storageState = await globalStorage.get(`auth-${username}`, async () => {
             const loginPage = await context.newPage();
             await loginPage.goto('https://example.com');
             await loginPage.getByLabel('Username').fill(username);
@@ -111,7 +111,7 @@ import { globalStorage } from 'global-storage/playwright';
 let userId = '';
 
 test.before(async () => {
-  userId = await globalStorage.getOrCompute('userId', async () => {
+  userId = await globalStorage.get('userId', async () => {
     const user = await db.createUser();
     return user.id;
   });
@@ -131,7 +131,7 @@ import { globalStorage } from 'global-storage/playwright';
 
 test('test', async ({ page }) => {
   await page.route('/api/cats/**', (route) => {
-    const json = globalStorage.getOrCompute('cats-response', async () => {
+    const json = globalStorage.get('cats-response', async () => {
        const response = await route.fetch();
        return response.json();
     });
@@ -154,7 +154,7 @@ test('test', async ({ page }) => {
     const query = new URL(req.url()).searchParams;
     const reqBody = req.postDataJSON();
     const storageKey = `cats-response-${query.get('id')}-${reqBody.page}`;
-    const json = globalStorage.getOrCompute(storageKey, async () => {
+    const json = globalStorage.get(storageKey, async () => {
        const response = await route.fetch();
        return response.json();
     });
@@ -172,7 +172,7 @@ To enable persistent storage for a key, provide an object `{ key, ttl }` as a fi
 ```ts
 test.use({ 
     storageState: async ({ browser }, use) => {
-        const storageState = await globalStorage.getOrCompute({
+        const storageState = await globalStorage.get({
             key: 'auth',
             ttl: '1h', // 1 hour
         }, async () => {

@@ -29,7 +29,7 @@ afterEach(() => {
   serverStorage.clearSession();
 });
 
-describe('getOrCompute', () => {
+describe('get', () => {
   describe('non-persistent', () => {
     test('string', () => checkNonPersistentValue('hello'));
     test('number', () => checkNonPersistentValue(42));
@@ -42,7 +42,7 @@ describe('getOrCompute', () => {
     async function checkNonPersistentValue(value: unknown) {
       let callCount = 0;
       const fn = () =>
-        globalStorage.getOrCompute(`memory-${JSON.stringify(value)}`, async () => {
+        globalStorage.get(`memory-${JSON.stringify(value)}`, async () => {
           callCount++;
           return value;
         });
@@ -74,7 +74,7 @@ describe('getOrCompute', () => {
       const ttl = 50;
 
       const fn = () =>
-        globalStorage.getOrCompute(`persistent-${JSON.stringify(value)}`, { ttl }, async () => {
+        globalStorage.get(`persistent-${JSON.stringify(value)}`, { ttl }, async () => {
           callCount++;
           return value;
         });
@@ -97,7 +97,7 @@ describe('getOrCompute', () => {
 
   test('undefined is converted to null in array', async () => {
     const key = 'undefined-in-array';
-    const fn = () => globalStorage.getOrCompute(key, () => [undefined]);
+    const fn = () => globalStorage.get(key, () => [undefined]);
 
     const value1 = await fn();
     const value2 = await fn();
@@ -108,7 +108,7 @@ describe('getOrCompute', () => {
 
   test('error while computing value', async () => {
     const fn = () =>
-      globalStorage.getOrCompute(`error-key`, async () => {
+      globalStorage.get(`error-key`, async () => {
         throw new Error('foo');
       });
 
@@ -123,7 +123,7 @@ describe('getStale', () => {
   test('non-persistent', async () => {
     const key = 'get-stale-non-persistent';
     const value1 = await globalStorage.getStale(key);
-    const value2 = await globalStorage.getOrCompute(key, () => 42);
+    const value2 = await globalStorage.get(key, () => 42);
     const value3 = await globalStorage.getStale(key);
 
     expect(value1).toEqual(undefined);
@@ -135,7 +135,7 @@ describe('getStale', () => {
     let callCount = 0;
     const ttl = 50;
     const key = 'get-stale-persistent';
-    const fn = () => globalStorage.getOrCompute(key, { ttl }, () => ++callCount);
+    const fn = () => globalStorage.get(key, { ttl }, () => ++callCount);
     const value1 = await globalStorage.getStale(key);
     const value2 = await fn();
     const value3 = await globalStorage.getStale(key);
@@ -156,12 +156,12 @@ describe('getStaleList', () => {
     let callCount = 0;
     const ttl = 50;
     const prefix = 'get-stale-list';
-    const fn = () => globalStorage.getOrCompute(`${prefix}-persistent`, { ttl }, () => ++callCount);
-    await globalStorage.getOrCompute(`${prefix}-session-1`, () => 11);
-    await globalStorage.getOrCompute(`${prefix}-session-2`, () => 22);
+    const fn = () => globalStorage.get(`${prefix}-persistent`, { ttl }, () => ++callCount);
+    await globalStorage.get(`${prefix}-session-1`, () => 11);
+    await globalStorage.get(`${prefix}-session-2`, () => 22);
     await fn();
     await fn();
-    await globalStorage.getOrCompute(`excluded-key`, () => 3);
+    await globalStorage.get(`excluded-key`, () => 3);
 
     const values = await globalStorage.getStaleList(prefix);
 
@@ -182,7 +182,7 @@ describe('ignoreTTL: true', () => {
     const key = 'ignore-ttl-key';
     let callCount = 0;
     const fn = () =>
-      globalStorage.getOrCompute(key, { ttl: 50 }, () => {
+      globalStorage.get(key, { ttl: 50 }, () => {
         callCount++;
         return 42;
       });

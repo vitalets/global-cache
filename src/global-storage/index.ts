@@ -33,7 +33,7 @@ export class GlobalStorage {
    * Fetch value by key or compute it if not found.
    */
   // eslint-disable-next-line visual/complexity, max-statements
-  async getOrCompute<T>(...args: GetOrComputeArgs<T>): Promise<T> {
+  async get<T>(...args: GetOrComputeArgs<T>): Promise<T> {
     const { key, params, fn } = resolveGetOrComputeArgs(args);
 
     if (globalConfig.disabled) {
