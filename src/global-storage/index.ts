@@ -46,11 +46,11 @@ export class GlobalStorage {
     debugKey(key, `Fetching value...`);
     const { value: existingValue, missing } = await this.api.get({ key, ttl });
     if (!missing) {
-      debugKey(key, `Fetched: ${previewValue(existingValue)}`);
+      debugKey(key, `Cache hit: ${previewValue(existingValue)}`);
       return existingValue as T;
     }
 
-    debugKey(key, 'Missing. Computing...');
+    debugKey(key, 'Cache miss. Computing...');
     const { value, error } = await this.computeValue(fn);
     debugKey(key, error ? `Error: ${error.message}` : `Computed: ${previewValue(value)}`);
 

@@ -1,6 +1,8 @@
 /**
- * Global config shared across host and all workers via env variables.
+ * Global config singleton shared across host and all workers via env variables.
  */
+
+import { removeUndefined } from './utils/object';
 
 export type GlobalConfigInput = {
   /* Forces all values to be non-persistent, usefull for CI */
@@ -25,8 +27,7 @@ export class GlobalConfig {
   }
 
   update(config: Partial<GlobalConfigResolved>) {
-    // todo: remove undefined props from config
-    Object.assign(this.config, config);
+    Object.assign(this.config, removeUndefined(config));
     saveConfigToEnv(this.config);
   }
 

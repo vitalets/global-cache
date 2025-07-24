@@ -20,7 +20,6 @@ router.get('/get', async (req, res) => {
   const { key, ttl: ttlParam } = req.query as GetValueParams;
   const { basePath } = getConfig(req.app as Express);
   const ttl = parseTTL(ttlParam);
-
   const valueInfo = await storage.load({ basePath, key, ttl });
 
   if (valueInfo.state === 'missing') {

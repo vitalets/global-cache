@@ -2,6 +2,7 @@
  * Global storage server configuration.
  */
 import { Express } from 'express';
+import { removeUndefined } from '../utils/object';
 
 export type GlobalStorageServerConfig = {
   port?: number;
@@ -23,5 +24,5 @@ export function getConfig(app: Express) {
 }
 
 function buildResolvedConfig(providedConfig: GlobalStorageServerConfig) {
-  return Object.assign({}, defaults, providedConfig);
+  return Object.assign({}, defaults, removeUndefined(providedConfig));
 }

@@ -7,10 +7,10 @@ import { globalStorage } from 'global-storage';
 // });
 
 export default defineConfig({
+  testDir: './test',
   globalSetup: globalStorage.setup,
   globalTeardown: globalStorage.teardown,
-  testDir: './test',
-  reporter: [['html', { open: 'never' }]],
+  reporter: [['list'], ['html', { open: 'never' }]],
   use: {
     screenshot: 'on',
     trace: 'retain-on-failure',
