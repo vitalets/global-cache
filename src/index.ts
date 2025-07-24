@@ -1,2 +1,2 @@
-export { globalStorage, GlobalStorage } from './global-storage';
+export { globalStorage, GlobalStorage } from './client';
 export { globalConfig, GlobalConfig } from './config';
