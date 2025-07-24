@@ -1,16 +1,33 @@
-# global-storage
+# @vitalets/global-storage
 
-A package for Playwright that lets you share data between tests, workers and even test-runs. It can significantly boost the performance of your tests.
+> Optimized key-value storage for sharing data across test workers.
 
-## Installation
+Share expensive computed values across parallel test workers — and compute each value exactly once.
 
-## Basic Usage
+## Why use it?
+
+When running e2e tests in parallel (e.g. Playwright), you might need to:
+
+* Authenticate user only once
+* Load a large dataset only once
+* Generate test state that’s reused across workers
+* Prevent redundant work across test processes
+
+With `@vitalets/global-storage`, the first worker that requests a key becomes responsible for computing it. Others wait until the result is ready — and all workers get the same value.
+
+## 🚀 Features
+
+* ⚙️ **Lazy computation**: Computes value only before tests that actually require it
+* 🔁 **Deduplicated**: Ensures each key is computed only once
+* 🤝 **Worker-safe**: Designed for test environments with parallel execution
+
+## Basic Usage (Playwright)
 
 1. Enable global storage in the Playwright config:
 
     ```ts
     import { defineConfig } from '@playwright/test';
-    import { globalStorage } from 'global-storage/playwright';
+    import { globalStorage } from '@vitalets/global-storage';
 
     export default defineConfig({
       globalSetup: globalStorage.setup,        // <-- setup global storage
@@ -19,7 +36,7 @@ A package for Playwright that lets you share data between tests, workers and eve
     });
     ```
 
-2. Wrap heavy operations with `globalStorage.get()` to compute value once and re-use in all tests:
+2. Wrap heavy operations with `globalStorage.get()` to compute value once and re-use later:
     ```ts
     const value = await globalStorage.get('some-key', async () => {
         const value = /* heavy operation */
@@ -31,8 +48,6 @@ A package for Playwright that lets you share data between tests, workers and eve
   * If key is already populated, the stored value will be returned without calling the function.
 
   > Important note: the value must be **serializable**, e.g. string, boolean, number, or JSON.
-
-**The main benefit: once value is computed, it can be accessed across all Playwright workers and tests.**
 
 ### Dynamic keys
 
@@ -48,14 +63,15 @@ const value = await globalStorage.get(`some-key-${id}`, async () => {
 By default, all values are stored in memory and cleared when test run ends.
 Although, it is possible to [persist data between test runs](#persist-data-between-test-runs).
 
-## Examples
+## Use Cases
+All code samples are for Playwright.
 
 ### Authentication
 
-You can perform lazy, on-demand, re-usable authentication. Use `storageState` fixture to authenticate once, store the auth state, and provide it to all subsequent tests:
+You can perform lazy, on-demand authentication. Use `storageState` fixture to authenticate once, store the auth state, and provide it to all subsequent tests:
 ```ts
 import { test } from '@playwright/test';
-import { globalStorage } from 'global-storage/playwright';
+import { globalStorage } from '@vitalets/global-storage';
 
 test.use({ 
     storageState: async ({ context }, use) => {
@@ -186,7 +202,6 @@ test.use({
 ```
 To persist data forever set `ttl: -1`. Such value will be re-used until file is removed:
 
-
 ## Cleanup
 
 After the test run, you may need to cleanup the created resources. For example, remove the user from the database. When resource IDs are in global storage, you can access them inside a teardown script:
@@ -200,15 +215,14 @@ import { globalStorage } from 'global-storage';
 export default defineConfig({
   globalSetup: globalStorage.setup,
   globalTeardown: [
-    /* custom teardown script before globalStorage.teardown */
-    require.resolve('./global-teardown'),
+    require.resolve('./global-teardown'), // <-- custom teardown script before globalStorage.teardown
     globalStorage.teardown,
   ],
   // ...
 });
 ```
 
-2. In `global-teardown.js` leverage `globalStorage.get()` to check stored value and run appropriate actions:
+2. In `global-teardown.js` leverage `globalStorage.getStale()` to check stored value and run appropriate actions:
 
 ```ts
 // global-teardown.js
@@ -216,18 +230,20 @@ import { defineConfig } from '@playwright/test';
 import { globalStorage } from 'global-storage';
 
 export default async function() {
-    const userId = await globalStorage.get('userId');
+    const userId = await globalStorage.getStale('userId');
     if (userId) {
         /* remove user from database */
     }
 }
 ```
 
-> Note that for **persistent** values clearing data may break your tests on the next run!
+How `globalStorage.getStale()` works:
+- for **non-persistent** keys returns the current value
+- for **persistent** keys returns the old value that was replaced during the current test-run
 
 ### Cleanup multiple values
 
-When using dynamic keys, you can leverage `globalStorage.getAll()` to retrieve all keys with the provided prefix:
+When using dynamic keys, you can leverage `globalStorage.getStaleList()` to retrieve all keys with the provided prefix:
 
 ```ts
 // global-teardown.ts
@@ -235,24 +251,22 @@ import { defineConfig } from '@playwright/test';
 import { globalStorage } from 'global-storage/playwright';
 
 export default async function() {
-    const userIds = await globalStorage.getAll({ prefix: 'user-' });
+    const userIds = await globalStorage.getStaleList('user-');
     for (const userId of userIds) {
       /* remove every created user from database */
     }
 }
 ```
 
-
-
 ## Configuration
 
-To provide configuration options, call `globalStorage.configure()` in the Playwright config:
+To provide configuration options, call `globalStorage.defineConfig()` in the Playwright config:
 
 ```ts
 import { defineConfig } from '@playwright/test';
 import { globalStorage } from 'global-storage/playwright';
 
-globalStorage.configure({ /* options */ })
+globalStorage.defineConfig({ /* options */ })
 
 // ...
 ```
@@ -260,7 +274,8 @@ globalStorage.configure({ /* options */ })
 Available options:
 
 - **disabled** `boolean` - Disables global storage. All values will be calculated each time. Default is `false`.
-- **url** `string` *(experimental)* - URL of a separate instance of global storage server. Default is `undefined`.
+
+tbd
 
 ## FAQ
 

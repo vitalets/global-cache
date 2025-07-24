@@ -1,5 +1,5 @@
 import { defineConfig } from '@playwright/test';
-import { globalStorage } from 'global-storage';
+import { globalStorage } from '@vitalets/global-storage';
 
 /* Uncomment to disable global storage and compare test results */
 // globalStorage.defineConfig({

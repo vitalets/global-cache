@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { globalStorage } from 'global-storage';
+import { globalStorage } from '@vitalets/global-storage';
 
 test.use({
   storageState: async ({ browser }, use) => {
