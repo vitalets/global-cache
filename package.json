@@ -1,6 +1,6 @@
 {
   "name": "global-storage",
-  "description": "Share data across e2e test workers in Playwright",
+  "description": "Optimized key-value storage for sharing data across test workers.",
   "version": "0.1.0",
   "type": "commonjs",
   "repository": {
