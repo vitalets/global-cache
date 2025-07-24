@@ -6,7 +6,6 @@ import { storage as serverStorage } from '../src/server/storage';
 import { afterEach } from 'node:test';
 
 const basePath = './test/.global-storage';
-const values = [42, 'hello', true, { foo: 'bar' }, [1, 2, 3], null, undefined];
 
 beforeAll(async () => {
   if (fs.existsSync(basePath)) {
@@ -31,8 +30,16 @@ afterEach(() => {
 });
 
 describe('getOrCompute', () => {
-  test('compute, store and re-use different value types (non-persistent)', async () => {
-    for (const value of values) {
+  describe('non-persistent', () => {
+    test('string', () => checkNonPersistentValue('hello'));
+    test('number', () => checkNonPersistentValue(42));
+    test('boolean', () => checkNonPersistentValue(true));
+    test('object', () => checkNonPersistentValue({ foo: 'bar' }));
+    test('array', () => checkNonPersistentValue([1, 2, 3, null]));
+    test('null', () => checkNonPersistentValue(null));
+    test('undefined', () => checkNonPersistentValue(undefined));
+
+    async function checkNonPersistentValue(value: unknown) {
       let callCount = 0;
       const fn = () =>
         globalStorage.getOrCompute(`memory-${JSON.stringify(value)}`, async () => {
@@ -53,10 +60,19 @@ describe('getOrCompute', () => {
     }
   });
 
-  test('compute, store and re-use different value types (persistent)', async () => {
-    const ttl = 50;
-    for (const value of values) {
+  describe('persistent', () => {
+    test('string', () => checkPersistentValue('hello'));
+    test('number', () => checkPersistentValue(42));
+    test('boolean', () => checkPersistentValue(true));
+    test('object', () => checkPersistentValue({ foo: 'bar' }));
+    test('array', () => checkPersistentValue([1, 2, 3, null]));
+    test('null', () => checkPersistentValue(null));
+    test('undefined', () => checkPersistentValue(undefined));
+
+    async function checkPersistentValue(value: unknown) {
       let callCount = 0;
+      const ttl = 50;
+
       const fn = () =>
         globalStorage.getOrCompute(`persistent-${JSON.stringify(value)}`, { ttl }, async () => {
           callCount++;
@@ -77,6 +93,17 @@ describe('getOrCompute', () => {
       expect(value4).toEqual(value);
       expect(value5).toEqual(value);
     }
+  });
+
+  test('undefined is converted to null in array', async () => {
+    const key = 'undefined-in-array';
+    const fn = () => globalStorage.getOrCompute(key, () => [undefined]);
+
+    const value1 = await fn();
+    const value2 = await fn();
+
+    expect(value1).toEqual([null]);
+    expect(value2).toEqual([null]);
   });
 
   test('error while computing value', async () => {
@@ -105,20 +132,40 @@ describe('getStale', () => {
   });
 
   test('persistent', async () => {
+    let callCount = 0;
     const ttl = 50;
     const key = 'get-stale-persistent';
+    const fn = () => globalStorage.getOrCompute(key, { ttl }, () => ++callCount);
     const value1 = await globalStorage.getStale(key);
-    const value2 = await globalStorage.getOrCompute(key, { ttl }, () => 123);
+    const value2 = await fn();
     const value3 = await globalStorage.getStale(key);
     await new Promise((r) => setTimeout(r, ttl + 10));
-    const value4 = await globalStorage.getOrCompute(key, { ttl }, () => 456);
+    const value4 = await fn();
     const value5 = await globalStorage.getStale(key);
 
     expect(value1).toEqual(undefined);
-    expect(value2).toEqual(123);
+    expect(value2).toEqual(1);
     expect(value3).toEqual(undefined); // undefined is expected, as for persistent keys old value is returned
-    expect(value4).toEqual(456);
-    expect(value5).toEqual(123); // stale value is the old one
+    expect(value4).toEqual(2);
+    expect(value5).toEqual(1); // stale value is the old one
+  });
+});
+
+describe('getStaleList', () => {
+  test('non-persistent + persistent', async () => {
+    let callCount = 0;
+    const ttl = 50;
+    const prefix = 'get-stale-list';
+    const fn = () => globalStorage.getOrCompute(`${prefix}-persistent`, { ttl }, () => ++callCount);
+    await globalStorage.getOrCompute(`${prefix}-session-1`, () => 11);
+    await globalStorage.getOrCompute(`${prefix}-session-2`, () => 22);
+    await fn();
+    await fn();
+    await globalStorage.getOrCompute(`excluded-key`, () => 3);
+
+    const values = await globalStorage.getStaleList(prefix);
+
+    expect(values).toEqual([11, 22, null]);
   });
 });
 

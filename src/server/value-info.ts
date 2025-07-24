@@ -1,4 +1,4 @@
-import { debug } from '../utils';
+import { debug } from '../utils/debug';
 
 export type ValueInfo = {
   key: string;

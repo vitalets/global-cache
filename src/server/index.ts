@@ -8,10 +8,11 @@
 import http from 'node:http';
 import { AddressInfo } from 'net';
 import express from 'express';
-import { debug } from '../utils';
+import { debug } from '../utils/debug';
 import { router as routeGet } from './routes/get';
-import { router as routeGetStale } from './routes/get-stale';
 import { router as routeSet } from './routes/set';
+import { router as routeGetStale } from './routes/get-stale';
+import { router as routeGetStaleList } from './routes/get-stale-list';
 import { errorHandler } from './error-handler';
 import { GlobalStorageServerConfig, setConfig } from './config';
 
@@ -22,8 +23,9 @@ export class GlobalStorageServer {
   constructor() {
     this.app.use(express.json());
     this.app.use('/', routeGet);
-    this.app.use('/', routeGetStale);
     this.app.use('/', routeSet);
+    this.app.use('/', routeGetStale);
+    this.app.use('/', routeGetStaleList);
     // todo:
     // this.app.get('/', (req, res) => {
     //   res.send('Global Storage Server is running.');

@@ -10,6 +10,10 @@ import { fsStorage } from './fs';
 export class Storage {
   private data = new Map<string, ValueInfo>();
 
+  getData() {
+    return this.data;
+  }
+
   // eslint-disable-next-line visual/complexity
   async load({ basePath, key, ttl }: { basePath: string; key: string; ttl?: number }) {
     let existingInfo = this.data.get(key);

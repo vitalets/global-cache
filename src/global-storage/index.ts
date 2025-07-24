@@ -1,15 +1,17 @@
 import { globalConfig, GlobalConfigInput } from '../global-config';
-import { debugForKey, previewValue } from '../utils';
-import { KeyParams, ValueFetcher } from './value-fetcher';
+import { debugKey } from '../utils/debug';
+import { previewValue } from '../utils/value';
+import { StorageApi } from './api';
+import { TTL } from '../server/ttl';
 
+export type KeyParams = { ttl?: TTL };
 export type GetOrComputeArgs<T> = [string, () => T] | [string, KeyParams, () => T];
-
 export type GlobalStorageConfig = GlobalConfigInput;
 
 export class GlobalStorage {
-  /**
-   * Set global config via global storage instance (for conveniency).
-   */
+  #api?: StorageApi;
+
+  /* Helper method to set global config via storage instance (for conveniency) */
   defineConfig(config: GlobalStorageConfig) {
     globalConfig.update(config);
   }
@@ -22,37 +24,68 @@ export class GlobalStorage {
     return require.resolve('../teardown.js');
   }
 
+  private get api() {
+    if (!this.#api) this.#api = new StorageApi(globalConfig.serverUrl);
+    return this.#api;
+  }
+
+  /**
+   * Fetch value by key or compute it if not found.
+   */
   // eslint-disable-next-line visual/complexity, max-statements
   async getOrCompute<T>(...args: GetOrComputeArgs<T>): Promise<T> {
     const { key, params, fn } = resolveGetOrComputeArgs(args);
-    const debug = debugForKey(key);
 
     if (globalConfig.disabled) {
-      debug(`Global storage disabled. Computing...`);
+      debugKey(key, `Global storage disabled. Computing...`);
       return fn();
     }
 
-    if (globalConfig.ignoreTTL) {
-      delete params.ttl;
+    const ttl = globalConfig.ignoreTTL ? undefined : params.ttl;
+
+    debugKey(key, `Fetching value...`);
+    const { value: existingValue, missing } = await this.api.get({ key, ttl });
+    if (!missing) {
+      debugKey(key, `Fetched: ${previewValue(existingValue)}`);
+      return existingValue as T;
     }
 
-    const valueFetcher = new ValueFetcher(key, params);
-    debug(`Fetching value...`);
-    const { value: existingValue, missing } = await valueFetcher.load();
-    debug(missing ? 'Missing. Computing...' : `Value re-used: ${previewValue(existingValue)}`);
-
-    if (!missing) return existingValue as T;
-
+    debugKey(key, 'Missing. Computing...');
     const { value, error } = await this.computeValue(fn);
-    debug(error ? error.message : `Computed: ${previewValue(value)}`);
+    debugKey(key, error ? `Error: ${error.message}` : `Computed: ${previewValue(value)}`);
 
-    debug(`Saving value...`);
-    await valueFetcher.save({ value, error });
-    debug(`Saved.`);
+    debugKey(key, `Saving value...`);
+    const savedValue = await this.api.set({ key, ttl, value, error });
+    debugKey(key, `Saved.`);
 
     if (error) throw error;
 
+    return savedValue;
+  }
+
+  /**
+   * Fetch stale value.
+   * - for non-persistant keys it would be the current value
+   * - for persistent keys it would be the old value if it was changed during this run
+   */
+  async getStale(key: string) {
+    debugKey(key, `Fetching stale value...`);
+    const value = await this.api.getStale({ key });
+    debugKey(key, `Fetched: ${previewValue(value)}`);
     return value;
+  }
+
+  /**
+   * Fetch list of stale values by prefix.
+   * - for non-persistant keys it would be the current value
+   * - for persistent keys it would be the old value if it was changed during this run
+   */
+  async getStaleList(prefix: string) {
+    debugKey(prefix, `Fetching stale list...`);
+    const values = await this.api.getStaleList({ prefix });
+    debugKey(prefix, `Fetched: ${values.length} value(s)`);
+
+    return values;
   }
 
   private async computeValue<T>(fn: () => T) {
@@ -64,26 +97,6 @@ export class GlobalStorage {
       return { error };
     }
   }
-
-  /**
-   * Fetch stale value.
-   * - for non-persistant keys it would be current value in memory
-   * - for persistent keys it would be the old value if it was changed during this run
-   */
-  async getStale(key: string) {
-    const debug = debugForKey(key);
-    debug(`Fetching stale value...`);
-    const value = await new ValueFetcher(key).getStale();
-    debug(`Fetched: ${previewValue(value)}`);
-    return value;
-  }
-
-  // async getAll({ prefix }: { prefix: string }) {
-  //   const res = await fetch(`${env.serverUrl}/get-all/${prefix}`);
-  //   if (!res.ok) {
-  //     throw new Error(`Failed to get all values by prefix ${prefix}: ${res.statusText}`);
-  //   }
-  // }
 
   // todo: has
   // todo: delete

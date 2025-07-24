@@ -4,11 +4,15 @@ import { storage } from '../storage';
 
 export const router = Router();
 
+export type GetStaleParams = {
+  key: string;
+};
+
 /**
  * Route for geting a stale value.
  */
-router.get('/:key/stale', async (req, res) => {
-  const { key } = req.params;
+router.get('/get-stale', async (req, res) => {
+  const { key } = req.query as GetStaleParams;
   const { basePath } = getConfig(req.app as Express);
   // ttl: 0 -> load only from memory
   const valueInfo = await storage.load({ basePath, key, ttl: 0 });

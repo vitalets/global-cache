@@ -7,7 +7,8 @@ import { parseTTL } from '../ttl';
 
 export const router = Router();
 
-export type SetValueReqBody = {
+export type SetValueParams = {
+  key: string;
   /* The value to set. */
   value?: unknown;
   /* An error occured during value computing. */
@@ -16,12 +17,8 @@ export type SetValueReqBody = {
   ttl?: string | number;
 };
 
-/**
- * Route for setting a value.
- */
-router.post('/:key', async (req, res) => {
-  const { key } = req.params;
-  const { value, error, ttl: ttlParam }: SetValueReqBody = req.body;
+router.post('/set', async (req, res) => {
+  const { key, value, error, ttl: ttlParam } = req.body as SetValueParams;
   const { basePath } = getConfig(req.app as Express);
   const ttl = parseTTL(ttlParam);
 
@@ -36,5 +33,8 @@ router.post('/:key', async (req, res) => {
   }
 
   await storage.save({ basePath, valueInfo, ttl });
-  res.json(valueInfo);
+
+  // Important to return value, as it will handle undefined values
+  // in the same way as for other listeners.
+  res.json(value);
 });
