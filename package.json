@@ -1,7 +1,7 @@
 {
   "name": "@vitalets/global-storage",
   "description": "Optimized key-value storage for sharing data across test workers.",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "commonjs",
   "repository": {
     "type": "git",
