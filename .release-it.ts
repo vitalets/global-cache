@@ -10,7 +10,8 @@ export default {
       'npm run prettier',
       'npm ci',
       'npm test',
-      'npm run example',
+      // don't run example, b/c it's expected to fail
+      // 'npm run example',
       'npm run build',
     ],
   },
