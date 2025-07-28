@@ -22,6 +22,7 @@ export default [
     files: ['**/*.ts'],
     rules: {
       'no-console': 'error',
+      'no-empty-pattern': 0,
     },
   },
   // src files

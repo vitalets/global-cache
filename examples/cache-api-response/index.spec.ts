@@ -2,6 +2,8 @@ import { test, expect } from '@playwright/test';
 import { pathToFileURL } from 'node:url';
 import { globalStorage } from '@vitalets/global-storage';
 
+const url = pathToFileURL(__dirname + '/index.html').toString();
+
 test.use({
   page: async ({ page }, use) => {
     // setup request mock
@@ -21,19 +23,19 @@ test.use({
 });
 
 test('failing test 1', async ({ page }) => {
-  await page.goto(pathToFileURL(__dirname + '/index.html').toString());
+  await page.goto(url);
   await expect(page.locator('body')).toContainText('"name": "Dummy"');
-  throw new Error('Make test fail to create new worker');
+  throw new Error('Make test fail to create a new worker');
 });
 
 test('failing test 2', async ({ page }) => {
-  await page.goto(pathToFileURL(__dirname + '/index.html').toString());
-  expect(page.locator('body')).toContainText('"name": "Dummy"');
-  throw new Error('Make test fail to create new worker');
+  await page.goto(url);
+  await expect(page.locator('body')).toContainText('"name": "Dummy"');
+  throw new Error('Make test fail to create a new worker');
 });
 
 test('failing test 3', async ({ page }) => {
-  await page.goto(pathToFileURL(__dirname + '/index.html').toString());
-  expect(page.locator('body')).toContainText('"name": "Dummy"');
-  throw new Error('Make test fail to create new worker');
+  await page.goto(url);
+  await expect(page.locator('body')).toContainText('"name": "Dummy"');
+  throw new Error('Make test fail to create a new worker');
 });

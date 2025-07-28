@@ -1,14 +1,17 @@
 import { expect } from '@playwright/test';
 import { test } from './fixtures';
 
-test('failing test', async ({ page }) => {
+test('failing test', async ({ page }, testInfo) => {
   await page.goto('https://authenticationtest.com');
-  await expect(page.getByRole('link', { name: 'Sign Out' })).toBeVisible(); // authenticated!
-  throw new Error('Make test fail to create new worker');
+  await expect(page.getByRole('link', { name: 'Sign Out' })).toBeVisible();
+  console.log(`Worker ${testInfo.workerIndex}, user is authenticated.`);
+  throw new Error('Make test fail to create a new worker');
 });
 
-test('passing test', async ({ page }) => {
+test('passing test', async ({ page }, testInfo) => {
   // although previous test fails and new worker is stared, auth state is re-used
   await page.goto('https://authenticationtest.com');
-  await expect(page.getByRole('link', { name: 'Sign Out' })).toBeVisible(); // authenticated!
+  await expect(page.getByRole('link', { name: 'Sign Out' })).toBeVisible();
+  console.log(`Worker ${testInfo.workerIndex}, user is authenticated.`);
+  throw new Error('Make test fail to create a new worker');
 });

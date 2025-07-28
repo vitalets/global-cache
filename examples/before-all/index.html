@@ -1,0 +1,13 @@
+<!doctype html>
+<html>
+  <body>
+    <pre id="users"></pre>
+    <script>
+      fetch('https://jsonplaceholder.typicode.com/users')
+        .then((res) => res.json())
+        .then(
+          (posts) => (document.getElementById('users').innerHTML = JSON.stringify(posts, null, 2)),
+        );
+    </script>
+  </body>
+</html>
