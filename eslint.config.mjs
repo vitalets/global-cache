@@ -53,7 +53,7 @@ export default [
     },
   },
   {
-    files: ['example/**/*.ts'],
+    files: ['examples/**/*.ts'],
     rules: {
       'max-statements': 0,
       complexity: 0,
