@@ -8,6 +8,7 @@ export const test = baseTest.extend({
       // - authenticate once, then re-use the storage state in all tests
       // - re-use auth for subsequent test-runs within 5 minutes
       storageState = await globalStorage.get('storage-state', { ttl: '5 min' }, async () => {
+        console.log('Performing sing-in...');
         const loginPage = await browser.newPage(); // <-- important to use 'browser', not 'page' or 'context' fixture to avoid cyclic dependency
         await loginPage.goto('https://authenticationtest.com/simpleFormAuth/');
         await loginPage.getByLabel('E-Mail Address').fill('simpleForm@authenticationtest.com');

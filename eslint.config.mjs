@@ -57,6 +57,7 @@ export default [
     rules: {
       'max-statements': 0,
       complexity: 0,
+      'no-console': 0,
     },
   },
   {

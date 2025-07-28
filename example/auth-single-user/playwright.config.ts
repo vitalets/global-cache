@@ -1,11 +1,6 @@
 import { defineConfig } from '@playwright/test';
 import { globalStorage } from '@vitalets/global-storage';
 
-/* Uncomment to disable global storage and compare test results */
-// globalStorage.defineConfig({
-//   disabled: true,
-// });
-
 export default defineConfig({
   testDir: './test',
   globalSetup: globalStorage.setup,
