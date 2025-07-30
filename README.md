@@ -277,6 +277,9 @@ Available options:
 
 tbd
 
+## API
+tbd
+
 ## FAQ
 
 #### Do I need `beforeAll` / `afterAll` hooks?
