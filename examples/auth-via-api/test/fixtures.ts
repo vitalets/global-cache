@@ -10,6 +10,7 @@ export const test = baseTest.extend({
         console.log('Performing sing-in...');
         // important to use 'playwright' fixture, not 'request' to avoid cyclic dependency
         const request = await playwright.request.newContext();
+        // authenticate via API request
         await request.post('https://authenticationtest.com//login/?mode=simpleFormAuth', {
           form: {
             email: 'simpleForm@authenticationtest.com',
