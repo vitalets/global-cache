@@ -1,8 +1,8 @@
 /**
- * Storage singleton, providing methods to load and save values.
- * It uses in-memory storage for fast access and file system for persistence.
- *
- * todo: make it extensible to support other storage backends.
+ * Single-instance mode of Global Storage Server.
+ * - non-persistent values are stored in memory
+ * - presistent values are stored on fs and cached in memory
+ * - waiting for value performed via memory
  */
 import { initValueInfo, isExpired, setMissing, ValueInfo } from '../value-info';
 import { fsStorage } from './fs';

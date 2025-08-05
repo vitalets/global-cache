@@ -13,7 +13,7 @@ import { router as routeGet } from './routes/get';
 import { router as routeSet } from './routes/set';
 import { router as routeGetStale } from './routes/get-stale';
 import { router as routeGetStaleList } from './routes/get-stale-list';
-import { errorHandler } from './error-handler';
+import { errorHandler } from './error';
 import { GlobalStorageServerConfig, setConfig } from './config';
 
 export class GlobalStorageServer {

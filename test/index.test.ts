@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import { beforeAll, afterAll, test, expect, describe } from 'vitest';
 import { globalStorage } from '../src';
 // this import is only for testing purposes
-import { storage as serverStorage } from '../src/server/storage';
+import { storage as serverStorage } from '../src/server/single-instance';
 import { afterEach } from 'node:test';
 
 const basePath = './test/.global-storage';

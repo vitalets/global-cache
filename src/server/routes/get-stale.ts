@@ -1,6 +1,6 @@
 import { Express, Router } from 'express';
 import { getConfig } from '../config';
-import { storage } from '../storage';
+import { storage } from '../single-instance';
 
 export const router = Router();
 

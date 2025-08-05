@@ -1,7 +1,7 @@
 import { Express, Router } from 'express';
 import { getConfig } from '../config';
-import { listeners } from '../listeners';
-import { storage } from '../storage';
+import { listeners } from '../single-instance/listeners';
+import { storage } from '../single-instance';
 import { setError, setValue } from '../value-info';
 import { parseTTL } from '../ttl';
 

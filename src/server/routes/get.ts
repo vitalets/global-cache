@@ -1,14 +1,14 @@
 import { Express, Router } from 'express';
 import { parseTTL } from '../ttl';
 import { getConfig } from '../config';
-import { listeners } from '../listeners';
-import { storage } from '../storage';
+import { listeners } from '../single-instance/listeners';
+import { storage } from '../single-instance';
 
 export const router = Router();
 
 export type GetValueParams = {
   key: string;
-  /* Time to live for the value, if set, value is stored on the filesystem. */
+  /* Time to live for the value, if set, value is persisted on the filesystem. */
   ttl?: string;
 };
 

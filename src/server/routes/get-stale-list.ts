@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { storage } from '../storage';
+import { storage } from '../single-instance';
 
 export const router = Router();
 
