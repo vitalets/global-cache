@@ -8,9 +8,4 @@ export default defineConfig({
     require.resolve('./test/cleanup'), // <-- custom teardown script for cleanup
     globalStorage.teardown,
   ],
-  reporter: [['list'], ['html', { open: 'never' }]],
-  use: {
-    screenshot: 'on',
-    trace: 'retain-on-failure',
-  },
 });

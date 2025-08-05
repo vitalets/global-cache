@@ -5,9 +5,9 @@ This example demonstrates how to implement multi-user authentication using globa
 The approach is more efficient than the [separate auth project](https://playwright.dev/docs/auth#multiple-signed-in-roles) because it  authenticates the required roles on demand.
 
 ## Details
-- User credentials are stored in `users.ts`.
-- Each of spec files `user.spec.ts` and `admin.spec.ts` performs lazy authentication and runs  scenarios for the respective role.
-- Authentication steps are shared via `helpers.ts`.
+- User credentials are stored in `test/users.ts`.
+- Two spec files `test/{user,admin}.spec.ts` perform lazy authentication of the respective user and run test scenarios.
+- Helper file `test/auth.ts` contains common auth function that is re-used in all tests.
 
 ## Running all tests
 When running all tests with 2 workers, each file triggers authentication for its role:
@@ -27,7 +27,7 @@ Singing-in as user
 ```
 
 ## Running single test 
-Running single test file triggers authentication only for the required role:
+Running single test file triggers authentication **only for the required role**:
 ```
 npx playwright test user.spec.ts
 ```
