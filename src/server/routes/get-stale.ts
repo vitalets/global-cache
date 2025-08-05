@@ -1,6 +1,6 @@
 import { Express, Router } from 'express';
 import { getConfig } from '../config';
-import { storage } from '../single-instance';
+import { getStorage } from '../storage';
 
 export const router = Router();
 
@@ -13,9 +13,10 @@ export type GetStaleParams = {
  */
 router.get('/get-stale', async (req, res) => {
   const { key } = req.query as GetStaleParams;
-  const { basePath } = getConfig(req.app as Express);
-  // ttl: 0 -> load only from memory
-  const valueInfo = await storage.load({ basePath, key, ttl: 0 });
-  const staleValue = valueInfo.persistent ? valueInfo.oldValue : valueInfo.value;
+  const config = getConfig(req.app as Express);
+
+  const storage = getStorage(config);
+  const staleValue = await storage.getStale(key);
+
   res.json(staleValue);
 });

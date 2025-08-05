@@ -13,6 +13,7 @@ import { router as routeGet } from './routes/get';
 import { router as routeSet } from './routes/set';
 import { router as routeGetStale } from './routes/get-stale';
 import { router as routeGetStaleList } from './routes/get-stale-list';
+import { router as routeClearSession } from './routes/clear-session';
 import { errorHandler } from './error';
 import { GlobalStorageServerConfig, setConfig } from './config';
 
@@ -26,6 +27,7 @@ export class GlobalStorageServer {
     this.app.use('/', routeSet);
     this.app.use('/', routeGetStale);
     this.app.use('/', routeGetStaleList);
+    this.app.use('/', routeClearSession);
     // todo:
     // this.app.get('/', (req, res) => {
     //   res.send('Global Storage Server is running.');
@@ -66,5 +68,5 @@ export class GlobalStorageServer {
   }
 }
 
-/* Export a singleton instance of GlobalStorageServer for easy access */
+/* Export a default instance of GlobalStorageServer for easier access in single instance mode */
 export const globalStorageServer = new GlobalStorageServer();

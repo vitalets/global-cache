@@ -3,14 +3,10 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { ValueInfo } from '../value-info';
-import { parseValue, stringifyValue } from '../../utils/value';
+import { ValueInfo } from '../../value-info';
+import { parseValue, stringifyValue } from '../../../utils/value';
 
-export function fsStorage(basePath: string) {
-  return new FileSystemStorage(basePath);
-}
-
-class FileSystemStorage {
+export class FileSystemStorage {
   constructor(private basePath: string) {}
 
   async get(key: string): Promise<ValueInfo | undefined> {

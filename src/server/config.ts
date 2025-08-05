@@ -13,7 +13,7 @@ const defaults: Pick<Required<GlobalStorageServerConfig>, 'basePath'> = {
   basePath: '.global-storage',
 };
 
-type GlobalStorageServerConfigResolved = ReturnType<typeof buildResolvedConfig>;
+export type GlobalStorageServerConfigResolved = ReturnType<typeof buildResolvedConfig>;
 
 export function setConfig(app: Express, providedConfig: GlobalStorageServerConfig) {
   app.locals.config = buildResolvedConfig(providedConfig);

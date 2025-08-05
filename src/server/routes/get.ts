@@ -1,35 +1,31 @@
 import { Express, Router } from 'express';
 import { parseTTL } from '../ttl';
 import { getConfig } from '../config';
-import { listeners } from '../single-instance/listeners';
-import { storage } from '../single-instance';
+import { getStorage } from '../storage';
 
 export const router = Router();
 
 export type GetValueParams = {
   key: string;
-  /* Time to live for the value, if set, value is persisted on the filesystem. */
-  ttl?: string;
+  ttl?: string; // Time to live for the value, if set - value is persistent.
 };
 
 /**
  * Route for geting a value.
  */
-
 router.get('/get', async (req, res) => {
   const { key, ttl: ttlParam } = req.query as GetValueParams;
-  const { basePath } = getConfig(req.app as Express);
+  const config = getConfig(req.app as Express);
   const ttl = parseTTL(ttlParam);
-  const valueInfo = await storage.load({ basePath, key, ttl });
+
+  const storage = getStorage(config);
+  const valueInfo = await storage.loadInfo({ key, ttl });
 
   if (valueInfo.state === 'missing') {
-    valueInfo.state = 'computing';
-    // Pass ttl: 0 to avoid saving to fs
-    // todo: improve this place
-    await storage.save({ basePath, valueInfo, ttl: 0 });
-    res.status(404).json(valueInfo);
+    await storage.setComputing(valueInfo);
+    res.status(404).json(valueInfo); // sending valueInfo is useful for debug
   } else {
-    const value = valueInfo.state === 'computing' ? await listeners.wait(key) : valueInfo.value;
+    const value = valueInfo.state === 'computing' ? await storage.waitValue(key) : valueInfo.value;
     res.json(value);
   }
 });

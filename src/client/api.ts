@@ -47,4 +47,9 @@ export class StorageApi {
 
     return value || [];
   }
+
+  async clearSession() {
+    const res = await this.http.post('/clear-session');
+    await throwIfHttpError(res, 'Failed to clear session:');
+  }
 }

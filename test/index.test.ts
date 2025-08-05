@@ -1,9 +1,6 @@
 import fs from 'node:fs';
-import { beforeAll, afterAll, test, expect, describe } from 'vitest';
+import { beforeAll, afterAll, afterEach, test, expect, describe } from 'vitest';
 import { globalStorage } from '../src';
-// this import is only for testing purposes
-import { storage as serverStorage } from '../src/server/single-instance';
-import { afterEach } from 'node:test';
 
 const basePath = './test/.global-storage';
 
@@ -25,8 +22,8 @@ afterAll(async () => {
   await globalTeardown();
 });
 
-afterEach(() => {
-  serverStorage.clearSession();
+afterEach(async () => {
+  await globalStorage.clear();
 });
 
 describe('get', () => {
@@ -49,7 +46,7 @@ describe('get', () => {
 
       const [value1, value2] = await Promise.all([fn(), fn()]);
       const value3 = await fn();
-      serverStorage.clearSession();
+      await globalStorage.clear();
       const value4 = await fn();
 
       expect(callCount).toEqual(2);
@@ -81,7 +78,7 @@ describe('get', () => {
 
       const [value1, value2] = await Promise.all([fn(), fn()]);
       const value3 = await fn();
-      serverStorage.clearSession();
+      await globalStorage.clear();
       const value4 = await fn();
       await new Promise((r) => setTimeout(r, ttl + 10)); // wait for value to expire
       const value5 = await fn(); // increments callCount again
@@ -188,7 +185,7 @@ describe('ignoreTTL: true', () => {
       });
     const value1 = await fn();
     const value2 = await globalStorage.getStale(key);
-    serverStorage.clearSession();
+    await globalStorage.clear();
     const value3 = await fn(); // increment callCount as ttl is ignored
 
     expect(callCount).toEqual(2);

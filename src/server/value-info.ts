@@ -1,3 +1,6 @@
+/**
+ * Info about value and helper functions to manage it.
+ */
 import { debug } from '../utils/debug';
 
 export type ValueInfo = {
@@ -18,6 +21,10 @@ export function isExpired({ state, computedAt }: ValueInfo, ttl: number) {
     if (!computedAt || ttl === -1) return false;
     return Date.now() > computedAt + ttl;
   }
+}
+
+export function setComputing(info: ValueInfo) {
+  info.state = 'computing';
 }
 
 export function setMissing(info: ValueInfo) {

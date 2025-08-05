@@ -1,5 +1,5 @@
 import { globalConfig, GlobalConfigInput } from '../config';
-import { debugKey } from '../utils/debug';
+import { debug, debugKey } from '../utils/debug';
 import { previewValue } from '../utils/value';
 import { StorageApi } from './api';
 import { TTL } from '../server/ttl';
@@ -88,6 +88,12 @@ export class GlobalStorage {
     return values;
   }
 
+  async clear() {
+    debug('Clearing session...');
+    await this.api.clearSession();
+    debug('Session cleared.');
+  }
+
   private async computeValue<T>(fn: () => T) {
     try {
       const value = await fn();
@@ -97,9 +103,6 @@ export class GlobalStorage {
       return { error };
     }
   }
-
-  // todo: has
-  // todo: delete
 }
 
 function resolveGetOrComputeArgs<T>(args: GetOrComputeArgs<T>) {
