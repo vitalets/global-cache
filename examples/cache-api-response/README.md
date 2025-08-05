@@ -1,4 +1,4 @@
-# Example: Cache API Response
+# Cache API Response with Global Storage
 
 This example shows how to cache API response with the global storage.
 

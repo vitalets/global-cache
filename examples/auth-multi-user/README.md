@@ -1,8 +1,8 @@
-# Multi-User Authentication Example with Global Storage
+# Multi-User Authentication with Global Storage
 
-This example demonstrates how to implement multi-user authentication using global storage. 
+This example demonstrates how to implement multi-user authentication with global storage. 
 
-The approach is more efficient than the [separate auth project](https://playwright.dev/docs/auth#multiple-signed-in-roles) because it  authenticates the required roles on demand.
+The approach is more efficient than the [separate auth project](https://playwright.dev/docs/auth#multiple-signed-in-roles) because it authenticates the required roles on demand.
 
 ## Details
 - User credentials are stored in `test/users.ts`.

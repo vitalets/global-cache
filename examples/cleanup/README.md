@@ -1,6 +1,6 @@
-# Cleanup Example with Global Storage
+# Data Cleanup with Global Storage
 
-This example demonstrates how to implement proper data cleanup with global storage. 
+An example of proper data cleanup with global storage. 
 
 ## Details
 - A test user is lazily created in `beforeAll` hook and its ID is stored in the global storage.
