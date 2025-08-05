@@ -3,7 +3,7 @@ import { globalStorage } from '@vitalets/global-storage';
 
 let userId = '';
 
-test.beforeAll(async () => {
+test.beforeEach(async () => {
   // This code in beforeAll will run exactly once across all workers.
   // It's how most people expect beforeAll to work.
   userId = await globalStorage.get('user-id', async () => {
@@ -16,17 +16,17 @@ test.beforeAll(async () => {
   });
 });
 
-test('failing test 1', async ({}, testInfo) => {
+test('test 1', async ({}, testInfo) => {
   console.log(`Worker ${testInfo.workerIndex}, using user id: ${userId}`);
   throw new Error('Make test fail to start a new worker');
 });
 
-test('failing test 2', async ({}, testInfo) => {
+test('test 2', async ({}, testInfo) => {
   console.log(`Worker ${testInfo.workerIndex}, using user id: ${userId}`);
   throw new Error('Make test fail to start a new worker');
 });
 
-test('failing test 3', async ({}, testInfo) => {
+test('test 3', async ({}, testInfo) => {
   console.log(`Worker ${testInfo.workerIndex}, using user id: ${userId}`);
   throw new Error('Make test fail to start a new worker');
 });

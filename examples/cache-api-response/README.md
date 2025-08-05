@@ -13,6 +13,10 @@ This example shows how to cache API response with the global storage.
 
 Real request is sent only once. Execution time: **~2s**.
 ```
+npx playwright test
+```
+Output:
+```
 Running 3 tests using 1 worker
 
   ✘  1 test/index.spec.ts:25:5 › failing test 1 (2.3s)
