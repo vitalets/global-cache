@@ -73,7 +73,7 @@
     "vitest": "^3.2.4"
   },
   "keywords": [
-    "parallel storage",
+    "global cache",
     "global storage",
     "global setup",
     "global teardown",
@@ -81,7 +81,8 @@
     "workers",
     "testing",
     "e2e",
-    "performance"
+    "performance",
+    "optimization"
   ],
   "publishConfig": {
     "access": "public"

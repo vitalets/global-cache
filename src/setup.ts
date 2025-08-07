@@ -4,7 +4,7 @@ import { storageServer } from './server';
 
 export default async function globalSetup() {
   if (globalConfig.disabled) {
-    debug('Parallel storage is disabled.');
+    debug('Global cache is disabled.');
     return;
   }
 
