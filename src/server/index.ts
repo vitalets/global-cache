@@ -1,6 +1,6 @@
 /**
  * Storage Server.
- * An HTTP server that provides a simple key-value storage.
+ * An HTTP server that provides a simple key-value globalCache.
  * Can be launched locally or on a dedicated environment (standalone).
  *
  * This file is exported separately from the main index file, to not be loaded in workers.

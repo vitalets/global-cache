@@ -1,5 +1,5 @@
 import { test as baseTest, expect } from '@playwright/test';
-import { storage } from 'parallel-storage';
+import { globalCache } from '@vitalets/global-cache';
 
 export const test = baseTest.extend({
   storageState: async ({ storageState, browser }, use, testInfo) => {
@@ -8,7 +8,7 @@ export const test = baseTest.extend({
 
     // Get auth state: authenticate only if not authenticated yet.
     // Cache auth for 5 minutes, to reuse in futher test runs as well!
-    const authState = await storage.get('auth-state', { ttl: '5 min' }, async () => {
+    const authState = await globalCache.get('auth-state', { ttl: '5 min' }, async () => {
       console.log('Performing sing-in...');
       const loginPage = await browser.newPage(); // <-- important to use 'browser', not 'page' or 'context' fixture to avoid circullar dependency
 

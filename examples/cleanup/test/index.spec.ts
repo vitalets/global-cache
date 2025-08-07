@@ -1,10 +1,10 @@
 import { test } from '@playwright/test';
-import { storage } from 'parallel-storage';
+import { globalCache } from '@vitalets/global-cache';
 
 let userId = '';
 
 test.beforeAll(async () => {
-  userId = await storage.get('db-user-id', async () => {
+  userId = await globalCache.get('db-user-id', async () => {
     const userId = Math.random().toString(); // emulate user creation in db
     await new Promise((r) => setTimeout(r, 1000)); // emulate delay
     console.log(`User created in db: ${userId}`);

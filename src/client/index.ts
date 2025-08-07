@@ -6,13 +6,13 @@ import { TTL } from '../server/ttl';
 
 export type KeyParams = { ttl?: TTL };
 export type GetOrComputeArgs<T> = [string, () => T] | [string, KeyParams, () => T];
-export type ParallelStorageConfig = GlobalConfigInput;
+export type GlobalCacheConfig = GlobalConfigInput;
 
-export class ParallelStorage {
+export class GlobalCache {
   #api?: StorageApi;
 
   /* Helper method to set global config via storage instance (for conveniency) */
-  defineConfig(config: ParallelStorageConfig) {
+  defineConfig(config: GlobalCacheConfig) {
     globalConfig.update(config);
   }
 
@@ -111,5 +111,5 @@ function resolveGetOrComputeArgs<T>(args: GetOrComputeArgs<T>) {
     : { key: args[0], params: { ...args[1] }, fn: args[2] };
 }
 
-// Export storage instance.
-export const storage = new ParallelStorage();
+// Export singleton.
+export const globalCache = new GlobalCache();

@@ -1,5 +1,5 @@
 import { Browser, expect } from '@playwright/test';
-import { storage } from 'parallel-storage';
+import { globalCache } from '@vitalets/global-cache';
 import { users } from './users';
 
 /**
@@ -7,7 +7,7 @@ import { users } from './users';
  */
 export async function signInOnce(browser: Browser, role: 'user' | 'admin') {
   const { email, password } = users[role];
-  return storage.get(`storage-state-${role}`, async () => {
+  return globalCache.get(`storage-state-${role}`, async () => {
     console.log(`Singing-in as ${role}`);
     const loginPage = await browser.newPage();
     await loginPage.goto('https://authenticationtest.com/simpleFormAuth/');

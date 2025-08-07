@@ -1,11 +1,12 @@
 {
-  "name": "parallel-storage",
-  "description": "Key-value storage for sharing data between parallel workers.",
+  "name": "@vitalets/global-cache",
+  "description": "Key-value cache for sharing data between parallel workers.",
   "version": "0.1.1",
   "type": "commonjs",
+  "funding": "https://github.com/sponsors/vitalets",
   "repository": {
     "type": "git",
-    "url": "git://github.com/vitalets/parallel-storage.git"
+    "url": "git://github.com/vitalets/global-cache.git"
   },
   "main": "dist/index.js",
   "exports": {
@@ -35,10 +36,10 @@
     "prettier": "prettier --check --ignore-unknown .",
     "prettier:w": "prettier --write --ignore-unknown .",
     "test": "vitest run --no-cache --testTimeout 5000 --dir ./test",
-    "test:d": "DEBUG=parallel-storage* npm t",
+    "test:d": "DEBUG=global-cache* npm t",
     "pw": "npm i --no-save @playwright/test@$PW",
     "pw:install": "PLAYWRIGHT_SKIP_BROWSER_GC=1 npx playwright install chromium",
-    "example": "npm run build && DEBUG=parallel-storage* npx playwright test -c example",
+    "example": "npm run build && DEBUG=global-cache* npx playwright test -c example",
     "example:d": "npm run example -- --debug",
     "toc": "md-magic --files README.md",
     "build": "./scripts/build.sh",
@@ -82,6 +83,8 @@
     "e2e",
     "performance"
   ],
-  "funding": "https://github.com/sponsors/vitalets",
+  "publishConfig": {
+    "access": "public"
+  },
   "license": "MIT"
 }

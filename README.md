@@ -1,8 +1,8 @@
-# parallel-storage
+# @vitalets/global-cache
 
-> Key-value storage for sharing data between parallel workers.
+> Key-value cache for sharing data between parallel workers.
 
-With `parallel-storage`, the first worker that requests a value becomes responsible for computing it. Others wait until the result is ready — and all workers get the same value. The value is cached in memory or on the file system and can be reused by later workers and even across test runs.
+With global cache, the first worker that requests a value becomes responsible for computing it. Others wait until the result is ready — and all workers get the same value. The value is cached in memory or on the file system and reused by later workers and even across test runs.
 
 ## Index
 <details>
@@ -50,33 +50,33 @@ When running E2E tests in parallel, you might need to:
 ## Installation
 
 ```
-npm i -D parallel-storage
+npm i -D @vitalets/global-cache
 ```
 
 ## Basic Usage (Playwright)
 
-1. Enable parallel storage in the Playwright config:
+1. Enable global cache in the Playwright config:
 
     ```ts
     import { defineConfig } from '@playwright/test';
-    import { storage } from 'parallel-storage';
+    import { globalCache } from '@vitalets/global-cache';
 
     export default defineConfig({
-      globalSetup: storage.setup,        // <-- setup storage
-      globalTeardown: storage.teardown,  // <-- teardown storage
+      globalSetup: globalCache.setup,        // <-- setup globalCache
+      globalTeardown: globalCache.teardown,  // <-- teardown globalCache
       // ...
     });
     ```
 
-2. Wrap heavy operations with `storage.get()` to compute value once:
+2. Wrap heavy operations with `globalCache.get()` to compute value once:
     ```ts
-    const value = await storage.get('some-key', async () => {
+    const value = await globalCache.get('some-key', async () => {
         const value = /* ...heavy operation */
         return value;
     });
     ```
 
-  * If `some-key` is not populated, the function will be called and its result will be stored.
+  * If `some-key` is not populated, the function will be called and its result will be cached.
   * If `some-key` is already populated, the cached value will be returned instantly.
 
   > **Important note**: the return value must be **serializable**: only plain JavaScript objects and primitive types can be used, e.g. string, boolean, number, or JSON.
@@ -86,7 +86,7 @@ npm i -D parallel-storage
 If your function depends on some variables, you should add these variables to the key for propper data caching:
 
 ```ts
-const value = await storage.get(`some-key-${id}`, async () => {
+const value = await globalCache.get(`some-key-${id}`, async () => {
     const value = /* ...heavy operation that depends on `id` */
     return value;
 });
@@ -102,7 +102,7 @@ During this period, all test runs will reuse auth state and execute faster.
 To make value persistent, pass `{ ttl }` (time-to-live) option in the second argument of `.get()` method. TTL can be [ms](https://github.com/vercel/ms)-compatible string or number of miliseconds:
 ```ts
 // cache auth-state for 1 hour
-const authState = await storage.get('auth-state', { ttl: '1h' }, async () => {
+const authState = await globalCache.get('auth-state', { ttl: '1h' }, async () => {
     const loginPage = await browser.newPage();
     // ...authenticate user
     return loginPage.context().storageState();
@@ -123,7 +123,7 @@ This approach is more efficient than the [separate auth project](https://playwri
 ```ts
 // fixtures.ts
 import { test as baseTest, expect } from '@playwright/test';
-import { storage } from 'parallel-storage';
+import globalCache from '@vitalets/global-cache';
 
 export const test = baseTest.extend({
   storageState: async ({ storageState, browser }, use, testInfo) => {
@@ -132,7 +132,7 @@ export const test = baseTest.extend({
 
     // Get auth state: authenticate only if not authenticated yet.
     // Cache auth for 1 hour, to reuse in futher test runs as well.
-    const authState = await storage.get('auth-state', { ttl: '1 hour' }, async () => {
+    const authState = await globalCache.get('auth-state', { ttl: '1 hour' }, async () => {
       console.log('Performing sing-in...');
       const loginPage = await browser.newPage(); // <-- important to use 'browser', not 'page' or 'context' fixture to avoid circullar dependency
       
@@ -176,21 +176,21 @@ npx playwright test -g "@no-auth"
 
 ### Authentication (multi user)
 
-If you need to authenticate multiple users, you should add username to the key, to split their storage states. 
+If you need to authenticate multiple users, you should add username to the key, to split their auth data. 
 
 For example, you are testing your app under `user` and `admin` roles. You can create two separte test files `user.spec.ts` and `admin.spec.ts`:
 
 ```ts
 // user.spec.ts
 import { test } from '@playwright/test';
-import { storage } from 'parallel-storage';
+import globalCache from '@vitalets/global-cache';
 
 // Use your logic to define a username for this test file
 const USERNAME = 'user';
 
 test.use({ 
     storageState: async ({ browser }, use) => {
-        const authState = await storage.get(`auth-state-${USERNAME}`, async () => {
+        const authState = await globalCache.get(`auth-state-${USERNAME}`, async () => {
             const loginPage = await browser.newPage();
             // ...authenticate as user
         });
@@ -207,14 +207,14 @@ Test for `admin`:
 ```ts
 // admin.spec.ts
 import { test } from '@playwright/test';
-import { storage } from 'parallel-storage';
+import globalCache from '@vitalets/global-cache';
 
 // Use your logic to define a username for this test file
 const USERNAME = 'admin';
 
 test.use({ 
     storageState: async ({ browser }, use) => {
-        const authState = await storage.get(`auth-state-${USERNAME}`, async () => {
+        const authState = await globalCache.get(`auth-state-${USERNAME}`, async () => {
             const loginPage = await browser.newPage();
             // ...authenticate as admin
         });
@@ -241,12 +241,12 @@ You can use either `beforeAll` or `before` hook, in this case it does not matter
 
 ```ts
 import { test } from '@playwright/test';
-import { storage } from 'parallel-storage';
+import globalCache from '@vitalets/global-cache';
 
 let userId = '';
 
 test.before(async () => {
-  userId = await storage.get('user-id', async () => {
+  userId = await globalCache.get('user-id', async () => {
     const user = // ...create user in DB
     return user.id;
   });
@@ -268,14 +268,14 @@ test('test 2', async () => {
 You can store and re-use result of a network request: 
 ```ts
 import { test } from '@playwright/test';
-import { storage } from 'parallel-storage';
+import globalCache from '@vitalets/global-cache';
 
 test.use({
   page: async ({ page }, use) => {
     // setup request mock
     await page.route('https://jsonplaceholder.typicode.com/users', async (route) => {
-      // send real request once and store the response JSON in the storage
-      const json = await storage.get('users-response', async () => {
+      // send real request once and store the response JSON
+      const json = await globalCache.get('users-response', async () => {
         const response = await route.fetch();
         return response.json();
       });
@@ -299,8 +299,8 @@ If the response depends on query parameters or body, you should add these value 
 await page.route('/api/cats/**', (route, req) => {
   const query = new URL(req.url()).searchParams;
   const reqBody = req.postDataJSON();
-  const storageKey = `cats-response-${query.get('id')}-${reqBody.page}`;
-  const json = storage.get(storageKey, async () => {
+  const cacheKey = `cats-response-${query.get('id')}-${reqBody.page}`;
+  const json = globalCache.get(cacheKey, async () => {
       const response = await route.fetch();
       return response.json();
   });
@@ -319,48 +319,48 @@ The solution is to preform cleanup in a custom teardown script.
 ```ts
 // playwright.config.ts
 import { defineConfig } from '@playwright/test';
-import { storage } from 'parallel-storage';
+import globalCache from '@vitalets/global-cache';
 
 export default defineConfig({
-  globalSetup: storage.setup,
+  globalSetup: globalCache.setup,
   globalTeardown: [
-    require.resolve('./cleanup'), // <-- custom teardown script before storage.teardown
-    storage.teardown,
+    require.resolve('./cleanup'), // <-- custom teardown script before globalCache.teardown
+    globalCache.teardown,
   ],
   // ...
 });
 ```
 
-2. In the cleanup script use `storage.getStale()` method to access outdated values: 
+2. In the cleanup script use `globalCache.getStale()` method to access outdated values: 
 
 ```ts
 // cleanup.js
 import { defineConfig } from '@playwright/test';
-import { storage } from 'parallel-storage';
+import globalCache from '@vitalets/global-cache';
 
 export default async function() {
-    const userId = await storage.getStale('user-id');
+    const userId = await globalCache.getStale('user-id');
     if (userId) {
         /* remove user from database */
     }
 }
 ```
 
-The result of `storage.getStale(key)` is different for presistent and non-persistent values:
+The result of `globalCache.getStale(key)` is different for presistent and non-persistent values:
 - **non-persistent**: it returns the current value (as it will be cleared right after test run end)
 - **persistent**: it returns the previous value that was replaced during the test run (as the current value can be reused in future runs)
 
 ### Cleanup (by prefix)
 
-When using dynamic keys, you can use `storage.getStaleList(prefix)` to retrieve all values for the provided prefix:
+When using dynamic keys, you can use `globalCache.getStaleList(prefix)` to retrieve all values for the provided prefix:
 
 ```ts
 // cleanup.ts
 import { defineConfig } from '@playwright/test';
-import { storage } from 'parallel-storage';
+import globalCache from '@vitalets/global-cache';
 
 export default async function() {
-    const userIds = await storage.getStaleList('user-');
+    const userIds = await globalCache.getStaleList('user-');
     for (const userId of userIds) {
       /* remove every created user from database */
     }
@@ -369,20 +369,20 @@ export default async function() {
 
 ## Configuration
 
-To provide configuration options, call `storage.defineConfig()` in the Playwright config:
+To provide configuration options, call `globalCache.defineConfig()` in the Playwright config:
 
 ```ts
 import { defineConfig } from '@playwright/test';
-import { storage } from 'parallel-storage';
+import globalCache from '@vitalets/global-cache';
 
-storage.defineConfig({ /* options */ })
+globalCache.defineConfig({ /* options */ })
 
 // ...
 ```
 
 Available options:
 
-- **disabled** `boolean` - Disables global storage. All values will be calculated each time. Default is `false`.
+- **disabled** `boolean` - Disables global globalCache. All values will be calculated each time. Default is `false`.
 
 tbd
 
@@ -393,7 +393,7 @@ tbd
 See [CHANGELOG.md](./CHANGELOG.md).
 
 ## Feedback
-Feel free to share your feedback and suggestions in the [issues](https://github.com/vitalets/parallel-storage/issues).
+Feel free to share your feedback and suggestions in the [issues](https://github.com/vitalets/@vitalets/global-cache/issues).
 
 ## License
-[MIT](https://github.com/vitalets/parallel-storage/blob/main/LICENSE)
+[MIT](https://github.com/vitalets/@vitalets/global-cache/blob/main/LICENSE)

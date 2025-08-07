@@ -1,8 +1,8 @@
 import { defineConfig } from '@playwright/test';
-import { storage } from 'parallel-storage';
+import { globalCache } from '@vitalets/global-cache';
 
 export default defineConfig({
   testDir: './test',
-  globalSetup: storage.setup,
-  globalTeardown: storage.teardown,
+  globalSetup: globalCache.setup,
+  globalTeardown: globalCache.teardown,
 });

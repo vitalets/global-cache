@@ -1,15 +1,15 @@
 import fs from 'node:fs';
 import { beforeAll, afterAll, afterEach, test, expect, describe } from 'vitest';
-import { storage } from '../src';
+import { globalCache } from '../src';
 
-const basePath = './test/.parallel-storage';
+const basePath = './test/.global-cache';
 
 beforeAll(async () => {
   if (fs.existsSync(basePath)) {
     fs.rmSync(basePath, { recursive: true });
   }
 
-  storage.defineConfig({ basePath });
+  globalCache.defineConfig({ basePath });
 
   const { default: globalSetup } = await import('../src/setup.js');
   // @ts-expect-error callable
@@ -23,7 +23,7 @@ afterAll(async () => {
 });
 
 afterEach(async () => {
-  await storage.clear();
+  await globalCache.clear();
 });
 
 describe('get', () => {
@@ -39,14 +39,14 @@ describe('get', () => {
     async function checkNonPersistentValue(value: unknown) {
       let callCount = 0;
       const fn = () =>
-        storage.get(`memory-${JSON.stringify(value)}`, async () => {
+        globalCache.get(`memory-${JSON.stringify(value)}`, async () => {
           callCount++;
           return value;
         });
 
       const [value1, value2] = await Promise.all([fn(), fn()]);
       const value3 = await fn();
-      await storage.clear();
+      await globalCache.clear();
       const value4 = await fn();
 
       expect(callCount).toEqual(2);
@@ -71,14 +71,14 @@ describe('get', () => {
       const ttl = 50;
 
       const fn = () =>
-        storage.get(`persistent-${JSON.stringify(value)}`, { ttl }, async () => {
+        globalCache.get(`persistent-${JSON.stringify(value)}`, { ttl }, async () => {
           callCount++;
           return value;
         });
 
       const [value1, value2] = await Promise.all([fn(), fn()]);
       const value3 = await fn();
-      await storage.clear();
+      await globalCache.clear();
       const value4 = await fn();
       await new Promise((r) => setTimeout(r, ttl + 10)); // wait for value to expire
       const value5 = await fn(); // increments callCount again
@@ -94,7 +94,7 @@ describe('get', () => {
 
   test('undefined is converted to null in array', async () => {
     const key = 'undefined-in-array';
-    const fn = () => storage.get(key, () => [undefined]);
+    const fn = () => globalCache.get(key, () => [undefined]);
 
     const value1 = await fn();
     const value2 = await fn();
@@ -105,7 +105,7 @@ describe('get', () => {
 
   test('error while computing value', async () => {
     const fn = () =>
-      storage.get(`error-key`, async () => {
+      globalCache.get(`error-key`, async () => {
         throw new Error('foo');
       });
 
@@ -119,9 +119,9 @@ describe('get', () => {
 describe('getStale', () => {
   test('non-persistent', async () => {
     const key = 'get-stale-non-persistent';
-    const value1 = await storage.getStale(key);
-    const value2 = await storage.get(key, () => 42);
-    const value3 = await storage.getStale(key);
+    const value1 = await globalCache.getStale(key);
+    const value2 = await globalCache.get(key, () => 42);
+    const value3 = await globalCache.getStale(key);
 
     expect(value1).toEqual(undefined);
     expect(value2).toEqual(42);
@@ -132,13 +132,13 @@ describe('getStale', () => {
     let callCount = 0;
     const ttl = 50;
     const key = 'get-stale-persistent';
-    const fn = () => storage.get(key, { ttl }, () => ++callCount);
-    const value1 = await storage.getStale(key);
+    const fn = () => globalCache.get(key, { ttl }, () => ++callCount);
+    const value1 = await globalCache.getStale(key);
     const value2 = await fn();
-    const value3 = await storage.getStale(key);
+    const value3 = await globalCache.getStale(key);
     await new Promise((r) => setTimeout(r, ttl + 10));
     const value4 = await fn();
-    const value5 = await storage.getStale(key);
+    const value5 = await globalCache.getStale(key);
 
     expect(value1).toEqual(undefined);
     expect(value2).toEqual(1);
@@ -153,14 +153,14 @@ describe('getStaleList', () => {
     let callCount = 0;
     const ttl = 50;
     const prefix = 'get-stale-list';
-    const fn = () => storage.get(`${prefix}-persistent`, { ttl }, () => ++callCount);
-    await storage.get(`${prefix}-session-1`, () => 11);
-    await storage.get(`${prefix}-session-2`, () => 22);
+    const fn = () => globalCache.get(`${prefix}-persistent`, { ttl }, () => ++callCount);
+    await globalCache.get(`${prefix}-session-1`, () => 11);
+    await globalCache.get(`${prefix}-session-2`, () => 22);
     await fn();
     await fn();
-    await storage.get(`excluded-key`, () => 3);
+    await globalCache.get(`excluded-key`, () => 3);
 
-    const values = await storage.getStaleList(prefix);
+    const values = await globalCache.getStaleList(prefix);
 
     expect(values).toEqual([11, 22, null]);
   });
@@ -168,24 +168,24 @@ describe('getStaleList', () => {
 
 describe('ignoreTTL: true', () => {
   beforeAll(() => {
-    storage.defineConfig({ ignoreTTL: true });
+    globalCache.defineConfig({ ignoreTTL: true });
   });
 
   afterAll(() => {
-    storage.defineConfig({ ignoreTTL: false });
+    globalCache.defineConfig({ ignoreTTL: false });
   });
 
   test('value with ttl is not persistent', async () => {
     const key = 'ignore-ttl-key';
     let callCount = 0;
     const fn = () =>
-      storage.get(key, { ttl: 50 }, () => {
+      globalCache.get(key, { ttl: 50 }, () => {
         callCount++;
         return 42;
       });
     const value1 = await fn();
-    const value2 = await storage.getStale(key);
-    await storage.clear();
+    const value2 = await globalCache.getStale(key);
+    await globalCache.clear();
     const value3 = await fn(); // increment callCount as ttl is ignored
 
     expect(callCount).toEqual(2);

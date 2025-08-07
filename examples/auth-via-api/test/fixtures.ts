@@ -1,12 +1,12 @@
 import { test as baseTest } from '@playwright/test';
-import { storage } from 'parallel-storage';
+import { globalCache } from '@vitalets/global-cache';
 
 export const test = baseTest.extend({
   storageState: async ({ storageState, playwright }, use, testInfo) => {
     if (!testInfo.tags.includes('@no-auth')) {
       // - perform auth only for tests not marked with '@no-auth' tag
       // - authenticate once, then re-use the storage state in all tests
-      storageState = await storage.get('storage-state-via-api', async () => {
+      storageState = await globalCache.get('storage-state-via-api', async () => {
         console.log('Performing sing-in...');
         // important to use 'playwright' fixture, not 'request' to avoid cyclic dependency
         const request = await playwright.request.newContext();

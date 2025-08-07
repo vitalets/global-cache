@@ -8,5 +8,5 @@
 * Initial release.
 
 
-[unreleased]: https://github.com/vitalets/parallel-storage/compare/0.1.1...HEAD
-[0.1.1]: https://github.com/vitalets/parallel-storage/compare/0.1.0...0.1.1
+[unreleased]: https://github.com/vitalets/global-cache/compare/0.1.1...HEAD
+[0.1.1]: https://github.com/vitalets/global-cache/compare/0.1.0...0.1.1

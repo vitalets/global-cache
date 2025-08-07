@@ -1,4 +1,4 @@
-# Using parallel-storage with sharding
+# Using global-cache with sharding
 
 *This document is a working draft.*
 

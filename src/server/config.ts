@@ -10,7 +10,7 @@ export type GlobalStorageServerConfig = {
 };
 
 const defaults: Pick<Required<GlobalStorageServerConfig>, 'basePath'> = {
-  basePath: '.parallel-storage',
+  basePath: '.global-cache',
 };
 
 export type GlobalStorageServerConfigResolved = ReturnType<typeof buildResolvedConfig>;

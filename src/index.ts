@@ -1,1 +1,1 @@
-export { storage, ParallelStorage, ParallelStorageConfig } from './client';
+export { globalCache, GlobalCache, GlobalCacheConfig } from './client';

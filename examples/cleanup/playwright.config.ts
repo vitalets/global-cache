@@ -1,11 +1,11 @@
 import { defineConfig } from '@playwright/test';
-import { storage } from 'parallel-storage';
+import { globalCache } from '@vitalets/global-cache';
 
 export default defineConfig({
   testDir: './test',
-  globalSetup: storage.setup,
+  globalSetup: globalCache.setup,
   globalTeardown: [
     require.resolve('./test/cleanup'), // <-- custom teardown script for cleanup
-    storage.teardown,
+    globalCache.teardown,
   ],
 });

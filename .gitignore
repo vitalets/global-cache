@@ -11,5 +11,5 @@ npm-debug.log
 test-results
 playwright-report
 /todo.txt
-.parallel-storage
+.global-cache
 
