@@ -15,7 +15,7 @@ With global cache, the first worker that requests a value becomes responsible fo
 - [Installation](#installation)
 - [Basic Usage (Playwright)](#basic-usage-playwright)
   - [Dynamic keys](#dynamic-keys)
-  - [Persistent Values](#persistent-values)
+  - [Persistent values](#persistent-values)
 - [Use Cases](#use-cases)
   - [Authentication (single user)](#authentication-single-user)
   - [Authentication (multi user)](#authentication-multi-user)
