@@ -15,11 +15,11 @@ When running e2e tests in parallel (e.g. Playwright), you might need to:
 
 With `@vitalets/global-storage`, the first worker that requests a key becomes responsible for computing it. Others wait until the result is ready — and all workers get the same value.
 
-## 🚀 Features
+## Features
 
-* ⚙️ **Lazy computation**: Computes value only before tests that actually require it
-* 🔁 **Deduplicated**: Ensures each key is computed only once
-* 🤝 **Worker-safe**: Designed for test environments with parallel execution
+* **Lazy computation**: Computes value only before tests that actually require it
+* **Deduplicated**: Ensures each key is computed only once
+* **Worker-safe**: Designed for test environments with parallel execution
 
 ## Basic Usage (Playwright)
 
@@ -36,7 +36,7 @@ With `@vitalets/global-storage`, the first worker that requests a key becomes re
     });
     ```
 
-2. Wrap heavy operations with `globalStorage.get()` to compute value once and re-use later:
+2. Wrap heavy operations with `globalStorage.get()` to compute value once:
     ```ts
     const value = await globalStorage.get('some-key', async () => {
         const value = /* heavy operation */
@@ -44,14 +44,14 @@ With `@vitalets/global-storage`, the first worker that requests a key becomes re
     });
     ```
 
-  * If key is not populated, the function will be called and its result will be stored.
-  * If key is already populated, the stored value will be returned without calling the function.
+  * If key is not populated, the function will be called and its result will be cached.
+  * If key is already populated, the cached value will be returned instantly.
 
-  > Important note: the value must be **serializable**, e.g. string, boolean, number, or JSON.
+  > **Important note**: the return value must be **serializable**: only plain JavaScript objects and primitive types can be stored, e.g. string, boolean, number, or JSON.
 
 ### Dynamic keys
 
-If your function depends on some variables, you should add these variables to the key for propper data separation:
+If your function depends on some variables, you should add these variables to the key for propper data caching:
 
 ```ts
 const value = await globalStorage.get(`some-key-${id}`, async () => {
@@ -60,11 +60,32 @@ const value = await globalStorage.get(`some-key-${id}`, async () => {
 });
 ```
 
-By default, all values are stored in memory and cleared when test run ends.
-Although, it is possible to [persist data between test runs](#persist-data-between-test-runs).
+### Persistent Values
+
+By default, all values are stored in memory and cleared when test run finish. 
+But you can store data permanently on the filesystem and re-use between test runs. 
+For example, you can authenticate user once and save auth state for 1 hour.
+During this period, all test runs will re-use auth state and execute faster.
+
+To make value persistent, pass `{ ttl }` (time-to-live) option in the second argument of `.get()` method. TTL can be [ms](https://github.com/vercel/ms)-compatible string or number of miliseconds:
+```ts
+test.use({ 
+  storageState: async ({ browser }, use) => {
+    // cache auth-state for 1 hour
+    const storageState = await globalStorage.get('auth-state', { ttl: '1h' }, async () => {
+        const loginPage = await browser.newPage();
+        // ...
+        return loginPage.context().storageState();
+    });
+    await use(storageState);
+  }
+});
+```
+
+> To persist data forever set `ttl: 'infinite'`.
 
 ## Use Cases
-All code samples are for Playwright.
+All code samples are currently for Playwright.
 
 ### Authentication
 
@@ -75,7 +96,7 @@ import { globalStorage } from '@vitalets/global-storage';
 
 test.use({ 
     storageState: async ({ context }, use) => {
-        const storageState = await globalStorage.get('auth', async () => {
+        const storageState = await globalStorage.get('auth-state', async () => {
             const loginPage = await context.newPage();
             await loginPage.goto('https://example.com');
             await loginPage.getByLabel('Username').fill('admin');
@@ -127,14 +148,14 @@ import { globalStorage } from 'global-storage/playwright';
 let userId = '';
 
 test.before(async () => {
-  userId = await globalStorage.get('userId', async () => {
-    const user = await db.createUser();
+  userId = await globalStorage.get('user-id', async () => {
+    const user = // ...create user in DB
     return user.id;
   });
 });
 
-test('test', async ({ page }) => {
-  // page uses 'userId'
+test('test', async () => {
+  // test uses 'userId'
 });
 ```
 

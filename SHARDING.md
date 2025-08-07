@@ -1,6 +1,6 @@
 # Using Global-storage with sharding
 
-*Experimental.*
+*This document is a working draft.*
 
 You can share data between multiple shards on CI.
 To achieve it:
