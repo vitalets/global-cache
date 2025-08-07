@@ -35,9 +35,9 @@ With global cache, the first worker that requests a value becomes responsible fo
 
 ## Features
 
-* **On-demand execution**: Computes heavy values only when they’re actually required.
-* **Deduplicated**: Ensures each key is computed exactly once.
-* **Worker-safe**: Designed for test environments with parallel execution (e.g. [Playwright](https://playwright.dev/)).
+* ⚡  **On-demand execution**: Computes heavy values only when they’re actually required.
+* 🧩 **Deduplicated**: Ensures each key is computed exactly once.
+* 🛡️ **Worker-safe**: Designed for test environments with parallel execution (e.g. [Playwright](https://playwright.dev/)).
 
 ## Why use it?
 
