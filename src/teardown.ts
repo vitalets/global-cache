@@ -1,5 +1,5 @@
-import { globalStorageServer } from './server';
+import { storageServer } from './server';
 
 export default async function globalTeardown() {
-  await globalStorageServer.stop();
+  await storageServer.stop();
 }

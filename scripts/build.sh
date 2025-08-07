@@ -6,8 +6,8 @@ set -euo pipefail
 rm -rf ./dist
 npx tsc -p tsconfig.build.json
 
-# copy 'dist' to 'example/node_modules/' to allow import from 'global-storage'.
-rm -rf ./example/node_modules/@vitalets/global-storage
-mkdir -p ./example/node_modules/@vitalets/global-storage
-cp -R ./dist ./example/node_modules/@vitalets/global-storage/
-cp ./package.json ./example/node_modules/@vitalets/global-storage/
+# copy 'dist' to 'examples/node_modules/' to allow bare import from 'parallel-storage' in examples.
+rm -rf ./examples/node_modules/parallel-storage
+mkdir -p ./examples/node_modules/parallel-storage
+cp -R ./dist ./examples/node_modules/parallel-storage/
+cp ./package.json ./examples/node_modules/parallel-storage/

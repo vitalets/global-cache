@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { pathToFileURL } from 'node:url';
-import { globalStorage } from '@vitalets/global-storage';
+import { storage } from 'parallel-storage';
 
 const url = pathToFileURL(__dirname + '/../index.html').toString();
 
@@ -9,7 +9,7 @@ test.use({
     // setup request mock
     await page.route('https://jsonplaceholder.typicode.com/users', async (route) => {
       // send real request only once and store the response in the global storage
-      const json = await globalStorage.get('users-response', async () => {
+      const json = await storage.get('users-response', async () => {
         console.log(`Sending real request to: ${route.request().url()}`);
 
         await new Promise((r) => setTimeout(r, 1000)); // emulate the delay

@@ -1,5 +1,5 @@
 /**
- * Global Storage Server.
+ * Storage Server.
  * An HTTP server that provides a simple key-value storage.
  * Can be launched locally or on a dedicated environment (standalone).
  *
@@ -17,7 +17,7 @@ import { router as routeClearSession } from './routes/clear-session';
 import { errorHandler } from './error';
 import { GlobalStorageServerConfig, setConfig } from './config';
 
-export class GlobalStorageServer {
+export class StorageServer {
   private app = express();
   private server: http.Server | null = null;
 
@@ -68,5 +68,5 @@ export class GlobalStorageServer {
   }
 }
 
-/* Export a default instance of GlobalStorageServer for easier access in single instance mode */
-export const globalStorageServer = new GlobalStorageServer();
+/* Export a default instance for easier access in single instance mode */
+export const storageServer = new StorageServer();

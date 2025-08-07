@@ -1,37 +1,37 @@
-# @vitalets/global-storage
+# parallel-storage
 
-> Optimized key-value storage for sharing data across test workers.
+> Key-value storage for sharing data between parallel workers.
 
-Share expensive computed values across parallel test workers — and compute each value exactly once.
-
-## Why use it?
-
-When running e2e tests in parallel (e.g. Playwright), you might need to:
-
-* Authenticate user only once
-* Load a large dataset only once
-* Generate test state that’s reused across workers
-* Prevent redundant work across test processes
-
-With `@vitalets/global-storage`, the first worker that requests a key becomes responsible for computing it. Others wait until the result is ready — and all workers get the same value.
+With `parallel-storage`, the first worker that requests a value becomes responsible for computing it. Others wait until the result is ready — and all workers get the same value. The value is cached in memory or on the file system and can be reused by later workers and even across test runs.
 
 ## Features
 
-* **Lazy computation**: Computes value only before tests that actually require it
-* **Deduplicated**: Ensures each key is computed only once
-* **Worker-safe**: Designed for test environments with parallel execution
+* **On-demand execution**: Computes heavy values only when they’re actually required.
+* **Deduplicated**: Ensures each key is computed exactly once.
+* **Worker-safe**: Designed for test environments with parallel execution (e.g. [Playwright](https://playwright.dev/)).
+
+## Why use it?
+
+When running E2E tests in parallel, you might need to:
+
+* Authenticate user only once
+* Populate a database only once
+* Reuse the state even if worker fails
+* Keep some value persistently to speed up subsequent test runs
+
+## Installation
 
 ## Basic Usage (Playwright)
 
-1. Enable global storage in the Playwright config:
+1. Enable parallel storage in the Playwright config:
 
     ```ts
     import { defineConfig } from '@playwright/test';
     import { storage } from 'parallel-storage';
 
     export default defineConfig({
-      globalSetup: storage.setup,        // <-- setup global storage
-      globalTeardown: storage.teardown,  // <-- teardown global storage
+      globalSetup: storage.setup,        // <-- setup storage
+      globalTeardown: storage.teardown,  // <-- teardown storage
       // ...
     });
     ```
@@ -39,23 +39,23 @@ With `@vitalets/global-storage`, the first worker that requests a key becomes re
 2. Wrap heavy operations with `storage.get()` to compute value once:
     ```ts
     const value = await storage.get('some-key', async () => {
-        const value = /* heavy operation */
+        const value = /* ...heavy operation */
         return value;
     });
     ```
 
-  * If key is not populated, the function will be called and its result will be cached.
-  * If key is already populated, the cached value will be returned instantly.
+  * If `some-key` is not populated, the function will be called and its result will be stored.
+  * If `some-key` is already populated, the cached value will be returned instantly.
 
-  > **Important note**: the return value must be **serializable**: only plain JavaScript objects and primitive types can be stored, e.g. string, boolean, number, or JSON.
+  > **Important note**: the return value must be **serializable**: only plain JavaScript objects and primitive types can be used, e.g. string, boolean, number, or JSON.
 
 ### Dynamic keys
 
 If your function depends on some variables, you should add these variables to the key for propper data caching:
 
 ```ts
-const value = await globalStorage.get(`some-key-${id}`, async () => {
-    const value = /* heavy operation that depends on `id` */
+const value = await storage.get(`some-key-${id}`, async () => {
+    const value = /* ...heavy operation that depends on `id` */
     return value;
 });
 ```
@@ -63,22 +63,17 @@ const value = await globalStorage.get(`some-key-${id}`, async () => {
 ### Persistent Values
 
 By default, all values are stored in memory and cleared when test run finish. 
-But you can store data permanently on the filesystem and re-use between test runs. 
+But you can store data permanently on the file system and reuse between subsequent runs. 
 For example, you can authenticate user once and save auth state for 1 hour.
-During this period, all test runs will re-use auth state and execute faster.
+During this period, all test runs will reuse auth state and execute faster.
 
 To make value persistent, pass `{ ttl }` (time-to-live) option in the second argument of `.get()` method. TTL can be [ms](https://github.com/vercel/ms)-compatible string or number of miliseconds:
 ```ts
-test.use({ 
-  storageState: async ({ browser }, use) => {
-    // cache auth-state for 1 hour
-    const storageState = await globalStorage.get('auth-state', { ttl: '1h' }, async () => {
-        const loginPage = await browser.newPage();
-        // ...
-        return loginPage.context().storageState();
-    });
-    await use(storageState);
-  }
+// cache auth-state for 1 hour
+const authState = await storage.get('auth-state', { ttl: '1h' }, async () => {
+    const loginPage = await browser.newPage();
+    // ...authenticate user
+    return loginPage.context().storageState();
 });
 ```
 
@@ -87,192 +82,253 @@ test.use({
 ## Use Cases
 All code samples are currently for Playwright.
 
-### Authentication
+### Authentication (single user)
 
-You can perform lazy, on-demand authentication. Use `storageState` fixture to authenticate once, store the auth state, and provide it to all subsequent tests:
+You can perform lazy, on-demand authentication. Use the `storageState` fixture to authenticate once, save the auth state, and share it with all subsequent tests.
+
+This approach is more efficient than the [separate auth project](https://playwright.dev/docs/auth#basic-shared-account-in-all-tests). It authenticates only when needed and doesn't require an additional project.
+
 ```ts
+// fixtures.ts
+import { test as baseTest, expect } from '@playwright/test';
+import { storage } from 'parallel-storage';
+
+export const test = baseTest.extend({
+  storageState: async ({ storageState, browser }, use, testInfo) => {
+    // Skip authentication for '@no-auth'-tagged tests
+    if (testInfo.tags.includes('@no-auth')) return use(storageState);
+
+    // Get auth state: authenticate only if not authenticated yet.
+    // Cache auth for 1 hour, to reuse in futher test runs as well.
+    const authState = await storage.get('auth-state', { ttl: '1 hour' }, async () => {
+      console.log('Performing sing-in...');
+      const loginPage = await browser.newPage(); // <-- important to use 'browser', not 'page' or 'context' fixture to avoid circullar dependency
+      
+      await loginPage.goto('https://authenticationtest.com/simpleFormAuth/');
+      await loginPage.getByLabel('E-Mail Address').fill('simpleForm@authenticationtest.com');
+      await loginPage.getByLabel('Password').fill('pa$$w0rd');
+      await loginPage.getByRole('button', { name: 'Log In' }).click();
+      await expect(loginPage.getByRole('heading', { name: 'Login Success' })).toBeVisible();
+
+      return loginPage.context().storageState();
+    });
+  
+    await use(authState);
+  },
+});
+```
+
+In tests:
+```ts
+import { test } from './fixtures';
+
+test('test 1', async ({ page }) => {
+  // ...page is authenticated
+});
+
+test('test 2', async ({ page }) => {
+  // ...page is authenticated (from cached state)
+});
+
+test('test 3', { tag: '@no-auth' }, async ({ page }) => {
+  // ...page is NOT authenticated
+});
+```
+
+If you run only `@no-auth` test, authentication **will not be triggered**:
+```
+npx playwright test -g "@no-auth"
+```
+
+> Check out a fully working example of [single user authentication](/examples/auth-single-user/).
+
+### Authentication (multi user)
+
+If you need to authenticate multiple users, you should add username to the key, to split their storage states. 
+
+For example, you are testing your app under `user` and `admin` roles. You can create two separte test files `user.spec.ts` and `admin.spec.ts`:
+
+```ts
+// user.spec.ts
 import { test } from '@playwright/test';
-import { globalStorage } from '@vitalets/global-storage';
+import { storage } from 'parallel-storage';
+
+// Use your logic to define a username for this test file
+const USERNAME = 'user';
 
 test.use({ 
-    storageState: async ({ context }, use) => {
-        const storageState = await globalStorage.get('auth-state', async () => {
-            const loginPage = await context.newPage();
-            await loginPage.goto('https://example.com');
-            await loginPage.getByLabel('Username').fill('admin');
-            await loginPage.getByLabel('Password').fill('password');
-            await loginPage.getByRole('button', { name: 'Sign in' }).click();
-            await expect(loginPage.getByText('Authenticated.')).toBeVisible();
-
-            return context.storageState();
+    storageState: async ({ browser }, use) => {
+        const authState = await storage.get(`auth-state-${USERNAME}`, async () => {
+            const loginPage = await browser.newPage();
+            // ...authenticate as user
         });
-        await use(storageState);
+        await use(authState);
     }
 });
 
-test('authenticated page', async ({ page }) => {
+test('test for user', async ({ page }) => {
   // ...
 });
 ```
 
-If you need multiple users, you should add username to the key, to split their storage states:
-
+Test for `admin`:
 ```ts
+// admin.spec.ts
 import { test } from '@playwright/test';
-import { globalStorage } from 'global-storage/playwright';
+import { storage } from 'parallel-storage';
 
-const username = process.env.TEST_USER;
+// Use your logic to define a username for this test file
+const USERNAME = 'admin';
 
 test.use({ 
-    storageState: async ({ context }, use) => {
-        const storageState = await globalStorage.get(`auth-${username}`, async () => {
-            const loginPage = await context.newPage();
-            await loginPage.goto('https://example.com');
-            await loginPage.getByLabel('Username').fill(username);
-            // ...
+    storageState: async ({ browser }, use) => {
+        const authState = await storage.get(`auth-state-${USERNAME}`, async () => {
+            const loginPage = await browser.newPage();
+            // ...authenticate as admin
         });
-        await use(storageState);
+        await use(authState);
     }
 });
+
+test('test for admin', async ({ page }) => {
+  // ...
+});
 ```
+
+The approach is more efficient than the [multi-role auth project](https://playwright.dev/docs/auth#multiple-signed-in-roles) because it authenticates the required roles on demand.
+
+If you run these tests on 2 shards, the 1st shard will only authenticate `user` and the 2nd will authenticate `admin`. It executes much faster. 
+
+> Check out a fully working example of [multi user authentication](/examples/auth-multi-user/).
 
 ### Sharing a variable
 
 You can calculate any variable once and re-use it in all tests. 
-For example, populate database with a user and assign user ID to a shared `userId` variable:
+For example, populate database with a user and assign user ID to a shared `userId` variable.
+You can use either `beforeAll` or `before` hook, in this case it does not matter.
 
 ```ts
 import { test } from '@playwright/test';
-import { globalStorage } from 'global-storage/playwright';
+import { storage } from 'parallel-storage';
 
 let userId = '';
 
 test.before(async () => {
-  userId = await globalStorage.get('user-id', async () => {
+  userId = await storage.get('user-id', async () => {
     const user = // ...create user in DB
     return user.id;
   });
 });
 
-test('test', async () => {
-  // test uses 'userId'
+test('test 1', async () => {
+  // ...test uses 'userId'
+});
+
+test('test 2', async () => {
+  // ...test uses 'userId'
 });
 ```
+
+> Check out a fully working example of [multi user authentication](/examples/auth-multi-user/).
 
 ### Caching network request
 
 You can store and re-use result of a network request: 
 ```ts
 import { test } from '@playwright/test';
-import { globalStorage } from 'global-storage/playwright';
+import { storage } from 'parallel-storage';
+
+test.use({
+  page: async ({ page }, use) => {
+    // setup request mock
+    await page.route('https://jsonplaceholder.typicode.com/users', async (route) => {
+      // send real request once and store the response JSON in the storage
+      const json = await storage.get('users-response', async () => {
+        const response = await route.fetch();
+        return response.json();
+      });
+
+      json[0].name = 'Dummy'; // modify the response for testing purposes
+
+      await route.fulfill({ json }); // fulfill the request with the modified response
+    });
+    await use(page);
+  },
+});
 
 test('test', async ({ page }) => {
-  await page.route('/api/cats/**', (route) => {
-    const json = globalStorage.get('cats-response', async () => {
-       const response = await route.fetch();
-       return response.json();
-    });
-
-    // modify response if needed
-
-    await route.fulfill({ json });
-  });
+  // ...uses page with mock
 });
 ```
 
 If the response depends on query parameters or body, you should add these value to the key:
 
 ```ts
-import { test } from '@playwright/test';
-import { globalStorage } from 'global-storage/playwright';
-
-test('test', async ({ page }) => {
-  await page.route('/api/cats/**', (route, req) => {
-    const query = new URL(req.url()).searchParams;
-    const reqBody = req.postDataJSON();
-    const storageKey = `cats-response-${query.get('id')}-${reqBody.page}`;
-    const json = globalStorage.get(storageKey, async () => {
-       const response = await route.fetch();
-       return response.json();
-    });
-
-    await route.fulfill({ json });
+await page.route('/api/cats/**', (route, req) => {
+  const query = new URL(req.url()).searchParams;
+  const reqBody = req.postDataJSON();
+  const storageKey = `cats-response-${query.get('id')}-${reqBody.page}`;
+  const json = storage.get(storageKey, async () => {
+      const response = await route.fetch();
+      return response.json();
   });
+
+  await route.fulfill({ json });
 });
 ```
-
-### Persist data between test runs
-
-You may store data on the filesystem and re-use it between test runs. For example, you can authenticate user and save auth state for 1 hour. During this period, all test runs will re-use stored auth state and will not waste time on performing authentication steps.
-
-To enable persistent storage for a key, provide an object `{ key, ttl }` as a first argument. `ttl` defines the cache time in minutes:
-```ts
-test.use({ 
-    storageState: async ({ browser }, use) => {
-        const storageState = await globalStorage.get({
-            key: 'auth',
-            ttl: '1h', // 1 hour
-        }, async () => {
-            const loginPage = await browser.newPage();
-            // ...perform auth
-            return loginPage.context().storageState();
-        });
-        await use(storageState);
-    }
-});
-```
-To persist data forever set `ttl: -1`. Such value will be re-used until file is removed:
 
 ## Cleanup
 
-After the test run, you may need to cleanup the created resources. For example, remove the user from the database. When resource IDs are in global storage, you can access them inside a teardown script:
+After the test run, you may need to cleanup the created resources. For example, remove the user from the database. It can't be just called in `after / afterAll` hook, because at this point other workers may still need the vlaue. 
+
+The solution is to preform cleanup in a custom teardown script.
 
 1. Define a custom teardown script in the Playwright config:
 ```ts
 // playwright.config.ts
 import { defineConfig } from '@playwright/test';
-import { globalStorage } from 'global-storage';
+import { storage } from 'parallel-storage';
 
 export default defineConfig({
-  globalSetup: globalStorage.setup,
+  globalSetup: storage.setup,
   globalTeardown: [
-    require.resolve('./global-teardown'), // <-- custom teardown script before globalStorage.teardown
-    globalStorage.teardown,
+    require.resolve('./cleanup'), // <-- custom teardown script before storage.teardown
+    storage.teardown,
   ],
   // ...
 });
 ```
 
-2. In `global-teardown.js` leverage `globalStorage.getStale()` to check stored value and run appropriate actions:
+2. In the cleanup script use `storage.getStale()` method to access outdated values: 
 
 ```ts
-// global-teardown.js
+// cleanup.js
 import { defineConfig } from '@playwright/test';
-import { globalStorage } from 'global-storage';
+import { storage } from 'parallel-storage';
 
 export default async function() {
-    const userId = await globalStorage.getStale('userId');
+    const userId = await storage.getStale('user-id');
     if (userId) {
         /* remove user from database */
     }
 }
 ```
 
-How `globalStorage.getStale()` works:
-- for **non-persistent** keys returns the current value
-- for **persistent** keys returns the old value that was replaced during the current test-run
+The result of `storage.getStale(key)` is different for presistent and non-persistent values:
+- **non-persistent**: it returns the current value (as it will be cleared right after test run end)
+- **persistent**: it returns the previous value that was replaced during the test run (as the current value can be reused in future runs)
 
 ### Cleanup multiple values
 
-When using dynamic keys, you can leverage `globalStorage.getStaleList()` to retrieve all keys with the provided prefix:
+When using dynamic keys, you can use `storage.getStaleList(prefix)` to retrieve all values for the provided prefix:
 
 ```ts
-// global-teardown.ts
+// cleanup.ts
 import { defineConfig } from '@playwright/test';
-import { globalStorage } from 'global-storage/playwright';
+import { storage } from 'parallel-storage';
 
 export default async function() {
-    const userIds = await globalStorage.getStaleList('user-');
+    const userIds = await storage.getStaleList('user-');
     for (const userId of userIds) {
       /* remove every created user from database */
     }
@@ -281,13 +337,13 @@ export default async function() {
 
 ## Configuration
 
-To provide configuration options, call `globalStorage.defineConfig()` in the Playwright config:
+To provide configuration options, call `storage.defineConfig()` in the Playwright config:
 
 ```ts
 import { defineConfig } from '@playwright/test';
-import { globalStorage } from 'global-storage/playwright';
+import { storage } from 'parallel-storage';
 
-globalStorage.defineConfig({ /* options */ })
+storage.defineConfig({ /* options */ })
 
 // ...
 ```
@@ -301,16 +357,11 @@ tbd
 ## API
 tbd
 
-## FAQ
-
-#### Do I need `beforeAll` / `afterAll` hooks?
-In most cases - no. Having global storage enabled, you don't need `test.beforeAll` / `test.afterAll` anymore, because you have better and more optimized control of running something once before/after all tests. Native `beforeAll` hook re-runs after every failed test, that is usually not what you expect.
-
 ## Changelog
 See [CHANGELOG.md](./CHANGELOG.md).
 
 ## Feedback
-Feel free to share your feedback and suggestions in the [issues](https://github.com/vitalets/global-storage/issues).
+Feel free to share your feedback and suggestions in the [issues](https://github.com/vitalets/parallel-storage/issues).
 
 ## License
-[MIT](https://github.com/vitalets/global-storage/blob/main/LICENSE)
+[MIT](https://github.com/vitalets/parallel-storage/blob/main/LICENSE)

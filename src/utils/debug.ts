@@ -1,8 +1,7 @@
 import Debug from 'debug';
 
-export const debug = Debug('global-storage');
+export const debug = Debug('parallel-storage');
 export const debugKey = (key: string, message: string) => {
-  const debug = Debug(`global-storage:${key}`);
+  const debug = Debug(`parallel-storage:${key}`);
   debug(message);
 };
-// export const debugForKey = (key: string) => Debug(`global-storage:${key}`);

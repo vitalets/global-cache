@@ -1,12 +1,12 @@
 import { test } from '@playwright/test';
-import { globalStorage } from '@vitalets/global-storage';
+import { storage } from 'parallel-storage';
 
 let userId = '';
 
 test.beforeEach(async () => {
   // This code in beforeAll will run exactly once across all workers.
   // It's how most people expect beforeAll to work.
-  userId = await globalStorage.get('user-id', async () => {
+  userId = await storage.get('user-id', async () => {
     console.log('Creating user in db...');
 
     const userId = Math.random().toString(); // emulate user creation in db
