@@ -13,7 +13,8 @@ With global cache, the first worker that requests a value becomes responsible fo
 - [Features](#features)
 - [Why use it?](#why-use-it)
 - [Installation](#installation)
-- [Basic Usage (Playwright)](#basic-usage-playwright)
+- [Usage (Playwright)](#usage-playwright)
+  - [Basic](#basic)
   - [Dynamic keys](#dynamic-keys)
   - [Persistent values](#persistent-values)
 - [Use Cases](#use-cases)
@@ -53,7 +54,9 @@ When running E2E tests in parallel, you might need to:
 npm i -D @vitalets/global-cache
 ```
 
-## Basic Usage (Playwright)
+## Usage (Playwright)
+
+### Basic
 
 1. Enable global cache in the Playwright config:
 
@@ -118,12 +121,12 @@ All code samples are currently for Playwright.
 
 You can perform lazy, on-demand authentication. Use the `storageState` fixture to authenticate once, save the auth state, and share it with all subsequent tests.
 
-This approach is more efficient than the [separate auth project](https://playwright.dev/docs/auth#basic-shared-account-in-all-tests). It authenticates only when needed and doesn't require an additional project.
+This approach is more efficient than the [separate auth project](https://playwright.dev/docs/auth#basic-shared-account-in-all-tests) from the Playwright docs. It authenticates only when needed and doesn't require an additional project.
 
 ```ts
 // fixtures.ts
 import { test as baseTest, expect } from '@playwright/test';
-import globalCache from '@vitalets/global-cache';
+import { globalCache } from '@vitalets/global-cache';
 
 export const test = baseTest.extend({
   storageState: async ({ storageState, browser }, use, testInfo) => {
@@ -134,7 +137,8 @@ export const test = baseTest.extend({
     // Cache auth for 1 hour, to reuse in futher test runs as well.
     const authState = await globalCache.get('auth-state', { ttl: '1 hour' }, async () => {
       console.log('Performing sing-in...');
-      const loginPage = await browser.newPage(); // <-- important to use 'browser', not 'page' or 'context' fixture to avoid circullar dependency
+      // Important to use 'browser', not 'page' or 'context' fixture to avoid circullar dependency
+      const loginPage = await browser.newPage();
       
       await loginPage.goto('https://authenticationtest.com/simpleFormAuth/');
       await loginPage.getByLabel('E-Mail Address').fill('simpleForm@authenticationtest.com');
@@ -152,6 +156,7 @@ export const test = baseTest.extend({
 
 In tests:
 ```ts
+// index.spec.ts
 import { test } from './fixtures';
 
 test('test 1', async ({ page }) => {
@@ -172,6 +177,7 @@ If you run only `@no-auth` test, authentication **will not be triggered**:
 npx playwright test -g "@no-auth"
 ```
 
+> [!TIP]
 > Check out a fully working example of [single user authentication](/examples/auth-single-user/).
 
 ### Authentication (multi user)
@@ -183,7 +189,7 @@ For example, you are testing your app under `user` and `admin` roles. You can cr
 ```ts
 // user.spec.ts
 import { test } from '@playwright/test';
-import globalCache from '@vitalets/global-cache';
+import { globalCache } from '@vitalets/global-cache';
 
 // Use your logic to define a username for this test file
 const USERNAME = 'user';
@@ -207,7 +213,7 @@ Test for `admin`:
 ```ts
 // admin.spec.ts
 import { test } from '@playwright/test';
-import globalCache from '@vitalets/global-cache';
+import { globalCache } from '@vitalets/global-cache';
 
 // Use your logic to define a username for this test file
 const USERNAME = 'admin';
@@ -227,10 +233,11 @@ test('test for admin', async ({ page }) => {
 });
 ```
 
-The approach is more efficient than the [multi-role auth project](https://playwright.dev/docs/auth#multiple-signed-in-roles) because it authenticates the required roles on demand.
+The approach is more efficient than the [multi-role auth project](https://playwright.dev/docs/auth#multiple-signed-in-roles), because it authenticates the required roles on demand.
 
 If you run these tests on 2 shards, the 1st shard will only authenticate `user` and the 2nd will authenticate `admin`. It executes much faster. 
 
+> [!TIP]
 > Check out a fully working example of [multi user authentication](/examples/auth-multi-user/).
 
 ### Sharing a variable
@@ -241,7 +248,7 @@ You can use either `beforeAll` or `before` hook, in this case it does not matter
 
 ```ts
 import { test } from '@playwright/test';
-import globalCache from '@vitalets/global-cache';
+import { globalCache } from '@vitalets/global-cache';
 
 let userId = '';
 
@@ -261,6 +268,7 @@ test('test 2', async () => {
 });
 ```
 
+> [!TIP]
 > Check out a fully working example of [multi user authentication](/examples/auth-multi-user/).
 
 ### Caching network request
@@ -268,7 +276,7 @@ test('test 2', async () => {
 You can store and re-use result of a network request: 
 ```ts
 import { test } from '@playwright/test';
-import globalCache from '@vitalets/global-cache';
+import { globalCache } from '@vitalets/global-cache';
 
 test.use({
   page: async ({ page }, use) => {
@@ -309,6 +317,9 @@ await page.route('/api/cats/**', (route, req) => {
 });
 ```
 
+> [!TIP]
+> Check out a fully working example of [caching network request](/examples/cache-api-response/).
+
 ### Cleanup (single key)
 
 After the test run, you may need to cleanup the created resources. For example, remove the user from the database. It can't be just called in `after / afterAll` hook, because at this point other workers may still need the vlaue. 
@@ -319,7 +330,7 @@ The solution is to preform cleanup in a custom teardown script.
 ```ts
 // playwright.config.ts
 import { defineConfig } from '@playwright/test';
-import globalCache from '@vitalets/global-cache';
+import { globalCache } from '@vitalets/global-cache';
 
 export default defineConfig({
   globalSetup: globalCache.setup,
@@ -336,7 +347,7 @@ export default defineConfig({
 ```ts
 // cleanup.js
 import { defineConfig } from '@playwright/test';
-import globalCache from '@vitalets/global-cache';
+import { globalCache } from '@vitalets/global-cache';
 
 export default async function() {
     const userId = await globalCache.getStale('user-id');
@@ -350,6 +361,9 @@ The result of `globalCache.getStale(key)` is different for presistent and non-pe
 - **non-persistent**: it returns the current value (as it will be cleared right after test run end)
 - **persistent**: it returns the previous value that was replaced during the test run (as the current value can be reused in future runs)
 
+> [!TIP]
+> Check out a fully working example of [cleanup](/examples/cleanup/).
+
 ### Cleanup (by prefix)
 
 When using dynamic keys, you can use `globalCache.getStaleList(prefix)` to retrieve all values for the provided prefix:
@@ -357,7 +371,7 @@ When using dynamic keys, you can use `globalCache.getStaleList(prefix)` to retri
 ```ts
 // cleanup.ts
 import { defineConfig } from '@playwright/test';
-import globalCache from '@vitalets/global-cache';
+import { globalCache } from '@vitalets/global-cache';
 
 export default async function() {
     const userIds = await globalCache.getStaleList('user-');
@@ -373,18 +387,19 @@ To provide configuration options, call `globalCache.defineConfig()` in the Playw
 
 ```ts
 import { defineConfig } from '@playwright/test';
-import globalCache from '@vitalets/global-cache';
+import { globalCache } from '@vitalets/global-cache';
 
-globalCache.defineConfig({ /* options */ })
+globalCache.defineConfig({ 
+  // ...options
+})
 
-// ...
 ```
 
 Available options:
 
-- **disabled** `boolean` - Disables global globalCache. All values will be calculated each time. Default is `false`.
-
-tbd
+- **basePath** `string` - Path to a directory to store persistent values. Default is `.global-cache`.
+- **ignoreTTL** `boolean` - Forces all values to be non-persistent, usefull for CI (where cross run caching is redundant). Default is `false`.
+- **disabled** `boolean` - Disables global cache. All values will be computed each time. Default is `false`.
 
 ## API
 tbd
