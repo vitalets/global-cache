@@ -4,6 +4,34 @@
 
 With `parallel-storage`, the first worker that requests a value becomes responsible for computing it. Others wait until the result is ready — and all workers get the same value. The value is cached in memory or on the file system and can be reused by later workers and even across test runs.
 
+## Index
+<details>
+<summary>Click to expand</summary>
+
+<!-- doc-gen TOC maxDepth="3" excludeText="Index" -->
+- [Index](#index)
+- [Features](#features)
+- [Why use it?](#why-use-it)
+- [Installation](#installation)
+- [Basic Usage (Playwright)](#basic-usage-playwright)
+  - [Dynamic keys](#dynamic-keys)
+  - [Persistent Values](#persistent-values)
+- [Use Cases](#use-cases)
+  - [Authentication (single user)](#authentication-single-user)
+  - [Authentication (multi user)](#authentication-multi-user)
+  - [Sharing a variable](#sharing-a-variable)
+  - [Caching network request](#caching-network-request)
+  - [Cleanup (single key)](#cleanup-single-key)
+  - [Cleanup (by prefix)](#cleanup-by-prefix)
+- [Configuration](#configuration)
+- [API](#api)
+- [Changelog](#changelog)
+- [Feedback](#feedback)
+- [License](#license)
+<!-- end-doc-gen -->
+
+</details>
+
 ## Features
 
 * **On-demand execution**: Computes heavy values only when they’re actually required.
@@ -20,6 +48,10 @@ When running E2E tests in parallel, you might need to:
 * Keep some value persistently to speed up subsequent test runs
 
 ## Installation
+
+```
+npm i -D parallel-storage
+```
 
 ## Basic Usage (Playwright)
 
@@ -60,7 +92,7 @@ const value = await storage.get(`some-key-${id}`, async () => {
 });
 ```
 
-### Persistent Values
+### Persistent values
 
 By default, all values are stored in memory and cleared when test run finish. 
 But you can store data permanently on the file system and reuse between subsequent runs. 
@@ -277,7 +309,7 @@ await page.route('/api/cats/**', (route, req) => {
 });
 ```
 
-## Cleanup
+### Cleanup (single key)
 
 After the test run, you may need to cleanup the created resources. For example, remove the user from the database. It can't be just called in `after / afterAll` hook, because at this point other workers may still need the vlaue. 
 
@@ -318,7 +350,7 @@ The result of `storage.getStale(key)` is different for presistent and non-persis
 - **non-persistent**: it returns the current value (as it will be cleared right after test run end)
 - **persistent**: it returns the previous value that was replaced during the test run (as the current value can be reused in future runs)
 
-### Cleanup multiple values
+### Cleanup (by prefix)
 
 When using dynamic keys, you can use `storage.getStaleList(prefix)` to retrieve all values for the provided prefix:
 
