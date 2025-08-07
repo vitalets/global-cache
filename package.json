@@ -1,11 +1,11 @@
 {
-  "name": "@vitalets/global-storage",
-  "description": "Optimized key-value storage for sharing data across test workers.",
+  "name": "parallel-storage",
+  "description": "Key-value storage for sharing data between parallel workers.",
   "version": "0.1.0",
   "type": "commonjs",
   "repository": {
     "type": "git",
-    "url": "git://github.com/vitalets/global-storage.git"
+    "url": "git://github.com/vitalets/parallel-storage.git"
   },
   "main": "dist/index.js",
   "exports": {
@@ -72,17 +72,16 @@
     "vitest": "^3.2.4"
   },
   "keywords": [
+    "parallel storage",
     "global storage",
     "global setup",
+    "global teardown",
     "playwright",
     "workers",
     "testing",
     "e2e",
     "performance"
   ],
-  "publishConfig": {
-    "access": "public"
-  },
   "funding": "https://github.com/sponsors/vitalets",
   "license": "MIT"
 }

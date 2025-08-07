@@ -27,18 +27,18 @@ With `@vitalets/global-storage`, the first worker that requests a key becomes re
 
     ```ts
     import { defineConfig } from '@playwright/test';
-    import { globalStorage } from '@vitalets/global-storage';
+    import { storage } from 'parallel-storage';
 
     export default defineConfig({
-      globalSetup: globalStorage.setup,        // <-- setup global storage
-      globalTeardown: globalStorage.teardown,  // <-- teardown global storage
+      globalSetup: storage.setup,        // <-- setup global storage
+      globalTeardown: storage.teardown,  // <-- teardown global storage
       // ...
     });
     ```
 
-2. Wrap heavy operations with `globalStorage.get()` to compute value once:
+2. Wrap heavy operations with `storage.get()` to compute value once:
     ```ts
-    const value = await globalStorage.get('some-key', async () => {
+    const value = await storage.get('some-key', async () => {
         const value = /* heavy operation */
         return value;
     });
