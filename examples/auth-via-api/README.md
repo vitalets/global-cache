@@ -1,4 +1,4 @@
-# Authentication via API Request with Global Storage
+# Authentication via API Request with Global Cache
 
 This example demonstrates how to implement authentication via API Request and cache it in the global globalCache. 
 

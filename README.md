@@ -82,7 +82,7 @@ npm i -D @vitalets/global-cache
   * If `some-key` is not populated, the function will be called and its result will be cached.
   * If `some-key` is already populated, the cached value will be returned instantly.
 
-  > **Important note**: the return value must be **serializable**: only plain JavaScript objects and primitive types can be used, e.g. string, boolean, number, or JSON.
+  > **NOTE**: the return value must be **serializable**: only plain JavaScript objects and primitive types can be used, e.g. string, boolean, number, or JSON.
 
 ### Dynamic keys
 
@@ -102,10 +102,10 @@ But you can store data permanently on the file system and reuse between subseque
 For example, you can authenticate user once and save auth state for 1 hour.
 During this period, all test runs will reuse auth state and execute faster.
 
-To make value persistent, pass `{ ttl }` (time-to-live) option in the second argument of `.get()` method. TTL can be [ms](https://github.com/vercel/ms)-compatible string or number of miliseconds:
+To make value persistent, pass `{ ttl }` (time-to-live) option in the second argument of `.get()` method. TTL can be [ms-compatible](https://github.com/vercel/ms) string or number of miliseconds:
 ```ts
-// cache auth-state for 1 hour
-const authState = await globalCache.get('auth-state', { ttl: '1h' }, async () => {
+// cache auth for 1 hour
+const authState = await globalCache.get('auth-state', { ttl: '1 hour' }, async () => {
     const loginPage = await browser.newPage();
     // ...authenticate user
     return loginPage.context().storageState();

@@ -1,4 +1,4 @@
-# Usage of BeforeAll Hook with Global Storage
+# Usage of BeforeAll Hook with Global Cache
 
 This example shows how to make `beforeAll` hook execute exactly once with the global globalCache. 
 It's how most people expect `beforeAll` to work.
@@ -7,7 +7,7 @@ It's how most people expect `beforeAll` to work.
 
 - There are 3 identical tests in `test/index.spec.ts`, each test intentionally fails to start a new worker.
 - `test.beforeAll` hook emulates test user creation in DB.
-- Created user's ID is stored in the global storage under `user-id` key and re-used in all tests.
+- Created user's ID is stored in the global cache under `user-id` key and re-used in all tests.
 
 > In fact, `test.beforeAll` can be replaced with `test.beforeEach` here - the code will run once anyway.
 

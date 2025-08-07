@@ -1,4 +1,4 @@
-# Multi-User Authentication with Global Storage
+# Multi-User Authentication with Global Cache
 
 This example demonstrates how to implement multi-user authentication with global globalCache. 
 

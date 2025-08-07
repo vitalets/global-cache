@@ -8,7 +8,7 @@ test.use({
   page: async ({ page }, use) => {
     // setup request mock
     await page.route('https://jsonplaceholder.typicode.com/users', async (route) => {
-      // send real request only once and store the response in the global storage
+      // send real request only once and store the response JSON
       const json = await globalCache.get('users-response', async () => {
         console.log(`Sending real request to: ${route.request().url()}`);
 

@@ -1,4 +1,4 @@
-# Single-User Authentication with Global Storage
+# Single-User Authentication with Global Cache
 
 This example demonstrates how to implement single-user authentication with global globalCache. 
 

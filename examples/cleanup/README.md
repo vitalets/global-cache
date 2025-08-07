@@ -1,4 +1,4 @@
-# Data Cleanup with Global Storage
+# Data Cleanup with Global Cache
 
 An example of proper data cleanup with global globalCache. 
 
