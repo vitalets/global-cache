@@ -1,8 +1,8 @@
 # Single-User Authentication with Global Cache
 
-This example demonstrates how to implement single-user authentication with global cache. 
+An example of single-user authentication with global cache. 
 
-The approach is more efficient than the [separate auth project](https://playwright.dev/docs/auth#basic-shared-account-in-all-tests), because it authenticates on demand and doesn't require additional project.
+This approach is more efficient than the [separate auth project](https://playwright.dev/docs/auth#basic-shared-account-in-all-tests), becuse authentication runs only when needed and doesn't require an additional project.
 
 ## Details
 - `auth.spec.ts` runs tests for authenticated user, and `no-auth.spec.ts` for non-authenticated.

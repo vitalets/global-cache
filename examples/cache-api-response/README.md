@@ -1,6 +1,6 @@
 # Cache API Response with Global Cache
 
-This example shows how to cache API response with the global cache.
+An example of caching API response with the global cache.
 
 ## Details
 

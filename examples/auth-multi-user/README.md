@@ -1,8 +1,8 @@
 # Multi-User Authentication with Global Cache
 
-This example demonstrates how to implement multi-user authentication with global cache. 
+An example of multi-user authentication with global cache. 
 
-The approach is more efficient than the [separate auth project](https://playwright.dev/docs/auth#multiple-signed-in-roles) because it authenticates the required roles on demand.
+The approach is more efficient than the [multi-role auth project](https://playwright.dev/docs/auth#multiple-signed-in-roles), because only needed roles get authenticated.
 
 ## Details
 - User credentials are stored in `test/users.ts`.

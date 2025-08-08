@@ -94,7 +94,7 @@ npm i -D @vitalets/global-cache
 
   > **NOTE**: The return value must be **serializable**: only plain JavaScript objects and primitive types can be used, e.g., string, boolean, number, or JSON.
 
-  You can use `globalCache.get()` anywhere in your tests. Typically, it could be [fixtures](https://playwright.dev/docs/test-fixtures) or `before / beforeAll` hooks. See [more details](#use-cases) in the use cases section.
+  You can use `globalCache.get()` anywhere in your tests. Typically, it could be [fixtures](https://playwright.dev/docs/test-fixtures) or `before / beforeAll` hooks. See [more examples](#use-cases) below.
 
 ### Dynamic keys
 
@@ -133,7 +133,7 @@ All code samples are currently for Playwright.
 
 You can perform lazy, on-demand authentication. Use the `storageState` fixture to authenticate once, save the auth state, and share it with all subsequent tests.
 
-This approach is more efficient than the [separate auth project](https://playwright.dev/docs/auth#basic-shared-account-in-all-tests) from the Playwright docs. It authenticates only when needed and doesn't require an additional project.
+This approach is more efficient than the [separate auth project](https://playwright.dev/docs/auth#basic-shared-account-in-all-tests), becuse authentication runs only when needed and doesn't require an additional project.
 
 ```ts
 // fixtures.ts
@@ -245,7 +245,7 @@ test('test for admin', async ({ page }) => {
 });
 ```
 
-The approach is more efficient than the [multi-role auth project](https://playwright.dev/docs/auth#multiple-signed-in-roles), because it authenticates the required roles on demand.
+The approach is more efficient than the [multi-role auth project](https://playwright.dev/docs/auth#multiple-signed-in-roles), because only needed roles get authenticated.
 
 If you run these tests on 2 shards, the 1st shard will only authenticate `user` and the 2nd will authenticate `admin`. It executes much faster. 
 
