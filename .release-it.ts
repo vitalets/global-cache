@@ -17,6 +17,10 @@ export default {
       'npm run tsc',
     ],
   },
+  github: {
+    release: true,
+    web: true,
+  },
   plugins: {
     '@release-it/keep-a-changelog': {
       filename: 'CHANGELOG.md',
