@@ -3,7 +3,7 @@
 [![lint](https://github.com/vitalets/global-cache/actions/workflows/lint.yaml/badge.svg)](https://github.com/vitalets/global-cache/actions/workflows/lint.yaml)
 [![test](https://github.com/vitalets/global-cache/actions/workflows/test.yaml/badge.svg)](https://github.com/vitalets/global-cache/actions/workflows/test.yaml)
 [![npm version](https://img.shields.io/npm/v/@vitalets/global-cache)](https://www.npmjs.com/package/@vitalets/global-cache)
-[![license](https://img.shields.io/npm/l/@vitalets/global-cache)](https://github.com/vitalets/global-cache/blob/main/LICENSE)
+[![license](https://img.shields.io/npm/l/%40vitalets%2Fglobal-cache)](https://github.com/vitalets/global-cache/blob/main/LICENSE)
 
 > Key-value cache for sharing data between parallel workers and subsequent runs.
 
