@@ -22,7 +22,7 @@ With the global cache, the first worker that requests a value becomes responsibl
   - [Authentication (multi user)](#authentication-multi-user)
   - [Sharing a variable](#sharing-a-variable)
   - [Caching network request](#caching-network-request)
-  - [Cleanup (single key)](#cleanup-single-key)
+  - [Cleanup (single value)](#cleanup-single-value)
   - [Cleanup (by prefix)](#cleanup-by-prefix)
   - [Typed cache](#typed-cache)
 - [Configuration](#configuration)
@@ -332,11 +332,11 @@ await page.route('/api/cats/**', (route, req) => {
 > [!TIP]
 > Check out a fully working example of [caching network request](/examples/cache-api-response/).
 
-### Cleanup (single key)
+### Cleanup (single value)
 
-After the test run, you may need to cleanup the created resources. For example, remove the user from the database. It can't be just called in `after / afterAll` hook, because at this point other workers may still need the vlaue. 
+After the test run, you may need to cleanup the created resources. For example, remove the user from the database. It can't be just called in `after / afterAll` hook, because at this point other workers may still need the value. 
 
-The solution is to preform cleanup in a custom teardown script.
+The solution is to preform cleanup in a custom teardown script via `globalCache.getStale()` method.
 
 1. Define a custom teardown script in the Playwright config:
 ```ts
@@ -450,13 +450,13 @@ import { globalCache } from '@vitalets/global-cache';
 
 #### `globalCache.setup`
 
-Returns an absolute path to the file, that performs setup of global cache.
+Returns an absolute path to the file, that performs the global cache setup.
 
 **Returns**: `string`
 
 #### `globalCache.teardown`
 
-Returns an absolute path to the file, that performs teardown of global cache.
+Returns an absolute path to the file, that performs the global cache teardown.
 
 **Returns**: `string`
 
