@@ -8,6 +8,7 @@ export default {
     'before:init': [
       'npm run lint',
       'npm run prettier',
+      'npx publint',
       'npm ci',
       'npm test',
       // don't run example, b/c it's expected to fail
