@@ -517,6 +517,33 @@ Clears all non-peristent keys for the current run.
 
 **Returns**: `Promise`
 
+## Debug
+
+To debug global cache, run Playwright with the following `DEBUG` environment variable:
+```sh
+DEBUG=global-cache* npx playwright test 
+```
+
+Example output:
+```
+global-cache Starting server... +0ms
+global-cache Server started on port: 50138 +1ms
+global-cache:auth-state Fetching value... +0ms
+global-cache:auth-state Cache miss. Computing... +0ms
+global-cache:auth-state Computed: {"cookies":[{"name":"PHPSESSID","value":"372lp9jct... +0ms
+global-cache:auth-state Saving value... +0ms
+global-cache:auth-state Saved. +0ms
+global-cache:auth-state Fetching value... +0ms
+global-cache:auth-state Cache hit: {"cookies":[{"name":"PHPSESSID","value":"372lp9jct... +0ms
+global-cache Stopping server... +6s
+global-cache Server stopped. +0ms
+```
+
+To debug particular key use `global-cache:KEY` format: 
+```sh
+DEBUG=global-cache:auth-state npx playwright test 
+```
+
 ## Changelog
 See [CHANGELOG.md](./CHANGELOG.md).
 
