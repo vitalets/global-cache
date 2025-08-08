@@ -4,6 +4,8 @@
 
 With the global cache, the first worker that requests a value becomes responsible for computing it. Others wait until the result is ready — and all workers get the same value. The value is cached in memory or on the file system and reused by later workers and test runs.
 
+<img align="center" alt="Global cache" src="https://github.com/user-attachments/assets/71833505-b74f-44c8-837e-0cdbdf4ef733" />
+
 ## Index
 <details>
 <summary>Click to expand</summary>
@@ -472,7 +474,7 @@ Configures global cache.
 
 **Returns**: `void`
 
-**Usage**:
+**Example**:
 ```ts
 import { globalCache } from '@vitalets/global-cache';
 
