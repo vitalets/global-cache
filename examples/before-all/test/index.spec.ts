@@ -3,7 +3,7 @@ import { globalCache } from '@vitalets/global-cache';
 
 let userId = '';
 
-test.beforeEach(async () => {
+test.beforeAll(async () => {
   // This code in beforeAll will run exactly once across all workers.
   // It's how most people expect beforeAll to work.
   userId = await globalCache.get('user-id', async () => {
