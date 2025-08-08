@@ -197,7 +197,7 @@ npx playwright test -g "@no-auth"
 ```
 
 > [!TIP]
-> Check out a fully working example of [single user authentication](/examples/auth-single-user/).
+> Check out a fully working example of [single user authentication](/examples/auth-single-user/). There is also a separate [global-cache-example-playwright](https://github.com/vitalets/global-cache-example-playwright) repo, that you can clone and play.
 
 ### Authentication (multi user)
 
