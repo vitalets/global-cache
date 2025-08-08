@@ -6,14 +6,15 @@ export default {
   },
   hooks: {
     'before:init': [
+      'npm ci',
       'npm run lint',
       'npm run prettier',
       'npx publint',
-      'npm ci',
+      'npm run build',
       'npm test',
       // don't run example, b/c it's expected to fail
       // 'npm run example',
-      'npm run build',
+      'npm run tsc',
     ],
   },
   plugins: {
