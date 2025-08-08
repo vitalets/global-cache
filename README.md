@@ -8,7 +8,7 @@ With global cache, the first worker that requests a value becomes responsible fo
 <details>
 <summary>Click to expand</summary>
 
-<!-- doc-gen TOC maxDepth="3" excludeText="Index" -->
+<!-- doc-gen TOC maxDepth="4" excludeText="Index" -->
 - [Index](#index)
 - [Features](#features)
 - [Why use it?](#why-use-it)
@@ -27,6 +27,13 @@ With global cache, the first worker that requests a value becomes responsible fo
   - [Typed cache](#typed-cache)
 - [Configuration](#configuration)
 - [API](#api)
+  - [`globalCache.setup`](#globalcachesetup)
+  - [`globalCache.teardown`](#globalcacheteardown)
+  - [`globalCache.defineConfig(config)`](#globalcachedefineconfigconfig)
+  - [`globalCache.get(key,[ params,] computeFn)`](#globalcachegetkey-params-computefn)
+  - [`globalCache.getStale(key)`](#globalcachegetstalekey)
+  - [`globalCache.getStaleList(prefix)`](#globalcachegetstalelistprefix)
+  - [`globalCache.clear()`](#globalcacheclear)
 - [Changelog](#changelog)
 - [Feedback](#feedback)
 - [License](#license)
@@ -36,9 +43,9 @@ With global cache, the first worker that requests a value becomes responsible fo
 
 ## Features
 
-* ⚡  **On-demand execution**: Computes heavy values only when they’re actually required.
-* 🧩 **Deduplicated**: Ensures each key is computed exactly once.
-* 🛡️ **Worker-safe**: Designed for test environments with parallel execution (e.g. [Playwright](https://playwright.dev/)).
+* ⚡ **On-demand execution**: Computes heavy values only when they’re actually needed.
+* 🧩 **Deduplicated**: Ensures each key is computed exactly once (until expired).
+* 🛡️ **Worker-safe**: Designed for test environments with parallel workers (e.g. [Playwright](https://playwright.dev/)).
 
 ## Why use it?
 
@@ -47,7 +54,7 @@ When running E2E tests in parallel, you might need to:
 * Authenticate user only once
 * Populate a database only once
 * Reuse the state even if worker fails
-* Keep some value persistently to speed up subsequent test runs
+* Keep some values persistently to speed up subsequent test runs
 
 ## Installation
 
@@ -62,6 +69,7 @@ npm i -D @vitalets/global-cache
 1. Enable global cache in the Playwright config:
 
     ```ts
+    // playwright.config.ts
     import { defineConfig } from '@playwright/test';
     import { globalCache } from '@vitalets/global-cache';
 
@@ -358,9 +366,9 @@ export default async function() {
 }
 ```
 
-The result of `globalCache.getStale(key)` is different for presistent and non-persistent values:
-- **non-persistent**: it returns the current value (as it will be cleared right after test run end)
-- **persistent**: it returns the previous value that was replaced during the test run (as the current value can be reused in future runs)
+The result of `globalCache.getStale(key)` is different for presistent and non-persistent keys:
+- **non-persistent**: returns the current value (as it will be cleared right after test run end)
+- **persistent**: returns the previous value that was replaced during the test run (as the current value can be reused in future runs)
 
 > [!TIP]
 > Check out a fully working example of [cleanup](/examples/cleanup/).
@@ -420,23 +428,94 @@ const value = await globalCache.get('foo', fn);
 To provide configuration options, call `globalCache.defineConfig()` in the Playwright config:
 
 ```ts
-import { defineConfig } from '@playwright/test';
 import { globalCache } from '@vitalets/global-cache';
 
 globalCache.defineConfig({ 
   // ...options
-})
-
+});
 ```
 
-Available options:
-
-- **basePath** `string` - Path to a directory to store persistent values. Default is `.global-cache`.
-- **ignoreTTL** `boolean` - Forces all values to be non-persistent, usefull for CI (where cross run caching is redundant). Default is `false`.
-- **disabled** `boolean` - Disables global cache. All values will be computed each time. Default is `false`.
+[Available options](#globalcachedefineconfigconfig).
 
 ## API
-tbd
+
+`globalCache` is a singleton used to manage cache values. Import it directly from the package:
+
+```ts
+import { globalCache } from '@vitalets/global-cache';
+```
+
+#### `globalCache.setup`
+
+Returns an absolute path to the file, that performs setup of global cache.
+
+**Returns**: `string`
+
+#### `globalCache.teardown`
+
+Returns an absolute path to the file, that performs teardown of global cache.
+
+**Returns**: `string`
+
+#### `globalCache.defineConfig(config)`
+
+Configures global cache.
+
+**Parameters**:
+- `config: `
+  - `basePath: string` - Path to a directory to store persistent values. Default is `.global-cache`.
+  - `ignoreTTL: boolean` - Forces all values to be non-persistent, usefull for CI (where cross run caching is redundant). Default is `false`.
+  - `disabled: boolean` - Disables global cache. All values will be computed each time. Default is `false`.
+
+**Returns**: `void`
+
+**Usage**:
+```ts
+import { globalCache } from '@vitalets/global-cache';
+
+globalCache.defineConfig({ 
+  basePath: 'path/to/cache',
+  ignoreTTL: !!process.env.CI,
+});
+```
+
+#### `globalCache.get(key,[ params,] computeFn)`
+
+Get value by key or compute it if not found.
+
+**Parameters**:
+- `key: string`
+- `params: object`
+  - `ttl: string | number`
+- `computeFn: Function`
+
+**Returns**: `Promise`
+
+#### `globalCache.getStale(key)`
+
+Get "stale" value for cleanup. The result is different for presistent and non-persistent keys:
+- **non-persistent**: returns the current value (as it will be cleared right after test run end)
+- **persistent**: returns the previous value that was replaced during the test run (as the current value can be reused in the future runs)
+
+**Parameters**:
+- `key: string`
+
+**Returns**: `Promise`
+
+#### `globalCache.getStaleList(prefix)`
+
+Get a list of "stale" values by prefix. The result follow the same rules as for `.getStale()`.
+
+**Parameters**:
+- `prefix: string`
+
+**Returns**: `Promise<Array>`
+
+#### `globalCache.clear()`
+
+Clears all non-peristent keys for the current run.
+
+**Returns**: `Promise`
 
 ## Changelog
 See [CHANGELOG.md](./CHANGELOG.md).

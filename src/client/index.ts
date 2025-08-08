@@ -28,7 +28,7 @@ export class GlobalCache<S extends DefaultSchema = DefaultSchema> {
   }
 
   /**
-   * Fetch value by key or compute it if not found.
+   * Get value by key or compute it if not found.
    */
   // eslint-disable-next-line visual/complexity, max-statements
   async get<K extends Keys<S>>(...args: GetArgs<K, S>): Promise<S[K]> {
