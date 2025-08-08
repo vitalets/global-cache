@@ -140,7 +140,7 @@ All code samples are currently for Playwright.
 
 You can perform lazy, on-demand authentication. Use the `storageState` fixture to authenticate once, save the auth state, and share it with all subsequent tests.
 
-This approach is more efficient than the [separate auth project](https://playwright.dev/docs/auth#basic-shared-account-in-all-tests), becuse authentication runs only when needed and doesn't require an additional project.
+This approach is more efficient than the [separate auth project](https://playwright.dev/docs/auth#basic-shared-account-in-all-tests), because authentication runs only when needed and doesn't require an additional project.
 
 ```ts
 // fixtures.ts
