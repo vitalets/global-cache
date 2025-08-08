@@ -5,7 +5,7 @@
 [![npm version](https://img.shields.io/npm/v/@vitalets/global-cache)](https://www.npmjs.com/package/@vitalets/global-cache)
 [![license](https://img.shields.io/npm/l/@vitalets/global-cache)](https://github.com/vitalets/global-cache/blob/main/LICENSE)
 
-> key-value cache for sharing data between parallel workers and subsequent runs.
+> Key-value cache for sharing data between parallel workers and subsequent runs.
 
 With the global cache, the first worker that requests a value becomes responsible for computing it. Others wait until the result is ready — and all workers get the same value. The value is cached in memory or on the file system and reused by later workers and test runs.
 
