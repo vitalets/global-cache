@@ -14,6 +14,8 @@ jobs:
           node-version: 20
           cache: 'npm'
       - run: npm ci
+      # Need to build project, because linting of examples expects @vitalets/global-cache in node_modules
+      - run: npm run build
       - run: npm run lint
       - run: npm run prettier
       - run: npm run tsc
