@@ -39,8 +39,6 @@
     "test:d": "DEBUG=global-cache* npm t",
     "pw": "npm i --no-save @playwright/test@$PW",
     "pw:install": "PLAYWRIGHT_SKIP_BROWSER_GC=1 npx playwright install chromium",
-    "example": "npm run build && DEBUG=global-cache* npx playwright test -c example",
-    "example:d": "npm run example -- --debug",
     "toc": "md-magic --files README.md",
     "build": "./scripts/build.sh",
     "release": "release-it"
