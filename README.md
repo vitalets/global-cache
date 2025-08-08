@@ -1,8 +1,8 @@
 # @vitalets/global-cache
 
-> Key-value cache for sharing data between parallel workers.
+> Key-value cache for sharing data between parallel workers and subsequent runs.
 
-With global cache, the first worker that requests a value becomes responsible for computing it. Others wait until the result is ready — and all workers get the same value. The value is cached in memory or on the file system and reused by later workers and even across test runs.
+With global cache, the first worker that requests a value becomes responsible for computing it. Others wait until the result is ready — and all workers get the same value. The value is cached in memory or on the file system and reused by later workers and test runs.
 
 ## Index
 <details>
@@ -83,8 +83,8 @@ npm i -D @vitalets/global-cache
 2. Wrap heavy operations with `globalCache.get()` to compute value once:
     ```ts
     const value = await globalCache.get('some-key', async () => {
-        const value = /* ...heavy operation */
-        return value;
+      const value = /* ...heavy operation */
+      return value;
     });
     ```
 
@@ -93,14 +93,16 @@ npm i -D @vitalets/global-cache
 
   > **NOTE**: the return value must be **serializable**: only plain JavaScript objects and primitive types can be used, e.g. string, boolean, number, or JSON.
 
+  You can use `globalCache.get()` anywhere in your tests. Typically, it could be [fixtures](https://playwright.dev/docs/test-fixtures) or `before / beforeAll` hooks. See [more details](#use-cases) in the use cases section.
+
 ### Dynamic keys
 
 If your function depends on some variables, you should add these variables to the key for propper data caching:
 
 ```ts
 const value = await globalCache.get(`some-key-${id}`, async () => {
-    const value = /* ...heavy operation that depends on `id` */
-    return value;
+  const value = /* ...heavy operation that depends on `id` */
+  return value;
 });
 ```
 
@@ -115,9 +117,9 @@ To make value persistent, pass `{ ttl }` (time-to-live) option in the second arg
 ```ts
 // cache auth for 1 hour
 const authState = await globalCache.get('auth-state', { ttl: '1 hour' }, async () => {
-    const loginPage = await browser.newPage();
-    // ...authenticate user
-    return loginPage.context().storageState();
+  const loginPage = await browser.newPage();
+  // ...authenticate user
+  return loginPage.context().storageState();
 });
 ```
 
@@ -204,13 +206,13 @@ import { globalCache } from '@vitalets/global-cache';
 const USERNAME = 'user';
 
 test.use({ 
-    storageState: async ({ browser }, use) => {
-        const authState = await globalCache.get(`auth-state-${USERNAME}`, async () => {
-            const loginPage = await browser.newPage();
-            // ...authenticate as user
-        });
-        await use(authState);
-    }
+  storageState: async ({ browser }, use) => {
+    const authState = await globalCache.get(`auth-state-${USERNAME}`, async () => {
+      const loginPage = await browser.newPage();
+      // ...authenticate as user
+    });
+    await use(authState);
+  }
 });
 
 test('test for user', async ({ page }) => {
@@ -228,13 +230,13 @@ import { globalCache } from '@vitalets/global-cache';
 const USERNAME = 'admin';
 
 test.use({ 
-    storageState: async ({ browser }, use) => {
-        const authState = await globalCache.get(`auth-state-${USERNAME}`, async () => {
-            const loginPage = await browser.newPage();
-            // ...authenticate as admin
-        });
-        await use(authState);
-    }
+  storageState: async ({ browser }, use) => {
+    const authState = await globalCache.get(`auth-state-${USERNAME}`, async () => {
+      const loginPage = await browser.newPage();
+      // ...authenticate as admin
+    });
+    await use(authState);
+  }
 });
 
 test('test for admin', async ({ page }) => {
