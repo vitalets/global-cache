@@ -1,8 +1,8 @@
 # @vitalets/global-cache
 
-> Key-value cache for sharing data between parallel workers and subsequent runs.
+> key-value cache for sharing data between parallel workers and subsequent runs.
 
-With global cache, the first worker that requests a value becomes responsible for computing it. Others wait until the result is ready — and all workers get the same value. The value is cached in memory or on the file system and reused by later workers and test runs.
+With the global cache, the first worker that requests a value becomes responsible for computing it. Others wait until the result is ready — and all workers get the same value. The value is cached in memory or on the file system and reused by later workers and test runs.
 
 ## Index
 <details>
@@ -52,14 +52,14 @@ With global cache, the first worker that requests a value becomes responsible fo
 
 When running E2E tests in parallel, you might need to:
 
-* Authenticate user only once
-* Populate a database only once
-* Reuse the state even if worker fails
-* Keep some values persistently to speed up subsequent test runs
+* Authenticate a user only once.
+* Populate a database only once.
+* Reuse the state even if a worker fails.
+* Keep some values persistently to speed up subsequent test runs.
 
 ## Installation
 
-```
+```sh
 npm i -D @vitalets/global-cache
 ```
 
@@ -67,7 +67,7 @@ npm i -D @vitalets/global-cache
 
 ### Basic
 
-1. Enable global cache in the Playwright config:
+1. Enable the global cache in the Playwright config:
 
     ```ts
     // playwright.config.ts
@@ -75,13 +75,13 @@ npm i -D @vitalets/global-cache
     import { globalCache } from '@vitalets/global-cache';
 
     export default defineConfig({
-      globalSetup: globalCache.setup,        // <-- setup globalCache
-      globalTeardown: globalCache.teardown,  // <-- teardown globalCache
+      globalSetup: globalCache.setup,        // <-- Setup globalCache
+      globalTeardown: globalCache.teardown,  // <-- Teardown globalCache
       // ...
     });
     ```
 
-2. Wrap heavy operations with `globalCache.get()` to compute value once:
+2. Wrap heavy operations with `globalCache.get()` to compute the value once:
     ```ts
     const value = await globalCache.get('some-key', async () => {
       const value = /* ...heavy operation */
@@ -89,16 +89,16 @@ npm i -D @vitalets/global-cache
     });
     ```
 
-  * If `some-key` is not populated, the function will be called and its result will be cached.
+  * If `some-key` is not populated, the function will be called, and its result will be cached.
   * If `some-key` is already populated, the cached value will be returned instantly.
 
-  > **NOTE**: the return value must be **serializable**: only plain JavaScript objects and primitive types can be used, e.g. string, boolean, number, or JSON.
+  > **NOTE**: The return value must be **serializable**: only plain JavaScript objects and primitive types can be used, e.g., string, boolean, number, or JSON.
 
   You can use `globalCache.get()` anywhere in your tests. Typically, it could be [fixtures](https://playwright.dev/docs/test-fixtures) or `before / beforeAll` hooks. See [more details](#use-cases) in the use cases section.
 
 ### Dynamic keys
 
-If your function depends on some variables, you should add these variables to the key for propper data caching:
+If your function depends on some variables, you should add these variables to the key for proper data caching:
 
 ```ts
 const value = await globalCache.get(`some-key-${id}`, async () => {
@@ -109,14 +109,14 @@ const value = await globalCache.get(`some-key-${id}`, async () => {
 
 ### Persistent values
 
-By default, all values are stored in memory and cleared when test run finish. 
-But you can store data permanently on the file system and reuse between subsequent runs. 
-For example, you can authenticate user once and save auth state for 1 hour.
-During this period, all test runs will reuse auth state and execute faster.
+By default, all values are stored in memory and cleared when the test run finishes. 
+However, you can store data permanently on the file system and reuse it between subsequent runs. 
+For example, you can authenticate a user once and save the auth state for 1 hour.
+During this period, all test runs will reuse the auth state and execute faster.
 
-To make value persistent, pass `{ ttl }` (time-to-live) option in the second argument of `.get()` method. TTL can be [ms-compatible](https://github.com/vercel/ms) string or number of miliseconds:
+To make a value persistent, pass the `{ ttl }` (time-to-live) option in the second argument of the `.get()` method. TTL can be an [ms-compatible](https://github.com/vercel/ms) string or a number of milliseconds:
 ```ts
-// cache auth for 1 hour
+// Cache auth for 1 hour
 const authState = await globalCache.get('auth-state', { ttl: '1 hour' }, async () => {
   const loginPage = await browser.newPage();
   // ...authenticate user
@@ -124,7 +124,7 @@ const authState = await globalCache.get('auth-state', { ttl: '1 hour' }, async (
 });
 ```
 
-> To persist data forever set `ttl: 'infinite'`.
+> To persist data forever, set `ttl: 'infinite'`.
 
 ## Use Cases
 All code samples are currently for Playwright.
