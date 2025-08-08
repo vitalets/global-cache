@@ -381,6 +381,39 @@ export default async function() {
 }
 ```
 
+### Typed cache
+
+You can make cache keys and values strictly typed.
+To achieve it, create own `global-cache.ts` file, define cache schema and re-export typed cache:
+
+```ts
+// global-cache.ts
+import { globalCache as genericGlobalCache, GlobalCache } from '@vitalets/global-cache';
+
+export type GlobalCacheSchema = {
+  'user-id': string;
+  'user-info': { name: string; email: string };
+  // ...add more keys as needed
+};
+
+// Re-export typed globalCache
+export const globalCache = genericGlobalCache as GlobalCache<GlobalCacheSchema>;
+```
+
+In tests import typed `globalCache`:
+```ts
+import { globalCache } from './global-cache';
+
+// valid call
+const userInfo = await globalCache.get('user-info', fn);
+
+// invalid call
+const value = await globalCache.get('foo', fn);
+```
+
+> [!TIP]
+> Check out a fully working example of [typed cache](/examples/typed-cache/).
+
 ## Configuration
 
 To provide configuration options, call `globalCache.defineConfig()` in the Playwright config:

@@ -1,6 +1,6 @@
 # Authentication via API Request with Global Cache
 
-This example demonstrates how to implement authentication via API Request and cache it in the global globalCache. 
+This example demonstrates how to implement authentication via API Request and cache it in the global cache. 
 
 The approach is more efficient than making auth request in a [separate project](https://playwright.dev/docs/auth#authenticate-with-api-request), because it authenticates on demand and doesn't require additional project.
 

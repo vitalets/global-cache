@@ -2,13 +2,11 @@ import { globalConfig, GlobalConfigInput } from '../config';
 import { debug, debugKey } from '../utils/debug';
 import { previewValue } from '../utils/value';
 import { StorageApi } from './api';
-import { TTL } from '../server/ttl';
+import { DefaultSchema, GetArgs, Keys } from './types';
 
-export type KeyParams = { ttl?: TTL };
-export type GetOrComputeArgs<T> = [string, () => T] | [string, KeyParams, () => T];
 export type GlobalCacheConfig = GlobalConfigInput;
 
-export class GlobalCache {
+export class GlobalCache<S extends DefaultSchema = DefaultSchema> {
   #api?: StorageApi;
 
   /* Helper method to set global config via storage instance (for conveniency) */
@@ -33,11 +31,11 @@ export class GlobalCache {
    * Fetch value by key or compute it if not found.
    */
   // eslint-disable-next-line visual/complexity, max-statements
-  async get<T>(...args: GetOrComputeArgs<T>): Promise<T> {
-    const { key, params, fn } = resolveGetOrComputeArgs(args);
+  async get<K extends Keys<S>>(...args: GetArgs<K, S>): Promise<S[K]> {
+    const { key, params, fn } = resolveGetArgs(args);
 
     if (globalConfig.disabled) {
-      debugKey(key, `Global storage disabled. Computing...`);
+      debugKey(key, `Global cache disabled. Computing...`);
       return fn();
     }
 
@@ -47,7 +45,7 @@ export class GlobalCache {
     const { value: existingValue, missing } = await this.api.get({ key, ttl });
     if (!missing) {
       debugKey(key, `Cache hit: ${previewValue(existingValue)}`);
-      return existingValue as T;
+      return existingValue;
     }
 
     debugKey(key, 'Cache miss. Computing...');
@@ -68,7 +66,7 @@ export class GlobalCache {
    * - for non-persistant keys it would be the current value
    * - for persistent keys it would be the old value if it was changed during this run
    */
-  async getStale(key: string) {
+  async getStale<K extends Keys<S>>(key: K): Promise<S[K] | undefined> {
     debugKey(key, `Fetching stale value...`);
     const value = await this.api.getStale({ key });
     debugKey(key, `Fetched: ${previewValue(value)}`);
@@ -80,12 +78,12 @@ export class GlobalCache {
    * - for non-persistant keys it would be the current value
    * - for persistent keys it would be the old value if it was changed during this run
    */
-  async getStaleList(prefix: string) {
+  async getStaleList<ValueType>(prefix: string) {
     debugKey(prefix, `Fetching stale list...`);
     const values = await this.api.getStaleList({ prefix });
     debugKey(prefix, `Fetched: ${values.length} value(s)`);
 
-    return values;
+    return values as ValueType[];
   }
 
   async clear() {
@@ -94,7 +92,7 @@ export class GlobalCache {
     debug('Session cleared.');
   }
 
-  private async computeValue<T>(fn: () => T) {
+  private async computeValue<ValueType>(fn: () => ValueType) {
     try {
       const value = await fn();
       return { value };
@@ -105,11 +103,11 @@ export class GlobalCache {
   }
 }
 
-function resolveGetOrComputeArgs<T>(args: GetOrComputeArgs<T>) {
+function resolveGetArgs<K extends Keys<S>, S extends DefaultSchema>(args: GetArgs<K, S>) {
   return args.length === 2
     ? { key: args[0], params: {}, fn: args[1] }
     : { key: args[0], params: { ...args[1] }, fn: args[2] };
 }
 
-// Export singleton.
+// Export singleton
 export const globalCache = new GlobalCache();

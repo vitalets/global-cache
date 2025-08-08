@@ -1,6 +1,6 @@
 # Usage of BeforeAll Hook with Global Cache
 
-This example shows how to make `beforeAll` hook execute exactly once with the global globalCache. 
+This example shows how to make `beforeAll` hook execute exactly once with the global cache. 
 It's how most people expect `beforeAll` to work.
 
 ## Details

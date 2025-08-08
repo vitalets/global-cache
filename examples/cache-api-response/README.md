@@ -1,13 +1,13 @@
 # Cache API Response with Global Cache
 
-This example shows how to cache API response with the global globalCache.
+This example shows how to cache API response with the global cache.
 
 ## Details
 
 - Webpage under test `index.html` performs a fetch request to https://jsonplaceholder.typicode.com/users and renders list of users. API response has a synthetic delay of 1s.
 - There are 3 identical tests in `test/index.spec.ts`, checking the page output. Each test intentionally fails to start a new worker.
 - The `page` fixture sets up a request interceptor via `page.route`, fetches actual data and stores the  response in the global cache under `users-response` key.
-- All subsequent workers instantly receive response from global globalCache.
+- All subsequent workers instantly receive response from global cache.
 
 ## Running tests
 

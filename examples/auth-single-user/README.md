@@ -1,6 +1,6 @@
 # Single-User Authentication with Global Cache
 
-This example demonstrates how to implement single-user authentication with global globalCache. 
+This example demonstrates how to implement single-user authentication with global cache. 
 
 The approach is more efficient than the [separate auth project](https://playwright.dev/docs/auth#basic-shared-account-in-all-tests), because it authenticates on demand and doesn't require additional project.
 

@@ -1,9 +1,9 @@
 # Data Cleanup with Global Cache
 
-An example of proper data cleanup with global globalCache. 
+An example of proper data cleanup with global cache. 
 
 ## Details
-- A test user is lazily created in `beforeAll` hook and its ID is stored in the global globalCache.
+- A test user is lazily created in `beforeAll` hook and its ID is stored in the global cache.
 - A custom teardown script `cleanup.ts` is added to the Playwright config. 
 - The teardown script gets stale value for the user ID and removes the user from db.
 

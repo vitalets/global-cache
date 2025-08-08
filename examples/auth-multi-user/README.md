@@ -1,6 +1,6 @@
 # Multi-User Authentication with Global Cache
 
-This example demonstrates how to implement multi-user authentication with global globalCache. 
+This example demonstrates how to implement multi-user authentication with global cache. 
 
 The approach is more efficient than the [separate auth project](https://playwright.dev/docs/auth#multiple-signed-in-roles) because it authenticates the required roles on demand.
 
