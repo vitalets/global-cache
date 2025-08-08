@@ -24,6 +24,7 @@ With global cache, the first worker that requests a value becomes responsible fo
   - [Caching network request](#caching-network-request)
   - [Cleanup (single key)](#cleanup-single-key)
   - [Cleanup (by prefix)](#cleanup-by-prefix)
+  - [Typed cache](#typed-cache)
 - [Configuration](#configuration)
 - [API](#api)
 - [Changelog](#changelog)
