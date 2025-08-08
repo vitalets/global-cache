@@ -34,6 +34,7 @@ With global cache, the first worker that requests a value becomes responsible fo
   - [`globalCache.getStale(key)`](#globalcachegetstalekey)
   - [`globalCache.getStaleList(prefix)`](#globalcachegetstalelistprefix)
   - [`globalCache.clear()`](#globalcacheclear)
+- [Debug](#debug)
 - [Changelog](#changelog)
 - [Feedback](#feedback)
 - [License](#license)
