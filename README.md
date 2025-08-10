@@ -88,16 +88,16 @@ npm i -D @vitalets/global-cache
     });
     ```
 
-2. Wrap heavy operations with `globalCache.get()` to compute the value once:
+2. Wrap heavy operations with `globalCache.get(key, fn)` to compute the value once:
     ```ts
-    const value = await globalCache.get('some-key', async () => {
+    const value = await globalCache.get('key', async () => {
       const value = /* ...heavy operation */
       return value;
     });
     ```
 
-  * If `some-key` is not populated, the function will be called, and its result will be cached.
-  * If `some-key` is already populated, the cached value will be returned instantly.
+  * If `key` is not populated, the function will be called, and its result will be cached.
+  * If `key` is already populated, the cached value will be returned instantly.
 
   > **NOTE**: The return value must be **serializable**: only plain JavaScript objects and primitive types can be used, e.g., string, boolean, number, or JSON.
 
