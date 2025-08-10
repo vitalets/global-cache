@@ -131,13 +131,13 @@ const authState = await globalCache.get('auth-state', { ttl: '1 hour' }, async (
 });
 ```
 
-After running this test, the auth state value will written to the file:
+After running this test, the auth state will be cached in the file:
 ```
 .global-cache
-└── auth-state.json
+ └── auth-state.json
 ```
 
-> By default, persistent values are stored in the `.global-cache` directory. Add this directory to your `.gitignore` file to avoid committing it.
+> By default, all persistent values are stored in the `.global-cache` directory. Add this directory to your `.gitignore` file to avoid committing it.
 
 ## Use Cases
 All code samples are currently for Playwright.
