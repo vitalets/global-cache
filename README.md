@@ -131,7 +131,13 @@ const authState = await globalCache.get('auth-state', { ttl: '1 hour' }, async (
 });
 ```
 
-> To persist data forever, set `ttl: 'infinite'`.
+After running this test, the auth state value will written to the file:
+```
+.global-cache
+└── auth-state.json
+```
+
+> By default, persistent values are stored in the `.global-cache` directory. Add this directory to your `.gitignore` file to avoid committing it.
 
 ## Use Cases
 All code samples are currently for Playwright.
@@ -496,7 +502,7 @@ Get value by key or compute it if not found.
 **Parameters**:
 - `key: string`
 - `params: object`
-  - `ttl: string | number`
+  - `ttl: string | number | 'infinite'`
 - `computeFn: Function`
 
 **Returns**: `Promise`
