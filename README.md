@@ -105,7 +105,7 @@ npm i -D @vitalets/global-cache
 
 ### Dynamic keys
 
-If your function depends on some variables, you should add these variables to the key for proper data caching:
+If your computation depends on some variables, you should add these variables to the key for proper data caching:
 
 ```ts
 const value = await globalCache.get(`some-key-${id}`, async () => {
