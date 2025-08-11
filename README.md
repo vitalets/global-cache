@@ -9,6 +9,8 @@
 
 With the global cache, the first worker that requests a value becomes responsible for computing it. Others wait until the result is ready — and all workers get the same value. The value is cached in memory or on the file system and reused by later workers and test runs.
 
+This can significantly boost your E2E test performance.
+
 <img align="center" alt="Global cache" src="https://github.com/user-attachments/assets/71833505-b74f-44c8-837e-0cdbdf4ef733" />
 
 ## Index
@@ -90,6 +92,8 @@ npm i -D @vitalets/global-cache
 
 2. Wrap heavy operations with `globalCache.get(key, fn)` to compute the value once:
     ```ts
+    import { globalCache } from '@vitalets/global-cache';
+    
     const value = await globalCache.get('key', async () => {
       const value = /* ...heavy operation */
       return value;
@@ -382,9 +386,9 @@ export default async function() {
 }
 ```
 
-The result of `globalCache.getStale(key)` is different for presistent and non-persistent keys:
+The result of `globalCache.getStale(key)` is different for non-presistent and persistent keys:
 - **non-persistent**: returns the current value (as it will be cleared right after test run end)
-- **persistent**: returns the previous value that was replaced during the test run (as the current value can be reused in future runs)
+- **persistent**: returns the previous value that was updated during the test run (as the current value may be reused in the subsequent runs)
 
 > [!TIP]
 > Check out a fully working example of [cleanup](/examples/cleanup/).
