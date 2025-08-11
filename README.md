@@ -166,7 +166,7 @@ export const test = baseTest.extend({
     // Cache auth for 1 hour, to reuse in futher test runs as well.
     const authState = await globalCache.get('auth-state', { ttl: '1 hour' }, async () => {
       console.log('Performing sing-in...');
-      // Important to use 'browser', not 'page' or 'context' fixture to avoid circullar dependency
+      // Important to use 'browser', not 'page' or 'context' fixture to avoid circular dependency
       const loginPage = await browser.newPage();
       
       await loginPage.goto('https://authenticationtest.com/simpleFormAuth/');
