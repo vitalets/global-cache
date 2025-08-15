@@ -3,6 +3,8 @@
 > This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
 
 ## [Unreleased]
+* feat: store value metadata on the file system
+* feat: check signature to invalidate cache after code changes
 
 ## [0.1.2] - 2025-08-08
 
