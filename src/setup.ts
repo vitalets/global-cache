@@ -1,4 +1,4 @@
-import { debug } from './utils/debug';
+import { debug } from './shared/debug';
 import { globalConfig } from './config';
 import { storageServer } from './server';
 

@@ -1,4 +1,4 @@
-import { TTL } from '../server/ttl';
+import { TTL } from '../shared/ttl';
 
 // Key-value types for strictly typed storage.
 export type DefaultSchema = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any

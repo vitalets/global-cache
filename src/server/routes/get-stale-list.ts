@@ -13,7 +13,7 @@ router.get('/get-stale-list', async (req, res) => {
   const config = getConfig(req.app as Express);
 
   const storage = getStorage(config);
-  const values = await storage.getStaleList(prefix);
+  const valueInfoList = await storage.getLoadedInfoList(prefix);
 
-  res.json(values);
+  res.json(valueInfoList);
 });

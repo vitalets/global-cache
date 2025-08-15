@@ -2,7 +2,7 @@
  * Global storage server configuration.
  */
 import { Express } from 'express';
-import { removeUndefined } from '../utils/object';
+import { removeUndefined } from '../shared/utils/object';
 
 export type GlobalStorageServerConfig = {
   port?: number;

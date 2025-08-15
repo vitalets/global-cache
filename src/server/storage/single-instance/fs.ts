@@ -3,28 +3,31 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { ValueInfo } from '../../value-info';
-import { parseValue, stringifyValue } from '../../../utils/value';
+import { ValueInfo } from '../../../shared/value-info';
+
+export type StoredInfo = {
+  computedAt: number;
+  sig: string;
+  value: unknown;
+};
 
 export class FileSystemStorage {
   constructor(private basePath: string) {}
 
-  async get(key: string): Promise<ValueInfo | undefined> {
+  async load(key: string) {
     const filePath = this.getFilePath(key);
     const fileExists = fs.existsSync(filePath);
     if (!fileExists) return;
-
-    const { mtimeMs: computedAt } = await fs.promises.stat(filePath);
     const content = await fs.promises.readFile(filePath, 'utf8');
-    const value = parseValue(content);
-
-    return { key, value, computedAt, persistent: true, state: 'computed' };
+    return JSON.parse(content) as StoredInfo;
   }
 
-  async set(key: string, value: unknown) {
+  async save({ key, value, sig }: ValueInfo) {
+    const computedAt = Date.now();
+    const storedInfo: StoredInfo = { computedAt, sig, value };
+    const content = JSON.stringify(storedInfo, null, 2);
     const filePath = this.getFilePath(key);
     await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
-    const content = stringifyValue(value);
     await fs.promises.writeFile(filePath, content, 'utf8');
   }
 

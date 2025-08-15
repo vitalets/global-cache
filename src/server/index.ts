@@ -8,7 +8,7 @@
 import http from 'node:http';
 import { AddressInfo } from 'net';
 import express from 'express';
-import { debug } from '../utils/debug';
+import { debug } from '../shared/debug';
 import { router as routeGet } from './routes/get';
 import { router as routeSet } from './routes/set';
 import { router as routeGetStale } from './routes/get-stale';

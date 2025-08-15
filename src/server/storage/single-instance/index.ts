@@ -1,18 +1,11 @@
 /**
  * Single-instance mode of Global Storage Server.
  * - non-persistent values are stored in memory
- * - presistent values are stored on fs and cached in memory
- * - waiting for value performed via memory
+ * - presistent values are stored on fs and loaded to memory on the first request
+ * - waiting for value is performed via memory
  */
-import {
-  initValueInfo,
-  isExpired,
-  setComputing,
-  setError,
-  setMissing,
-  setValue,
-  ValueInfo,
-} from '../../value-info';
+import { isExpired } from '../../../shared/ttl';
+import { assignValueInfo, ValueInfo } from '../../../shared/value-info';
 import { FileSystemStorage } from './fs';
 import { Waiters } from './waiters';
 
@@ -21,7 +14,7 @@ export type SingleInstanceStorageConfig = {
 };
 
 export class SingleInstanceStorage {
-  private data = new Map<string, ValueInfo>();
+  private sessionValues = new Map<string, ValueInfo>();
   private fsStorage: FileSystemStorage;
   private waiters = new Waiters();
 
@@ -29,87 +22,106 @@ export class SingleInstanceStorage {
     this.fsStorage = new FileSystemStorage(config.basePath);
   }
 
-  // eslint-disable-next-line visual/complexity
-  async loadInfo({ key, ttl }: { key: string; ttl?: number }) {
-    let loadedInfo = this.data.get(key);
+  async loadInfo({ key, sig, ttl }: { key: string; sig: string; ttl?: number }) {
+    let valueInfo = this.sessionValues.get(key);
 
-    if (!loadedInfo && ttl) {
-      loadedInfo = await this.fsStorage.get(key);
-      // store value in memory for faster access next time
-      if (loadedInfo) {
-        this.data.set(key, loadedInfo);
-      }
+    if (valueInfo && valueInfo.sig !== sig) {
+      throw createSignatureError(key);
     }
 
-    const valueInfo = loadedInfo || initValueInfo(key);
+    if (!valueInfo) {
+      valueInfo = ttl
+        ? await this.loadPersistentValueInfo({ key, sig, ttl }) // prettier ignore
+        : { key, state: 'missing', sig };
 
-    if (ttl) valueInfo.persistent = true;
-
-    // check expired
-    if (ttl && isExpired(valueInfo, ttl)) {
-      setMissing(valueInfo);
-      this.data.set(key, valueInfo);
-      // todo: here we remove file, but later we create file again if compute = true -> can be optimized
-      await this.fsStorage.delete(key);
+      // store value in memory for all usages in this session
+      this.sessionValues.set(key, valueInfo);
     }
 
     return valueInfo;
   }
 
+  private async loadPersistentValueInfo({
+    key,
+    sig,
+    ttl,
+  }: {
+    key: string;
+    sig: string;
+    ttl: number;
+  }) {
+    const valueInfo: ValueInfo = { key, state: 'missing', persistent: true, sig };
+    const storedInfo = await this.fsStorage.load(key);
+
+    if (!storedInfo) return valueInfo;
+    if (isExpired(storedInfo.computedAt, ttl)) {
+      return assignValueInfo(valueInfo, { state: 'expired', prevValue: storedInfo.value });
+    }
+    if (storedInfo.sig !== sig) {
+      return assignValueInfo(valueInfo, { state: 'sig-changed', prevValue: storedInfo.value });
+    }
+
+    return assignValueInfo(valueInfo, { state: 'computed', value: storedInfo.value });
+  }
+
   async setComputing(valueInfo: ValueInfo) {
-    setComputing(valueInfo);
-    this.data.set(valueInfo.key, valueInfo);
+    assignValueInfo(valueInfo, { state: 'computing' });
+    this.sessionValues.set(valueInfo.key, valueInfo);
   }
 
   async waitValue(key: string) {
     return this.waiters.wait(key);
   }
 
-  async setValue({
-    key,
-    ttl,
-    value,
-    error,
-  }: {
-    key: string;
-    ttl?: number;
-    value?: unknown;
-    error?: string;
-  }) {
-    const valueInfo = await this.loadInfo({ key, ttl });
-    if (error) {
-      setError(valueInfo);
-      this.data.set(key, valueInfo);
-      this.waiters.notifyError(key, error);
-      if (ttl) await this.fsStorage.delete(key);
-    } else {
-      setValue(valueInfo, value);
-      this.data.set(key, valueInfo);
-      this.waiters.notifyValue(key, value);
-      if (ttl) await this.fsStorage.set(key, value);
+  // eslint-disable-next-line max-statements, visual/complexity
+  async setComputed({ key, value, error }: { key: string; value?: unknown; error?: string }) {
+    const valueInfo = this.sessionValues.get(key);
+
+    if (!valueInfo) {
+      throw new Error(`Cannot set value for key "${key}" that is not loaded.`);
     }
+    if (valueInfo.state !== 'computing') {
+      throw new Error(`Cannot set value for key "${key}" that is not in "computing" state.`);
+    }
+
+    if (error) {
+      assignValueInfo(valueInfo, { state: 'missing', value: undefined });
+      this.sessionValues.set(key, valueInfo);
+      this.waiters.notifyError(key, error);
+      if (valueInfo.persistent) await this.fsStorage.delete(key);
+    } else {
+      assignValueInfo(valueInfo, { state: 'computed', value });
+      this.sessionValues.set(key, valueInfo);
+      this.waiters.notifyComputed(valueInfo);
+      if (valueInfo.persistent) await this.fsStorage.save(valueInfo);
+    }
+
+    return valueInfo;
   }
 
-  async getStale(key: string) {
-    // for stale we return only values from memory - used in this test-run.
-    const valueInfo = this.data.get(key);
-    // todo: move this logic to value-info or route handler
-    return valueInfo?.persistent ? valueInfo.oldValue : valueInfo?.value;
+  async getLoadedInfo(key: string) {
+    return this.sessionValues.get(key);
   }
 
-  async getStaleList(prefix: string) {
-    return (
-      [...this.data.values()]
-        .filter((valueInfo) => valueInfo.key.startsWith(prefix))
-        // todo: move this logic to value-info or route handler
-        .map((valueInfo) => (valueInfo.persistent ? valueInfo.oldValue : valueInfo.value))
-    );
+  async getLoadedInfoList(prefix: string) {
+    return [...this.sessionValues.values()].filter((valueInfo) => valueInfo.key.startsWith(prefix));
   }
 
   /**
-   * Clears all non-persistent values for this session.
+   * Clears all session values.
    */
   async clearSession() {
-    this.data.clear();
+    this.sessionValues.clear();
   }
+}
+
+function createSignatureError(key: string) {
+  new Error(
+    [
+      `Signature mismatch! Please ensure you are not calling globalCache.get("${key}"):`,
+      ` - with different compute functions`,
+      ` - with different params (e.g. ttl)`,
+      ` - from different locations`,
+    ].join('\n'),
+  );
 }

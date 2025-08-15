@@ -2,7 +2,7 @@
  * Global config singleton shared across host and all workers via env variables.
  */
 
-import { removeUndefined } from './utils/object';
+import { removeUndefined } from './shared/utils/object';
 
 export type GlobalConfigInput = {
   /* Forces all values to be non-persistent, usefull for CI */

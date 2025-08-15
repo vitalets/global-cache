@@ -1,6 +1,7 @@
 import { globalConfig, GlobalConfigInput } from '../config';
-import { debug, debugKey } from '../utils/debug';
-import { previewValue } from '../utils/value';
+import { calcSignature } from '../shared/sig';
+import { debug, debugKey } from '../shared/debug';
+import { previewValue } from './utils/preview-value';
 import { StorageApi } from './api';
 import { DefaultSchema, GetArgs, Keys } from './types';
 
@@ -40,25 +41,26 @@ export class GlobalCache<S extends DefaultSchema = DefaultSchema> {
     }
 
     const ttl = globalConfig.ignoreTTL ? undefined : params.ttl;
+    const sig = calcSignature({ ttl, fn, stack: '' });
 
     debugKey(key, `Fetching value...`);
-    const { value: existingValue, missing } = await this.api.get({ key, ttl });
-    if (!missing) {
-      debugKey(key, `Cache hit: ${previewValue(existingValue)}`);
-      return existingValue;
+    const { state, value: cachedValue } = await this.api.get({ key, sig, ttl });
+    if (state === 'computed') {
+      debugKey(key, `Cache hit: ${previewValue(cachedValue)}`);
+      return cachedValue as S[K];
     }
 
-    debugKey(key, 'Cache miss. Computing...');
+    debugKey(key, `Cache miss (${state}), computing...`);
     const { value, error } = await this.computeValue(fn);
     debugKey(key, error ? `Error: ${error.message}` : `Computed: ${previewValue(value)}`);
 
     debugKey(key, `Saving value...`);
-    const savedValue = await this.api.set({ key, ttl, value, error });
+    const valueInfo = await this.api.set({ key, value, error });
     debugKey(key, `Saved.`);
 
     if (error) throw error;
 
-    return savedValue;
+    return valueInfo.value as S[K];
   }
 
   /**
@@ -66,11 +68,12 @@ export class GlobalCache<S extends DefaultSchema = DefaultSchema> {
    * - for non-persistant keys it would be the current value
    * - for persistent keys it would be the old value if it was changed during this run
    */
-  async getStale<K extends Keys<S>>(key: K): Promise<S[K] | undefined> {
+  async getStale<K extends Keys<S>>(key: K) {
     debugKey(key, `Fetching stale value...`);
     const value = await this.api.getStale({ key });
     debugKey(key, `Fetched: ${previewValue(value)}`);
-    return value;
+
+    return value as S[K] | undefined;
   }
 
   /**
@@ -86,7 +89,7 @@ export class GlobalCache<S extends DefaultSchema = DefaultSchema> {
     return values as ValueType[];
   }
 
-  async clear() {
+  async clearSession() {
     debug('Clearing session...');
     await this.api.clearSession();
     debug('Session cleared.');

@@ -23,7 +23,7 @@ afterAll(async () => {
 });
 
 afterEach(async () => {
-  await globalCache.clear();
+  await globalCache.clearSession();
 });
 
 describe('get', () => {
@@ -46,7 +46,7 @@ describe('get', () => {
 
       const [value1, value2] = await Promise.all([fn(), fn()]);
       const value3 = await fn();
-      await globalCache.clear();
+      await globalCache.clearSession();
       const value4 = await fn();
 
       expect(callCount).toEqual(2);
@@ -78,17 +78,15 @@ describe('get', () => {
 
       const [value1, value2] = await Promise.all([fn(), fn()]);
       const value3 = await fn();
-      await globalCache.clear();
-      const value4 = await fn();
+      await globalCache.clearSession();
       await new Promise((r) => setTimeout(r, ttl + 10)); // wait for value to expire
-      const value5 = await fn(); // increments callCount again
+      const value4 = await fn(); // increments callCount again
 
       expect(callCount).toEqual(2);
       expect(value1).toEqual(value);
       expect(value2).toEqual(value);
       expect(value3).toEqual(value);
       expect(value4).toEqual(value);
-      expect(value5).toEqual(value);
     }
   });
 
@@ -136,7 +134,8 @@ describe('getStale', () => {
     const value1 = await globalCache.getStale(key);
     const value2 = await fn();
     const value3 = await globalCache.getStale(key);
-    await new Promise((r) => setTimeout(r, ttl + 10));
+    await globalCache.clearSession();
+    await new Promise((r) => setTimeout(r, ttl + 10)); // wait for value to expire
     const value4 = await fn();
     const value5 = await globalCache.getStale(key);
 
@@ -149,20 +148,43 @@ describe('getStale', () => {
 });
 
 describe('getStaleList', () => {
-  test('non-persistent + persistent', async () => {
+  test('non-persistent', async () => {
     let callCount = 0;
-    const ttl = 50;
-    const prefix = 'get-stale-list';
-    const fn = () => globalCache.get(`${prefix}-persistent`, { ttl }, () => ++callCount);
-    await globalCache.get(`${prefix}-session-1`, () => 11);
-    await globalCache.get(`${prefix}-session-2`, () => 22);
-    await fn();
-    await fn();
-    await globalCache.get(`excluded-key`, () => 3);
+    const prefix = 'get-stale-list-non-persistent';
+    const fn1 = () => globalCache.get(`${prefix}-1`, () => ++callCount);
+    const fn2 = () => globalCache.get(`${prefix}-2`, () => ++callCount);
+    const fnExcluded = () => globalCache.get(`excluded-${prefix}`, () => 3);
+    await fn1();
+    await fn2();
+    await fnExcluded();
 
     const values = await globalCache.getStaleList(prefix);
 
-    expect(values).toEqual([11, 22, null]);
+    expect(values).toEqual([1, 2]);
+  });
+
+  test('persistent', async () => {
+    let callCount = 0;
+    const ttl = 50;
+    const prefix = 'get-stale-list-persistent';
+    const fn1 = () => globalCache.get(`${prefix}-1`, { ttl }, () => ++callCount);
+    const fn2 = () => globalCache.get(`${prefix}-2`, { ttl }, () => ++callCount);
+    const fnExcluded = () => globalCache.get(`excluded-${prefix}`, { ttl }, () => 3);
+
+    await fn1();
+    await fn2();
+    await fnExcluded();
+    const values1 = await globalCache.getStaleList(prefix);
+
+    await globalCache.clearSession();
+    await new Promise((r) => setTimeout(r, ttl + 10)); // wait for value to expire
+
+    await fn1();
+    fnExcluded();
+    const values2 = await globalCache.getStaleList(prefix);
+
+    expect(values1).toEqual([undefined, undefined]); // no stale values in the first run, because they are persistent
+    expect(values2).toEqual([1]); // no '2' because it was not used in this run
   });
 });
 
@@ -178,19 +200,14 @@ describe('ignoreTTL: true', () => {
   test('value with ttl is not persistent', async () => {
     const key = 'ignore-ttl-key';
     let callCount = 0;
-    const fn = () =>
-      globalCache.get(key, { ttl: 50 }, () => {
-        callCount++;
-        return 42;
-      });
+    const fn = () => globalCache.get(key, { ttl: 1000 }, () => ++callCount);
     const value1 = await fn();
-    const value2 = await globalCache.getStale(key);
-    await globalCache.clear();
-    const value3 = await fn(); // increment callCount as ttl is ignored
+    const value2 = await globalCache.getStale(key); // returns current value because it is not persistent
+    await globalCache.clearSession();
+    const value3 = await fn(); // increments callCount as ttl is ignored
 
-    expect(callCount).toEqual(2);
-    expect(value1).toEqual(42);
-    expect(value2).toEqual(42); // 42 because value is not persistent
-    expect(value3).toEqual(42);
+    expect(value1).toEqual(1);
+    expect(value2).toEqual(1);
+    expect(value3).toEqual(2);
   });
 });

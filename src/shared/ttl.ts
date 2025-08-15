@@ -12,3 +12,8 @@ export function parseTTL(ttl: string | number | undefined) {
   const ttlNumber = Number(ttl);
   return Number.isNaN(ttlNumber) ? ms(ttl as StringValue) : ttlNumber;
 }
+
+export function isExpired(computedAt: number, ttl: number) {
+  if (!computedAt || ttl === -1) return false;
+  return Date.now() > computedAt + ttl;
+}

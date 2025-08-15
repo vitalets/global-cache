@@ -1,5 +1,5 @@
 import { Express, Router } from 'express';
-import { parseTTL } from '../ttl';
+import { parseTTL } from '../../shared/ttl';
 import { getConfig } from '../config';
 import { getStorage } from '../storage';
 
@@ -7,25 +7,28 @@ export const router = Router();
 
 export type GetValueParams = {
   key: string;
-  ttl?: string; // Time to live for the value, if set - value is persistent.
+  sig: string;
+  ttl?: string;
 };
 
 /**
  * Route for geting a value.
  */
 router.get('/get', async (req, res) => {
-  const { key, ttl: ttlParam } = req.query as GetValueParams;
+  const { key, sig, ttl: ttlParam } = req.query as GetValueParams;
   const config = getConfig(req.app as Express);
   const ttl = parseTTL(ttlParam);
 
   const storage = getStorage(config);
-  const valueInfo = await storage.loadInfo({ key, ttl });
+  let valueInfo = await storage.loadInfo({ key, sig, ttl });
 
-  if (valueInfo.state === 'missing') {
-    await storage.setComputing(valueInfo);
-    res.status(404).json(valueInfo); // sending valueInfo is useful for debug
+  if (valueInfo.state === 'computed') {
+    res.json(valueInfo);
+  } else if (valueInfo.state === 'computing') {
+    valueInfo = await storage.waitValue(key);
+    res.json(valueInfo);
   } else {
-    const value = valueInfo.state === 'computing' ? await storage.waitValue(key) : valueInfo.value;
-    res.json(value);
+    await storage.setComputing(valueInfo);
+    res.status(404).json(valueInfo);
   }
 });
