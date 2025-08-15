@@ -2,6 +2,8 @@
  * Simple http client for json payloads.
  */
 
+import { addSearchParams } from './http-query';
+
 const headers = { 'Content-Type': 'application/json' };
 
 export type QueryParams<T extends Record<string, unknown>> = {
@@ -27,35 +29,4 @@ export class HttpJson {
     addSearchParams(url, query);
     return url.toString();
   }
-}
-
-export async function buildHttpError(res: Response, prefix: string) {
-  return new Error(`${prefix} ${res.status} ${res.statusText} ${await res.text()}`);
-}
-
-export async function throwIfHttpError(res: Response, message: string) {
-  if (!res.ok) throw await buildHttpError(res, message);
-}
-
-function addSearchParams(url: URL, query?: Record<string, string>) {
-  const preparedQuery = prepareQueryParams(query || {});
-  Object.entries(preparedQuery).forEach(([key, value]) => {
-    url.searchParams.append(key, String(value));
-  });
-}
-
-/**
- * Converts record of parameters to query string format.
- * - undefined values are ignored
- * - values are converted to strings
- */
-export function prepareQueryParams<T extends Record<string, unknown>>(params?: T): QueryParams<T> {
-  const query: QueryParams<T> = {} as QueryParams<T>;
-  Object.entries(params || {}).forEach(([key, value]) => {
-    if (value !== undefined) {
-      query[key as keyof T] = String(value);
-    }
-  });
-
-  return query;
 }

@@ -10,8 +10,8 @@
 import { TTL } from './ttl';
 
 export type SingatureParams = {
-  stack: string;
   fn: Function; // eslint-disable-line @typescript-eslint/no-unsafe-function-type
+  stack: string;
   ttl?: TTL;
 };
 

@@ -211,3 +211,31 @@ describe('ignoreTTL: true', () => {
     expect(value3).toEqual(2);
   });
 });
+
+describe('invalid signature', () => {
+  test('different functions', async () => {
+    const key = `invalid-signature-different-fn`;
+    await globalCache.get(key, () => 1);
+    await expect(globalCache.get(key, () => 2)).rejects.toThrow(
+      `Failed to get key "${key}": Signature mismatch!`,
+    );
+  });
+
+  test('different locations', async () => {
+    const key = `invalid-signature-different-locations`;
+    const computeFn = () => 1;
+    await globalCache.get(key, computeFn);
+    await expect(globalCache.get(key, computeFn)).rejects.toThrow(
+      `Failed to get key "${key}": Signature mismatch!`,
+    );
+  });
+
+  test('mix non-persistent + persistent calls', async () => {
+    const key = `invalid-signature-mix-ttl`;
+    const computeFn = () => 1;
+    await globalCache.get(key, computeFn);
+    await expect(globalCache.get(key, { ttl: 50 }, computeFn)).rejects.toThrow(
+      `Failed to get key "${key}": Signature mismatch!`,
+    );
+  });
+});

@@ -26,7 +26,7 @@ export class SingleInstanceStorage {
     let valueInfo = this.sessionValues.get(key);
 
     if (valueInfo && valueInfo.sig !== sig) {
-      throw createSignatureError(key);
+      throw createSignatureError();
     }
 
     if (!valueInfo) {
@@ -115,10 +115,10 @@ export class SingleInstanceStorage {
   }
 }
 
-function createSignatureError(key: string) {
-  new Error(
+function createSignatureError() {
+  return new Error(
     [
-      `Signature mismatch! Please ensure you are not calling globalCache.get("${key}"):`,
+      `Signature mismatch! Please ensure you are not calling globalCache.get():`,
       ` - with different compute functions`,
       ` - with different params (e.g. ttl)`,
       ` - from different locations`,

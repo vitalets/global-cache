@@ -41,7 +41,9 @@ export class GlobalCache<S extends DefaultSchema = DefaultSchema> {
     }
 
     const ttl = globalConfig.ignoreTTL ? undefined : params.ttl;
-    const sig = calcSignature({ ttl, fn, stack: '' });
+    // keep stack expression in this fn to have correct stack offset
+    const stack = new Error().stack?.split('\n')[2]?.trim() || '';
+    const sig = calcSignature({ fn, ttl, stack });
 
     debugKey(key, `Fetching value...`);
     const { state, value: cachedValue } = await this.api.get({ key, sig, ttl });

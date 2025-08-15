@@ -3,7 +3,9 @@ import { SetValueParams } from '../server/routes/set';
 import { GetStaleParams } from '../server/routes/get-stale';
 import { GetStaleListParams } from '../server/routes/get-stale-list';
 import { TTL } from '../shared/ttl';
-import { buildHttpError, HttpJson, prepareQueryParams, throwIfHttpError } from './utils/http-json';
+import { HttpJson } from './utils/http-json';
+import { prepareQueryParams } from './utils/http-query';
+import { buildHttpError, throwIfHttpError } from './utils/http-error';
 import { getStaleValue, ValueInfo } from '../shared/value-info';
 
 export class StorageApi {
