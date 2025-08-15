@@ -11,7 +11,7 @@ With the global cache, the first worker that requests a value becomes responsibl
 
 This can significantly boost your E2E test performance.
 
-<img align="center" alt="Global cache schema" src="https://raw.githubusercontent.com/vitalets/global-cache/refs/heads/main/scripts/img/schema-800x224.png" />
+<img align="center" alt="Global cache schema" src="https://raw.githubusercontent.com/vitalets/global-cache/refs/heads/main/scripts/img/schema-1628.png" />
 
 ## Index
 <details>
