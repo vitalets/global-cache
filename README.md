@@ -141,7 +141,7 @@ After running this test, the auth state will be cached in the file:
  └── auth-state.json
 ```
 
-> By default, all persistent values are stored in the `.global-cache` directory. Add this directory to your `.gitignore` file to avoid committing it.
+> By default, all persistent values are stored in the `.global-cache` directory, but you can change this location in the [config](#globalcachedefineconfigconfig). Make sure to add the chosen directory to your `.gitignore` file to avoid committing it.
 
 ## Use Cases
 All code samples are currently for Playwright.
