@@ -162,11 +162,10 @@ export const test = baseTest.extend({
     // Skip authentication for '@no-auth'-tagged tests
     if (testInfo.tags.includes('@no-auth')) return use(storageState);
 
-    // Get auth state: authenticate only if not authenticated yet.
-    // Cache auth for 1 hour, to reuse in futher test runs as well.
+    // Get auth state once and cache for 1 hour
     const authState = await globalCache.get('auth-state', { ttl: '1 hour' }, async () => {
       console.log('Performing sing-in...');
-      // Important to use 'browser', not 'page' or 'context' fixture to avoid circular dependency
+      // Note: use 'browser', not 'page' or 'context' fixture to avoid circular dependency
       const loginPage = await browser.newPage();
       
       await loginPage.goto('https://authenticationtest.com/simpleFormAuth/');
