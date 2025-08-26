@@ -572,7 +572,7 @@ See [CHANGELOG.md](./CHANGELOG.md).
 
 #### How to use Global Cache in AfterAll hook?
 
-Running an `AfterAll` hook exactly once is tricky. The intent is usually to run it **only in the last worker** - the inverse of `BeforeAll`, which you often want in the **first** worker. But reliably detecting that “last call” is hard, as other tests may still be scheduled that use the same hook.
+Running an `AfterAll` hook exactly once is tricky. The intent is usually to run it only in the **last worker** - the inverse of `BeforeAll`, which you often want in the **first** worker. But reliably detecting that “last call” is hard, as other tests may still be scheduled that use the same hook.
 
 In this example, the cleanup would run as soon as the first worker finishes, while other workers might still depend on the resource:
 
@@ -585,7 +585,7 @@ test.afterAll(async () => {
 });
 ```
 
-**Do this instead:** move any "run-once-after-everything" logic to a global teardown. That guarantees all workers have finished. During teardown, use Global Cache’s [API](`#globalcachegetstalekey) to check whether the key exists and then perform the once-only cleanup.
+**Do this instead:** move any "run-once-after-everything" logic to a global teardown. That guarantees all workers have finished. During teardown, use Global Cache’s [API](#globalcachegetstalekey) to check whether the key exists and then perform the once-only cleanup.
 
 ## Feedback
 Feel free to share your feedback and suggestions in the [issues](https://github.com/vitalets/@vitalets/global-cache/issues).
