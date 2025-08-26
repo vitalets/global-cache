@@ -29,7 +29,7 @@ This can significantly boost your E2E test performance.
 - [Use Cases](#use-cases)
   - [Authentication (single user)](#authentication-single-user)
   - [Authentication (multi user)](#authentication-multi-user)
-  - [Sharing a variable](#sharing-a-variable)
+  - [Sharing a variable (BeforeAll)](#sharing-a-variable-beforeall)
   - [Caching network request](#caching-network-request)
   - [Cleanup (single value)](#cleanup-single-value)
   - [Cleanup (by prefix)](#cleanup-by-prefix)
@@ -45,6 +45,8 @@ This can significantly boost your E2E test performance.
   - [`globalCache.clear()`](#globalcacheclear)
 - [Debug](#debug)
 - [Changelog](#changelog)
+- [FAQ](#faq)
+  - [How to use Global Cache in AfterAll hook?](#how-to-use-global-cache-in-afterall-hook)
 - [Feedback](#feedback)
 - [License](#license)
 <!-- end-doc-gen -->
@@ -268,7 +270,7 @@ If you run these tests on 2 shards, the 1st shard will only authenticate `user` 
 > [!TIP]
 > Check out a fully working example of [multi user authentication](/examples/auth-multi-user/).
 
-### Sharing a variable
+### Sharing a variable (BeforeAll)
 
 You can calculate any variable once and re-use it in all tests. 
 For example, populate database with a user and assign user ID to a shared `userId` variable.
@@ -280,7 +282,7 @@ import { globalCache } from '@vitalets/global-cache';
 
 let userId = '';
 
-test.before(async () => {
+test.beforeAll(async () => {
   userId = await globalCache.get('user-id', async () => {
     const user = // ...create user in DB
     return user.id;
@@ -565,6 +567,25 @@ DEBUG=global-cache:auth-state npx playwright test
 
 ## Changelog
 See [CHANGELOG.md](./CHANGELOG.md).
+
+## FAQ
+
+#### How to use Global Cache in AfterAll hook?
+
+Running an `AfterAll` hook exactly once is tricky. The intent is usually to run it **only in the last worker** - the inverse of `BeforeAll`, which you often want in the **first** worker. But reliably detecting that “last call” is hard, as other tests may still be scheduled that use the same hook.
+
+In this example, the cleanup would run as soon as the first worker finishes, while other workers might still depend on the resource:
+
+```ts
+// ❌ Don't do this
+test.afterAll(async () => {
+  await globalCache.get('key', async () => {
+    // ...cleanup code
+  });
+});
+```
+
+**Do this instead:** move any "run-once-after-everything" logic to a global teardown. That guarantees all workers have finished. During teardown, use Global Cache’s [API](`#globalcachegetstalekey) to check whether the key exists and then perform the once-only cleanup.
 
 ## Feedback
 Feel free to share your feedback and suggestions in the [issues](https://github.com/vitalets/@vitalets/global-cache/issues).
