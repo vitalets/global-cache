@@ -577,7 +577,7 @@ Running an `AfterAll` hook exactly once is tricky. The intent is usually to run 
 In this example, the cleanup would run as soon as the first worker finishes, while other workers might still depend on the resource:
 
 ```ts
-// ❌ Don't do this
+// ❌ Don't do this in `afterAll`
 test.afterAll(async () => {
   await globalCache.get('key', async () => {
     // ...cleanup code
