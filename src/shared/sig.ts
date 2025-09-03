@@ -30,9 +30,17 @@ export function calcSignature({ ttl, stack, fn }: SingatureParams) {
   return JSON.stringify(obj);
 }
 
+// eslint-disable-next-line visual/complexity
 export function checkSignature(key: string, storedSigStr: string, currentSigStr: string) {
-  const storedSig = JSON.parse(storedSigStr) as SignatureObj;
-  const currentSig = JSON.parse(currentSigStr) as SignatureObj;
+  const storedSig = parseSignatureSafe(storedSigStr);
+  const currentSig = parseSignatureSafe(currentSigStr);
+
+  // fallback to string comparison if parsing failed for any of the signatures
+  if (!storedSig || !currentSig) {
+    return storedSigStr !== currentSigStr
+      ? buildErrorMessage(key, 'sig', storedSigStr, currentSigStr)
+      : undefined;
+  }
 
   // checking stack first -> allows to navigate to the code by click.
   if (storedSig.stack !== currentSig.stack) {
@@ -45,6 +53,14 @@ export function checkSignature(key: string, storedSigStr: string, currentSigStr:
 
   if (storedSig.fn !== currentSig.fn) {
     return buildErrorMessage(key, 'fn', storedSig.fn, currentSig.fn);
+  }
+}
+
+function parseSignatureSafe(sigStr: string) {
+  try {
+    return JSON.parse(sigStr) as SignatureObj;
+  } catch {
+    return null;
   }
 }
 
