@@ -213,29 +213,34 @@ describe('ignoreTTL: true', () => {
 });
 
 describe('invalid signature', () => {
-  test('different functions', async () => {
-    const key = `invalid-signature-different-fn`;
-    await globalCache.get(key, () => 1);
-    await expect(globalCache.get(key, () => 2)).rejects.toThrow(
-      `Failed to get key "${key}": Signature mismatch!`,
-    );
-  });
-
   test('different locations', async () => {
     const key = `invalid-signature-different-locations`;
     const computeFn = () => 1;
     await globalCache.get(key, computeFn);
-    await expect(globalCache.get(key, computeFn)).rejects.toThrow(
-      `Failed to get key "${key}": Signature mismatch!`,
-    );
+    const promise = globalCache.get(key, () => 2);
+    await expect(promise).rejects.toThrow(`Failed to get key "${key}": Signature mismatch (stack)`);
   });
 
-  test('mix non-persistent + persistent calls', async () => {
-    const key = `invalid-signature-mix-ttl`;
-    const computeFn = () => 1;
-    await globalCache.get(key, computeFn);
-    await expect(globalCache.get(key, { ttl: 50 }, computeFn)).rejects.toThrow(
-      `Failed to get key "${key}": Signature mismatch!`,
-    );
+  test('different ttl', async () => {
+    const key = `invalid-signature-different-ttl`;
+    let ttl = 50;
+    const fn = () => globalCache.get(key, { ttl }, () => 1);
+    await fn();
+    ttl = 100;
+    await expect(fn()).rejects.toThrow(`Failed to get key "${key}": Signature mismatch (ttl)`);
+    await expect(fn()).rejects.toThrow(`1-st call ttl: 50`);
+    await expect(fn()).rejects.toThrow(`2-nd call ttl: 100`);
+  });
+
+  test('different functions', async () => {
+    const key = `invalid-signature-different-fn`;
+    let flag = true;
+    const computeFn1 = () => 1;
+    const computeFn2 = () => 2;
+    const fn = () => globalCache.get(key, flag ? computeFn1 : computeFn2);
+    await fn();
+    flag = false;
+    await expect(fn()).rejects.toThrow(`Failed to get key "${key}": Signature mismatch (fn)`);
+    await expect(fn()).rejects.toThrow(`1-st call fn: () => 1`);
   });
 });

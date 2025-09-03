@@ -3,6 +3,7 @@
 > This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
 
 ## [Unreleased]
+* feat: better signature checks.
 
 ## [0.2.1] - 2025-08-26
 * chore: better error message for missing setup

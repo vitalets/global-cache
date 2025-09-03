@@ -9,8 +9,14 @@
 
 import { TTL } from './ttl';
 
-export type SingatureParams = {
+type SingatureParams = {
   fn: Function; // eslint-disable-line @typescript-eslint/no-unsafe-function-type
+  stack: string;
+  ttl?: TTL;
+};
+
+type SignatureObj = {
+  fn: string;
   stack: string;
   ttl?: TTL;
 };
@@ -19,5 +25,35 @@ export function calcSignature({ ttl, stack, fn }: SingatureParams) {
   // todo: use hashing?
   // todo: remove spaces and newlines from stack and computeFn?
   const fnBody = fn.toString().replace(/[\n\s]+/g, ' ');
-  return `${String(ttl)}:${stack}:${fnBody}`;
+  const obj: SignatureObj = { ttl, stack, fn: fnBody };
+
+  return JSON.stringify(obj);
+}
+
+export function checkSignature(key: string, storedSigStr: string, currentSigStr: string) {
+  const storedSig = JSON.parse(storedSigStr) as SignatureObj;
+  const currentSig = JSON.parse(currentSigStr) as SignatureObj;
+
+  // checking stack first -> allows to navigate to the code by click.
+  if (storedSig.stack !== currentSig.stack) {
+    return buildErrorMessage(key, 'stack', storedSig.stack, currentSig.stack);
+  }
+
+  if (storedSig.ttl !== currentSig.ttl) {
+    return buildErrorMessage(key, 'ttl', storedSig.ttl, currentSig.ttl);
+  }
+
+  if (storedSig.fn !== currentSig.fn) {
+    return buildErrorMessage(key, 'fn', storedSig.fn, currentSig.fn);
+  }
+}
+
+// eslint-disable-next-line max-params
+function buildErrorMessage(key: string, field: string, value1: unknown, value2: unknown) {
+  return [
+    `Signature mismatch (${field}). `,
+    `Please ensure you don't call globalCache.get("${key}") from multiple places.\n`,
+    `1-st call ${field}: ${value1}\n`,
+    `2-nd call ${field}: ${value2}`,
+  ].join('');
 }

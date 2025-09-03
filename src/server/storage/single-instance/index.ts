@@ -4,6 +4,7 @@
  * - presistent values are stored on fs and loaded to memory on the first request
  * - waiting for value is performed via memory
  */
+import { checkSignature } from '../../../shared/sig';
 import { isExpired } from '../../../shared/ttl';
 import { assignValueInfo, ValueInfo } from '../../../shared/value-info';
 import { FileSystemStorage } from './fs';
@@ -25,8 +26,9 @@ export class SingleInstanceStorage {
   async loadInfo({ key, sig, ttl }: { key: string; sig: string; ttl?: number }) {
     let valueInfo = this.sessionValues.get(key);
 
-    if (valueInfo && valueInfo.sig !== sig) {
-      throw createSignatureError();
+    if (valueInfo) {
+      const signatureError = checkSignature(key, valueInfo.sig, sig);
+      if (signatureError) throw new Error(signatureError);
     }
 
     if (!valueInfo) {
@@ -54,10 +56,13 @@ export class SingleInstanceStorage {
     const storedInfo = await this.fsStorage.load(key);
 
     if (!storedInfo) return valueInfo;
+
     if (isExpired(storedInfo.computedAt, ttl)) {
       return assignValueInfo(valueInfo, { state: 'expired', prevValue: storedInfo.value });
     }
-    if (storedInfo.sig !== sig) {
+
+    const signatureError = checkSignature(key, storedInfo.sig, sig);
+    if (signatureError) {
       return assignValueInfo(valueInfo, { state: 'sig-changed', prevValue: storedInfo.value });
     }
 
@@ -113,15 +118,4 @@ export class SingleInstanceStorage {
   async clearSession() {
     this.sessionValues.clear();
   }
-}
-
-function createSignatureError() {
-  return new Error(
-    [
-      `Signature mismatch! Please ensure you are not calling globalCache.get():`,
-      ` - with different compute functions`,
-      ` - with different params (e.g. ttl)`,
-      ` - from different locations`,
-    ].join('\n'),
-  );
 }
