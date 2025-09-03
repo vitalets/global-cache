@@ -1,7 +1,7 @@
 {
   "name": "@vitalets/global-cache",
   "description": "Key-value cache for sharing data between parallel workers.",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "type": "commonjs",
   "repository": {
     "type": "git",

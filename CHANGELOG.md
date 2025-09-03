@@ -3,6 +3,8 @@
 > This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
 
 ## [Unreleased]
+
+## [0.2.2] - 2025-09-03
 * feat: better signature checks.
 
 ## [0.2.1] - 2025-08-26
@@ -17,7 +19,8 @@
 * Initial release.
 
 
-[unreleased]: https://github.com/vitalets/global-cache/compare/0.2.1...HEAD
+[unreleased]: https://github.com/vitalets/global-cache/compare/0.2.2...HEAD
+[0.2.2]: https://github.com/vitalets/global-cache/compare/0.2.1...0.2.2
 [0.2.1]: https://github.com/vitalets/global-cache/compare/0.2.0...0.2.1
 [0.2.0]: https://github.com/vitalets/global-cache/compare/0.1.2...0.2.0
 [0.1.2]: https://github.com/vitalets/global-cache/compare/0.1.1...0.1.2
