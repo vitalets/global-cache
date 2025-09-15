@@ -35,6 +35,7 @@ This can significantly boost your E2E test performance.
   - [Cleanup (by prefix)](#cleanup-by-prefix)
   - [Typed cache](#typed-cache)
 - [Configuration](#configuration)
+- [Docker](#docker)
 - [API](#api)
   - [`globalCache.setup`](#globalcachesetup)
   - [`globalCache.teardown`](#globalcacheteardown)
@@ -457,6 +458,43 @@ globalCache.defineConfig({
 ```
 
 [Available options](#globalcachedefineconfigconfig).
+
+## Docker
+
+The global cache server can be run as a standalone Docker container, which is useful for distributed testing environments or when you need to share cache across multiple test runners.
+
+### Building the Docker Image
+
+Build the Docker image using the provided npm script:
+
+```bash
+npm run docker:build
+```
+
+Or manually:
+
+```bash
+docker build -t global-cache-server .
+```
+
+### Running the Container
+
+Run the container with persistent storage:
+
+```bash
+npm run docker:run
+```
+
+Or manually:
+
+```bash
+docker run -d \
+  --name global-cache-server \
+  -p 3000:3000 \
+  -v global-cache-data:/app/cache \
+  global-cache-server
+```
+
 
 ## API
 
