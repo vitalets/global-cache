@@ -54,4 +54,10 @@ export class StorageApi {
     const res = await this.http.post('/clear-session');
     await throwIfHttpError(res, 'Failed to clear session:');
   }
+
+  async healthCheck() {
+    const res = await this.http.get('/health');
+    await throwIfHttpError(res, 'Health check failed:');
+    return (await res.json()) as { status: string; timestamp: string; uptime: number };
+  }
 }

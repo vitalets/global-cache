@@ -11,6 +11,8 @@ export type GlobalConfigInput = {
   basePath?: string;
   /* Disables global storage, all values will be computed each time */
   disabled?: boolean;
+  /* Custom server URL to connect to an external global-cache server */
+  serverUrl?: string;
 };
 
 type GlobalConfigResolved = GlobalConfigInput & {
