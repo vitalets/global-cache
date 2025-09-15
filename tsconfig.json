@@ -7,7 +7,12 @@
     "useUnknownInCatchVariables": false,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "noEmit": true
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@vitalets/global-cache": ["./src/index.ts"],
+      "@vitalets/global-cache/server": ["./src/server/index.ts"]
+    }
   },
   "include": ["**/*.ts"],
   "exclude": ["dist"]

@@ -25,7 +25,10 @@
   "files": [
     "dist",
     "src",
-    "README.md"
+    "README.md",
+    "Dockerfile",
+    "docker-compose.yml",
+    ".dockerignore"
   ],
   "scripts": {
     "prepare": "git config core.hooksPath scripts/git-hooks",
@@ -40,7 +43,9 @@
     "pw:install": "PLAYWRIGHT_SKIP_BROWSER_GC=1 npx playwright install chromium",
     "toc": "md-magic --files README.md",
     "build": "./scripts/build.sh",
-    "release": "release-it"
+    "release": "release-it",
+    "docker:build": "docker build -t global-cache-server .",
+    "docker:run": "docker run -d --name global-cache-server -p 3000:3000 -v global-cache-data:/app/cache global-cache-server"
   },
   "dependencies": {
     "debug": "^4.4.1",
