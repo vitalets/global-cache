@@ -47,8 +47,9 @@ export class GlobalCache<S extends DefaultSchema = DefaultSchema> {
     }
 
     const ttl = globalConfig.ignoreTTL ? undefined : params.ttl;
+
     // keep stack expression in this fn to have correct stack offset
-    const stack = new Error().stack?.split('\n')[2]?.trim() || '';
+    const stack = new Error().stack?.split('\n')[2]?.trim().replace(process.cwd(), '') || '';
     const sig = calcSignature({ fn, ttl, stack });
 
     debugKey(key, `Fetching value...`);

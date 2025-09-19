@@ -3,6 +3,7 @@
 > This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
 
 ## [Unreleased]
+* chore: use relative path in sig
 
 ## [0.2.2] - 2025-09-03
 * feat: better signature checks.
