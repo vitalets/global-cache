@@ -27,7 +27,49 @@ afterEach(async () => {
 });
 
 describe('get', () => {
-  describe('non-persistent', () => {
+  test('non-persistent (basic flow)', async () => {
+    let callCount = 0;
+    const value = 'foo';
+    const fn = () =>
+      globalCache.get(`non-persistent-basic`, async () => {
+        callCount++;
+        return value;
+      });
+
+    const [value1, value2] = await Promise.all([fn(), fn()]);
+    const value3 = await fn();
+
+    expect(callCount).toEqual(1);
+    expect(value1).toEqual(value);
+    expect(value2).toEqual(value);
+    expect(value3).toEqual(value);
+  });
+
+  test('persistent (basic flow)', async () => {
+    let callCount = 0;
+    const value = 'foo';
+    const ttl = 50;
+
+    const fn = () =>
+      globalCache.get(`persistent-${JSON.stringify(value)}`, { ttl }, async () => {
+        callCount++;
+        return value;
+      });
+
+    const [value1, value2] = await Promise.all([fn(), fn()]);
+    const value3 = await fn();
+    await globalCache.clearSession(); // <-- should be removed
+    await waitForExpire(ttl);
+    const value4 = await fn();
+
+    expect(callCount).toEqual(2);
+    expect(value1).toEqual(value);
+    expect(value2).toEqual(value);
+    expect(value3).toEqual(value);
+    expect(value4).toEqual(value);
+  });
+
+  describe('non-persistent (different values)', () => {
     test('string', () => checkNonPersistentValue('hello'));
     test('number', () => checkNonPersistentValue(42));
     test('boolean', () => checkNonPersistentValue(true));
@@ -37,27 +79,13 @@ describe('get', () => {
     test('undefined', () => checkNonPersistentValue(undefined));
 
     async function checkNonPersistentValue(value: unknown) {
-      let callCount = 0;
-      const fn = () =>
-        globalCache.get(`memory-${JSON.stringify(value)}`, async () => {
-          callCount++;
-          return value;
-        });
-
-      const [value1, value2] = await Promise.all([fn(), fn()]);
-      const value3 = await fn();
-      await globalCache.clearSession();
-      const value4 = await fn();
-
-      expect(callCount).toEqual(2);
+      const fn = () => globalCache.get(`memory-${JSON.stringify(value)}`, () => value);
+      const value1 = await fn();
       expect(value1).toEqual(value);
-      expect(value2).toEqual(value);
-      expect(value3).toEqual(value);
-      expect(value4).toEqual(value);
     }
   });
 
-  describe('persistent', () => {
+  describe('persistent (different values)', () => {
     test('string', () => checkPersistentValue('hello'));
     test('number', () => checkPersistentValue(42));
     test('boolean', () => checkPersistentValue(true));
@@ -67,26 +95,17 @@ describe('get', () => {
     test('undefined', () => checkPersistentValue(undefined));
 
     async function checkPersistentValue(value: unknown) {
-      let callCount = 0;
       const ttl = 50;
-
       const fn = () =>
-        globalCache.get(`persistent-${JSON.stringify(value)}`, { ttl }, async () => {
-          callCount++;
-          return value;
-        });
+        globalCache.get(`persistent-${JSON.stringify(value)}`, { ttl }, async () => value);
 
-      const [value1, value2] = await Promise.all([fn(), fn()]);
-      const value3 = await fn();
-      await globalCache.clearSession();
-      await new Promise((r) => setTimeout(r, ttl + 10)); // wait for value to expire
-      const value4 = await fn(); // increments callCount again
+      const value1 = await fn();
+      await globalCache.clearSession(); // <-- should be removed
+      await waitForExpire(ttl);
+      const value2 = await fn();
 
-      expect(callCount).toEqual(2);
       expect(value1).toEqual(value);
       expect(value2).toEqual(value);
-      expect(value3).toEqual(value);
-      expect(value4).toEqual(value);
     }
   });
 
@@ -244,3 +263,7 @@ describe('invalid signature', () => {
     await expect(fn()).rejects.toThrow(`1-st call fn: () => 1`);
   });
 });
+
+async function waitForExpire(ttl: number) {
+  await new Promise((r) => setTimeout(r, ttl + 10));
+}
