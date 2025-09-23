@@ -4,10 +4,10 @@
  * This allows multiple requests to wait for the same computation without duplicating it.
  */
 
-import { ValueInfo } from '../../../shared/value-info';
+import { TestRunValueInfo } from '../../../shared/value-info';
 
 type Waiter = {
-  resolve: (valueInfo: ValueInfo) => void;
+  resolve: (valueInfo: TestRunValueInfo) => void;
   reject: (errorMessage: string) => void;
 };
 
@@ -15,7 +15,7 @@ export class Waiters {
   private map = new Map<string, Waiter[]>();
 
   wait(key: string) {
-    return new Promise<ValueInfo>((resolve, reject) => {
+    return new Promise<TestRunValueInfo>((resolve, reject) => {
       const waiter: Waiter = { resolve, reject };
       const waiters = this.map.get(key) || [];
       waiters.push(waiter);
@@ -23,7 +23,7 @@ export class Waiters {
     });
   }
 
-  notifyComputed(valueInfo: ValueInfo) {
+  notifyComputed(valueInfo: TestRunValueInfo) {
     const waiters = this.map.get(valueInfo.key);
     try {
       waiters?.forEach(({ resolve }) => resolve(valueInfo));

@@ -1,8 +1,8 @@
 /**
- * In-memory info about value.
+ * Value info in the scope of particular test run.
  */
 
-export type ValueInfo = {
+export type TestRunValueInfo = {
   key: string;
   sig: string;
   state: 'missing' | 'expired' | 'sig-changed' | 'computing' | 'computed';
@@ -12,14 +12,14 @@ export type ValueInfo = {
   prevValue?: unknown; // previous value (applicable for persistent keys, used for cleanup)
 };
 
-export function initValueInfo(key: string, sig: string, ttl?: number): ValueInfo {
+export function initValueInfo(key: string, sig: string, ttl?: number): TestRunValueInfo {
   return { key, state: 'missing', sig, persistent: Boolean(ttl) };
 }
 
-export function updateValueInfo(valueInfo: ValueInfo, props: Partial<ValueInfo>) {
+export function updateValueInfo(valueInfo: TestRunValueInfo, props: Partial<TestRunValueInfo>) {
   return Object.assign(valueInfo, props);
 }
 
-export function getStaleValue(valueInfo?: ValueInfo | null) {
+export function getStaleValue(valueInfo?: TestRunValueInfo | null) {
   return valueInfo?.persistent ? valueInfo.prevValue : valueInfo?.value;
 }

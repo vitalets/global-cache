@@ -6,7 +6,7 @@
  */
 import { checkSignature } from '../../../shared/sig';
 import { isExpired } from '../../../shared/ttl';
-import { updateValueInfo, initValueInfo, ValueInfo } from '../../../shared/value-info';
+import { updateValueInfo, initValueInfo, TestRunValueInfo } from '../../../shared/value-info';
 import { FileSystemStorage } from './fs';
 import { Waiters } from './waiters';
 
@@ -16,18 +16,18 @@ export type SingleInstanceStorageConfig = {
 };
 
 export class SingleInstanceStorage {
-  private sessionValues = new Map<string, ValueInfo>();
+  private values = new Map<string, TestRunValueInfo>();
   private fsStorage: FileSystemStorage;
   private waiters = new Waiters();
 
-  constructor(private config: SingleInstanceStorageConfig) {
+  constructor(config: SingleInstanceStorageConfig) {
     this.fsStorage = new FileSystemStorage(config.basePath);
   }
 
   // eslint-disable-next-line max-statements, visual/complexity
-  async loadInfo(params: { key: string; sig: string; ttl?: number }): Promise<ValueInfo> {
+  async loadInfo(params: { key: string; sig: string; ttl?: number }): Promise<TestRunValueInfo> {
     const { key, sig, ttl } = params;
-    let valueInfo = this.sessionValues.get(key);
+    let valueInfo = this.values.get(key);
 
     // check signature (for already accessed value)
     if (valueInfo) {
@@ -51,7 +51,7 @@ export class SingleInstanceStorage {
       valueInfo = initValueInfo(key, sig, ttl);
     }
 
-    this.sessionValues.set(key, valueInfo);
+    this.values.set(key, valueInfo);
 
     return valueInfo;
   }
@@ -60,7 +60,7 @@ export class SingleInstanceStorage {
     const storedInfo = await this.fsStorage.load(key);
     if (!storedInfo) return;
 
-    const valueInfo: ValueInfo = {
+    const valueInfo: TestRunValueInfo = {
       key,
       state: 'computed',
       persistent: true,
@@ -77,9 +77,9 @@ export class SingleInstanceStorage {
     return valueInfo;
   }
 
-  async setComputing(valueInfo: ValueInfo) {
+  async setComputing(valueInfo: TestRunValueInfo) {
     updateValueInfo(valueInfo, { state: 'computing' });
-    this.sessionValues.set(valueInfo.key, valueInfo);
+    this.values.set(valueInfo.key, valueInfo);
   }
 
   async waitValue(key: string) {
@@ -88,7 +88,7 @@ export class SingleInstanceStorage {
 
   // eslint-disable-next-line max-statements, visual/complexity
   async setComputed({ key, value, error }: { key: string; value?: unknown; error?: string }) {
-    const valueInfo = this.sessionValues.get(key);
+    const valueInfo = this.values.get(key);
 
     if (!valueInfo) {
       throw new Error(`Cannot set value for key "${key}" that is not loaded.`);
@@ -99,12 +99,12 @@ export class SingleInstanceStorage {
 
     if (error) {
       updateValueInfo(valueInfo, { state: 'missing', value: undefined, computedAt: undefined });
-      this.sessionValues.set(key, valueInfo);
+      this.values.set(key, valueInfo);
       this.waiters.notifyError(key, error);
       if (valueInfo.persistent) await this.fsStorage.delete(key);
     } else {
       updateValueInfo(valueInfo, { state: 'computed', value, computedAt: Date.now() });
-      this.sessionValues.set(key, valueInfo);
+      this.values.set(key, valueInfo);
       this.waiters.notifyComputed(valueInfo);
       if (valueInfo.persistent) await this.fsStorage.save(valueInfo);
     }
@@ -113,17 +113,17 @@ export class SingleInstanceStorage {
   }
 
   async getLoadedInfo(key: string) {
-    return this.sessionValues.get(key);
+    return this.values.get(key);
   }
 
   async getLoadedInfoList(prefix: string) {
-    return [...this.sessionValues.values()].filter((valueInfo) => valueInfo.key.startsWith(prefix));
+    return [...this.values.values()].filter((valueInfo) => valueInfo.key.startsWith(prefix));
   }
 
   /**
    * Clears all session values.
    */
   async clearSession() {
-    this.sessionValues.clear();
+    this.values.clear();
   }
 }

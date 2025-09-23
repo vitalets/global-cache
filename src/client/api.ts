@@ -6,7 +6,7 @@ import { TTL } from '../shared/ttl';
 import { HttpJson } from './utils/http-json';
 import { prepareQueryParams } from './utils/http-query';
 import { buildHttpError, throwIfHttpError } from './utils/http-error';
-import { getStaleValue, ValueInfo } from '../shared/value-info';
+import { getStaleValue, TestRunValueInfo } from '../shared/value-info';
 
 export class StorageApi {
   private http: HttpJson;
@@ -23,7 +23,7 @@ export class StorageApi {
       throw await buildHttpError(res, `Failed to get key "${key}":`);
     }
 
-    return (await res.json()) as ValueInfo;
+    return (await res.json()) as TestRunValueInfo;
   }
 
   async set({ key, value, error }: { key: string; value: unknown; error?: Error }) {
@@ -31,13 +31,13 @@ export class StorageApi {
     const res = await this.http.post('set', body);
     await throwIfHttpError(res, `Failed to save key "${key}":`);
 
-    return (await res.json()) as ValueInfo;
+    return (await res.json()) as TestRunValueInfo;
   }
 
   async getStale({ key }: GetStaleParams) {
     const res = await this.http.get('get-stale', { key });
     await throwIfHttpError(res, `Failed to get stale key "${key}":`);
-    const valueInfo = (await res.json()) as ValueInfo | null;
+    const valueInfo = (await res.json()) as TestRunValueInfo | null;
 
     return getStaleValue(valueInfo);
   }
@@ -45,7 +45,7 @@ export class StorageApi {
   async getStaleList({ prefix }: GetStaleListParams) {
     const res = await this.http.get('get-stale-list', { prefix });
     await throwIfHttpError(res, `Failed to get stale list for prefix "${prefix}":`);
-    const valueInfoList = (await res.json()) as ValueInfo[];
+    const valueInfoList = (await res.json()) as TestRunValueInfo[];
 
     return valueInfoList.map((valueInfo) => getStaleValue(valueInfo));
   }

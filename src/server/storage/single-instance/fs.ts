@@ -3,7 +3,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { ValueInfo } from '../../../shared/value-info';
+import { TestRunValueInfo } from '../../../shared/value-info';
 
 export type StoredInfo = {
   computedAt: number;
@@ -22,7 +22,7 @@ export class FileSystemStorage {
     return JSON.parse(content) as StoredInfo;
   }
 
-  async save({ key, value, sig }: ValueInfo) {
+  async save({ key, value, sig }: TestRunValueInfo) {
     const computedAt = Date.now();
     const storedInfo: StoredInfo = { computedAt, sig, value };
     const content = JSON.stringify(storedInfo, null, 2);
