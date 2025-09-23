@@ -14,12 +14,13 @@ export type GetValueParams = {
 /**
  * Route for geting a value.
  */
-router.get('/get', async (req, res) => {
+router.get('/run/:runId/get', async (req, res) => {
+  const { runId } = req.params;
   const { key, sig, ttl: ttlParam } = req.query as GetValueParams;
   const config = getConfig(req.app as Express);
   const ttl = parseTTL(ttlParam);
 
-  const storage = getStorage(config);
+  const storage = getStorage(config, runId);
   let valueInfo = await storage.loadInfo({ key, sig, ttl });
 
   if (valueInfo.state === 'computed') {

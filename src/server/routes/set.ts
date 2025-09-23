@@ -10,11 +10,12 @@ export type SetValueParams = {
   error?: string; // An error occured during value computing.
 };
 
-router.post('/set', async (req, res) => {
+router.post('/run/:runId/set', async (req, res) => {
+  const { runId } = req.params;
   const { key, value, error } = req.body as SetValueParams;
   const config = getConfig(req.app as Express);
 
-  const storage = getStorage(config);
+  const storage = getStorage(config, runId);
   const valueInfo = await storage.setComputed({ key, value, error });
 
   res.json(valueInfo);

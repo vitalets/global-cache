@@ -12,7 +12,11 @@ export type ValueInfo = {
   prevValue?: unknown; // previous value (applicable for persistent keys, used for cleanup)
 };
 
-export function assignValueInfo(valueInfo: ValueInfo, props: Partial<ValueInfo>) {
+export function initValueInfo(key: string, sig: string, ttl?: number): ValueInfo {
+  return { key, state: 'missing', sig, persistent: Boolean(ttl) };
+}
+
+export function updateValueInfo(valueInfo: ValueInfo, props: Partial<ValueInfo>) {
   return Object.assign(valueInfo, props);
 }
 

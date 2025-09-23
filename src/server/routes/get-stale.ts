@@ -11,12 +11,13 @@ export type GetStaleParams = {
 /**
  * Route for geting a stale value.
  */
-router.get('/get-stale', async (req, res) => {
+router.get('/run/:runId/get-stale', async (req, res) => {
+  const { runId } = req.params;
   const { key } = req.query as GetStaleParams;
   const config = getConfig(req.app as Express);
 
   // for stale we return only values used in this test-run.
-  const storage = getStorage(config);
+  const storage = getStorage(config, runId);
   const valueInfo = await storage.getLoadedInfo(key);
 
   res.json(valueInfo ?? null);

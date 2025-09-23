@@ -1,15 +1,20 @@
 import { GlobalStorageServerConfigResolved } from '../config';
 import { SingleInstanceStorage } from './single-instance';
 
-let singleInstanceStorage: SingleInstanceStorage | null = null;
+// In-memory storage of test runs with values
+const testRunStorageMap = new Map<string, SingleInstanceStorage>();
 
-export function getStorage({ basePath }: GlobalStorageServerConfigResolved) {
+// todo: cleanup old testRuns from the map
+
+export function getStorage({ basePath }: GlobalStorageServerConfigResolved, runId: string) {
   // todo: handle multi-instance storage
-  if (!singleInstanceStorage) {
+  let testRunStorage = testRunStorageMap.get(runId);
+  if (!testRunStorage) {
     // todo: re-create if basePath changed
-    singleInstanceStorage = new SingleInstanceStorage({ basePath });
+    testRunStorage = new SingleInstanceStorage({ basePath, runId });
+    testRunStorageMap.set(runId, testRunStorage);
   }
-  return singleInstanceStorage;
+  return testRunStorage;
 }
 
 // todo: define IStorage interface

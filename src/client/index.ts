@@ -25,11 +25,12 @@ export class GlobalCache<S extends DefaultSchema = DefaultSchema> {
 
   private get api() {
     if (!this.#api) {
-      const { serverUrl } = globalConfig;
+      const { serverUrl, runId } = globalConfig;
       if (!serverUrl) {
         throw new Error('Global-cache url is empty. Did you run the global-cache setup?');
       }
-      this.#api = new StorageApi(serverUrl);
+      const baseUrl = new URL(`/run/${runId}/`, serverUrl).toString();
+      this.#api = new StorageApi(baseUrl);
     }
     return this.#api;
   }

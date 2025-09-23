@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { debug } from './shared/debug';
 import { globalConfig } from './config';
 import { storageServer } from './server';
@@ -8,11 +9,17 @@ export default async function globalSetup() {
     return;
   }
 
-  await storageServer.start({
-    basePath: globalConfig.basePath,
-  });
+  // generate unique runId on every global setup call
+  globalConfig.update({ runId: process.env.GLOBAL_CACHE_RUN_ID || randomUUID() });
 
-  globalConfig.update({
-    serverUrl: `http://localhost:${storageServer.port}`,
-  });
+  // todo: don't start if serverUrl is set
+  if (!storageServer.isRunning) {
+    await storageServer.start({
+      basePath: globalConfig.basePath,
+    });
+
+    globalConfig.update({
+      serverUrl: `http://localhost:${storageServer.port}`,
+    });
+  }
 }

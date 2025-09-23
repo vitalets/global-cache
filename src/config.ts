@@ -15,11 +15,13 @@ export type GlobalConfigInput = {
 
 type GlobalConfigResolved = GlobalConfigInput & {
   serverUrl: string;
+  runId: string;
 };
 
 export class GlobalConfig {
   private config: GlobalConfigResolved = {
     serverUrl: '', // serverUrl will be set later, when server starts.
+    runId: '', // runId will be set in global setup
   };
 
   constructor() {
@@ -45,6 +47,10 @@ export class GlobalConfig {
 
   get disabled() {
     return Boolean(this.config.disabled);
+  }
+
+  get runId() {
+    return this.config.runId;
   }
 }
 

@@ -5,6 +5,7 @@
 ## [Unreleased]
 * chore: use relative path in sig
 * fix: check TTL within single test run
+* feat: split values per `runId`
 
 ## [0.2.2] - 2025-09-03
 * feat: better signature checks.

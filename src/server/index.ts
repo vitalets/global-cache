@@ -41,6 +41,10 @@ export class StorageServer {
     return port;
   }
 
+  get isRunning() {
+    return Boolean(this.server?.listening);
+  }
+
   /**
    * Start server.
    * See: https://github.com/nodejs/node/issues/21482#issuecomment-626025579
