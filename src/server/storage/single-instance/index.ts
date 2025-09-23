@@ -23,50 +23,70 @@ export class SingleInstanceStorage {
     this.fsStorage = new FileSystemStorage(config.basePath);
   }
 
-  async loadInfo({ key, sig, ttl }: { key: string; sig: string; ttl?: number }) {
-    let valueInfo = this.sessionValues.get(key);
-
-    if (valueInfo) {
-      const signatureError = checkSignature(key, valueInfo.sig, sig);
-      if (signatureError) throw new Error(signatureError);
-    }
-
-    if (!valueInfo) {
-      valueInfo = ttl
-        ? await this.loadPersistentValueInfo({ key, sig, ttl }) // prettier ignore
-        : { key, state: 'missing', sig };
-
-      // store value in memory for all usages in this session
-      this.sessionValues.set(key, valueInfo);
-    }
-
-    return valueInfo;
-  }
-
-  private async loadPersistentValueInfo({
+  // eslint-disable-next-line max-statements, visual/complexity
+  async loadInfo({
     key,
     sig,
     ttl,
   }: {
     key: string;
     sig: string;
-    ttl: number;
-  }) {
-    const valueInfo: ValueInfo = { key, state: 'missing', persistent: true, sig };
+    ttl?: number;
+  }): Promise<ValueInfo> {
+    let valueInfo = this.sessionValues.get(key);
+
+    let loadedFromFs = false;
+    if (!valueInfo && ttl) {
+      valueInfo = await this.loadPersistentValueInfo(key);
+      loadedFromFs = true;
+    }
+
+    // check signature
+    if (valueInfo?.state === 'computed') {
+      const signatureError = checkSignature(key, valueInfo.sig, sig);
+      if (signatureError) {
+        // todo: replace with checking valueInfo.runId === currentRunId
+        // eslint-disable-next-line max-depth
+        if (loadedFromFs) {
+          assignValueInfo(valueInfo, { state: 'sig-changed', prevValue: valueInfo.value });
+        } else {
+          throw new Error(signatureError);
+        }
+      }
+    }
+
+    // check expired
+    if (valueInfo?.state === 'computed' && valueInfo.persistent && ttl && valueInfo.computedAt) {
+      if (isExpired(valueInfo.computedAt, ttl)) {
+        assignValueInfo(valueInfo, {
+          state: 'expired',
+          prevValue: valueInfo.value,
+        });
+      }
+    }
+
+    if (!valueInfo) {
+      valueInfo = { key, state: 'missing', persistent: Boolean(ttl), sig };
+    }
+
+    // store value in memory for all usages in this session
+    this.sessionValues.set(key, valueInfo);
+
+    return valueInfo;
+  }
+
+  private async loadPersistentValueInfo(key: string): Promise<ValueInfo | undefined> {
     const storedInfo = await this.fsStorage.load(key);
-
-    if (!storedInfo) return valueInfo;
-
-    if (isExpired(storedInfo.computedAt, ttl)) {
-      return assignValueInfo(valueInfo, { state: 'expired', prevValue: storedInfo.value });
+    if (storedInfo) {
+      return {
+        key,
+        state: 'computed',
+        persistent: true,
+        computedAt: storedInfo.computedAt,
+        value: storedInfo.value,
+        sig: storedInfo.sig,
+      };
     }
-
-    const signatureError = checkSignature(key, storedInfo.sig, sig);
-    if (signatureError) {
-      return assignValueInfo(valueInfo, { state: 'sig-changed', prevValue: storedInfo.value });
-    }
-
-    return assignValueInfo(valueInfo, { state: 'computed', value: storedInfo.value });
   }
 
   async setComputing(valueInfo: ValueInfo) {
@@ -95,7 +115,7 @@ export class SingleInstanceStorage {
       this.waiters.notifyError(key, error);
       if (valueInfo.persistent) await this.fsStorage.delete(key);
     } else {
-      assignValueInfo(valueInfo, { state: 'computed', value });
+      assignValueInfo(valueInfo, { state: 'computed', value, computedAt: Date.now() });
       this.sessionValues.set(key, valueInfo);
       this.waiters.notifyComputed(valueInfo);
       if (valueInfo.persistent) await this.fsStorage.save(valueInfo);

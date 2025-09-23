@@ -1,11 +1,12 @@
 /**
- * Info about value and helper functions to manage it.
+ * In-memory info about value.
  */
 
 export type ValueInfo = {
   key: string;
   sig: string;
   state: 'missing' | 'expired' | 'sig-changed' | 'computing' | 'computed';
+  computedAt?: number;
   value?: unknown;
   persistent?: boolean; // indicates if the value is stored persistently (e.g., in file system)
   prevValue?: unknown; // previous value (applicable for persistent keys, used for cleanup)

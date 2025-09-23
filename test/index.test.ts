@@ -31,7 +31,7 @@ describe('get', () => {
     let callCount = 0;
     const value = 'foo';
     const fn = () =>
-      globalCache.get(`non-persistent-basic`, async () => {
+      globalCache.get(`non-persistent-basic-flow`, async () => {
         callCount++;
         return value;
       });
@@ -51,14 +51,13 @@ describe('get', () => {
     const ttl = 50;
 
     const fn = () =>
-      globalCache.get(`persistent-${JSON.stringify(value)}`, { ttl }, async () => {
+      globalCache.get(`persistent-basic-flow`, { ttl }, async () => {
         callCount++;
         return value;
       });
 
     const [value1, value2] = await Promise.all([fn(), fn()]);
     const value3 = await fn();
-    await globalCache.clearSession(); // <-- should be removed
     await waitForExpire(ttl);
     const value4 = await fn();
 
@@ -100,7 +99,6 @@ describe('get', () => {
         globalCache.get(`persistent-${JSON.stringify(value)}`, { ttl }, async () => value);
 
       const value1 = await fn();
-      await globalCache.clearSession(); // <-- should be removed
       await waitForExpire(ttl);
       const value2 = await fn();
 

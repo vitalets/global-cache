@@ -4,6 +4,7 @@
 
 ## [Unreleased]
 * chore: use relative path in sig
+* fix: check TTL within single test run
 
 ## [0.2.2] - 2025-09-03
 * feat: better signature checks.
