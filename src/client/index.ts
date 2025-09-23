@@ -23,6 +23,10 @@ export class GlobalCache<S extends DefaultSchema = DefaultSchema> {
     return require.resolve('../teardown.js');
   }
 
+  get teardownReporter() {
+    return require.resolve('../teardown-reporter.js');
+  }
+
   private get api() {
     if (!this.#api) {
       const { serverUrl, runId } = globalConfig;

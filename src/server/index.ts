@@ -61,14 +61,13 @@ export class StorageServer {
   }
 
   async stop() {
-    if (this.server?.listening) {
-      debug('Stopping server...');
-      await new Promise<void>((resolve, reject) => {
-        this.server?.close((err) => (err ? reject(err) : resolve()));
-      });
-      this.server = null;
-      debug('Server stopped.');
-    }
+    if (!this.isRunning) return;
+    debug('Stopping server...');
+    await new Promise<void>((resolve, reject) => {
+      this.server?.close((err) => (err ? reject(err) : resolve()));
+    });
+    this.server = null;
+    debug('Server stopped.');
   }
 }
 
