@@ -14,8 +14,8 @@
  *
  * TODO: handle external server.
  */
-import { storageServer } from './server';
-import { globalCache } from './client';
+import { storageServer } from '../server';
+import { globalCache } from '../client';
 
 export default class GlobalCacheReporter {
   printsToStdio() {

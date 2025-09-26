@@ -4,15 +4,22 @@ import { debug, debugKey } from '../shared/debug';
 import { previewValue } from './utils/preview-value';
 import { StorageApi } from './api';
 import { DefaultSchema, GetArgs, Keys } from './types';
+import { PlaywrightLikeConfig, wrapPlaywrightConfig } from '../playwright/config';
 
 export type GlobalCacheConfig = GlobalConfigInput;
 
 export class GlobalCache<S extends DefaultSchema = DefaultSchema> {
   #api?: StorageApi;
 
-  /* Helper method to set global config via storage instance (for conveniency) */
+  /*
+   * Helper method to set global config via storage instance (for conveniency)
+   */
   defineConfig(config: GlobalCacheConfig) {
     globalConfig.update(config);
+  }
+
+  playwright<T extends PlaywrightLikeConfig>(config: T) {
+    return globalConfig.disabled ? config : wrapPlaywrightConfig(config);
   }
 
   get setup() {
@@ -24,7 +31,7 @@ export class GlobalCache<S extends DefaultSchema = DefaultSchema> {
   }
 
   get reporter() {
-    return require.resolve('../reporter.js');
+    return require.resolve('../playwright/reporter.js');
   }
 
   private get api() {

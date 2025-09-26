@@ -13,13 +13,13 @@ export default async function globalSetup() {
   globalConfig.update({ runId: process.env.GLOBAL_CACHE_RUN_ID || randomUUID() });
 
   // todo: don't start if serverUrl is set
-  if (!storageServer.isRunning) {
-    await storageServer.start({
-      basePath: globalConfig.basePath,
-    });
+  if (storageServer.isRunning) return;
 
-    globalConfig.update({
-      serverUrl: `http://localhost:${storageServer.port}`,
-    });
-  }
+  await storageServer.start({
+    basePath: globalConfig.basePath,
+  });
+
+  globalConfig.update({
+    serverUrl: `http://localhost:${storageServer.port}`,
+  });
 }
