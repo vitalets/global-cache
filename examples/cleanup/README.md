@@ -9,6 +9,7 @@ An example of proper data cleanup with global cache.
 
 ## Running tests
 ```
+cd examples/cleanup
 npx playwright test
 ```
 Output:

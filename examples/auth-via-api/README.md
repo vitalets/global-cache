@@ -11,6 +11,7 @@ The approach is more efficient than making auth request in a [separate project](
 ## Running all tests
 When running all tests with 2 workers, authentication performed only in one worker (where it's really needed):
 ```
+cd examples/auth-via-api
 npx playwright test
 ```
 Output:

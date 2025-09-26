@@ -13,6 +13,7 @@ An example of caching API response with the global cache.
 
 Real request is sent only once. Execution time: **~2s**.
 ```
+cd examples/cache-api-response
 npx playwright test
 ```
 Output:

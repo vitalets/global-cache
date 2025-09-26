@@ -7,7 +7,6 @@ An example of typed global cache.
 - All calls of `globalCache.get(key)` and other methods are strictly typed. 
 
 ## Testing
-
 ```ts
 import { globalCache } from './global-cache';
 

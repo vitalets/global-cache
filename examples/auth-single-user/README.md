@@ -11,6 +11,7 @@ This approach is more efficient than the [separate auth project](https://playwri
 ## Running all tests
 When running all tests with 2 workers, authentication performed only in one worker (where it's really needed):
 ```
+cd examples/auth-single-user
 npx playwright test
 ```
 Output:

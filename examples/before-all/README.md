@@ -15,6 +15,7 @@ It's how most people expect `beforeAll` to work.
 
 Although there are 3 workers created during the test run, a user is created only once:
 ```
+cd examples/before-all
 npx playwright test
 ```
 Output:

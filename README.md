@@ -92,10 +92,12 @@ npm i -D @vitalets/global-cache
     });
     ```
 
-2. Wrap heavy operations with `globalCache.get(key, fn)` to compute the value once:
+2. In tests and hooks, wrap heavy operations with `globalCache.get(key, fn)` to compute the value once:
     ```ts
     import { globalCache } from '@vitalets/global-cache';
     
+    // ...
+
     const value = await globalCache.get('key', async () => {
       const value = /* ...heavy operation */
       return value;

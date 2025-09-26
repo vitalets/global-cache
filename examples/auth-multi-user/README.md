@@ -12,6 +12,7 @@ The approach is more efficient than the [multi-role auth project](https://playwr
 ## Running all tests
 When running all tests with 2 workers, each file triggers authentication for its role:
 ```
+cd examples/auth-multi-user
 npx playwright test
 ```
 Output:
