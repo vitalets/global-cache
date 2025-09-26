@@ -85,12 +85,33 @@ npm i -D @vitalets/global-cache
     import { defineConfig } from '@playwright/test';
     import { globalCache } from '@vitalets/global-cache';
 
+    export default globalCache.playwright(defineConfig({
+      // ...your Playwright config
+    }));
+    ```
+
+   <details>
+    <summary>Manual configuration (used previously)</summary>
+
+    You can manually adjust `globalSetup`, `globalTeardown` and `reporter` options:
+
+    ```ts
+    // playwright.config.ts
+    import { defineConfig } from '@playwright/test';
+    import { globalCache } from '@vitalets/global-cache';
+
     export default defineConfig({
       globalSetup: globalCache.setup,        // <-- Setup globalCache
       globalTeardown: globalCache.teardown,  // <-- Teardown globalCache
+      reporter: [
+        globalCache.reporter,
+        // ...
+      ],
       // ...
     });
     ```
+   </details> 
+
 
 2. In tests and hooks, wrap heavy operations with `globalCache.get(key, fn)` to compute the value once:
     ```ts
@@ -468,17 +489,14 @@ globalCache.defineConfig({
 import { globalCache } from '@vitalets/global-cache';
 ```
 
-#### `globalCache.setup`
+#### `globalCache.playwright(config)`
 
-Returns an absolute path to the file, that performs the global cache setup.
+A helper method to adjust Playwright config for global cache usage.
 
-**Returns**: `string`
+**Parameters**:
+- `config: object` - Playwright config
 
-#### `globalCache.teardown`
-
-Returns an absolute path to the file, that performs the global cache teardown.
-
-**Returns**: `string`
+**Returns**: `object` - Playwright config with global cache configured.
 
 #### `globalCache.defineConfig(config)`
 
@@ -539,6 +557,24 @@ Get a list of "stale" values by prefix. The result follow the same rules as for 
 Clears all non-peristent keys for the current run.
 
 **Returns**: `Promise`
+
+#### `globalCache.setup`
+
+Returns an absolute path to the file, that performs the global cache setup.
+
+**Returns**: `string`
+
+#### `globalCache.teardown`
+
+Returns an absolute path to the file, that performs the global cache teardown.
+
+**Returns**: `string`
+
+#### `globalCache.reporter`
+
+Returns an absolute path to the global cache Playwright reporter, used for improving user experience with VSCode and UI-mode.
+
+**Returns**: `string`
 
 ## Debug
 
