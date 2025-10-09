@@ -21,6 +21,12 @@ type SignatureObj = {
   ttl?: TTL;
 };
 
+export type SignatureMismatch = {
+  field: 'fn' | 'stack' | 'ttl' | 'sig';
+  value1: unknown;
+  value2: unknown;
+};
+
 export function calcSignature({ ttl, stack, fn }: SingatureParams) {
   // todo: use hashing?
   // todo: remove spaces and newlines from stack and computeFn?
@@ -31,29 +37,42 @@ export function calcSignature({ ttl, stack, fn }: SingatureParams) {
 }
 
 // eslint-disable-next-line visual/complexity
-export function checkSignature(key: string, storedSigStr: string, currentSigStr: string) {
+export function checkSignature(
+  key: string,
+  storedSigStr: string,
+  currentSigStr: string,
+): SignatureMismatch | undefined {
   const storedSig = parseSignatureSafe(storedSigStr);
   const currentSig = parseSignatureSafe(currentSigStr);
 
   // fallback to string comparison if parsing failed for any of the signatures
+  // todo: remove in the future releases
   if (!storedSig || !currentSig) {
     return storedSigStr !== currentSigStr
-      ? buildErrorMessage(key, 'sig', storedSigStr, currentSigStr)
+      ? createSignatureMismatch('sig', storedSigStr, currentSigStr)
       : undefined;
   }
 
-  // checking stack first -> allows to navigate to the code by click.
+  // checking stack first -> allows to navigate to the code by click in IDE.
   if (storedSig.stack !== currentSig.stack) {
-    return buildErrorMessage(key, 'stack', storedSig.stack, currentSig.stack);
+    return createSignatureMismatch('stack', storedSig.stack, currentSig.stack);
   }
 
   if (storedSig.ttl !== currentSig.ttl) {
-    return buildErrorMessage(key, 'ttl', storedSig.ttl, currentSig.ttl);
+    return createSignatureMismatch('ttl', storedSig.ttl, currentSig.ttl);
   }
 
   if (storedSig.fn !== currentSig.fn) {
-    return buildErrorMessage(key, 'fn', storedSig.fn, currentSig.fn);
+    return createSignatureMismatch('fn', storedSig.fn, currentSig.fn);
   }
+}
+
+function createSignatureMismatch(
+  field: SignatureMismatch['field'],
+  value1: unknown,
+  value2: unknown,
+): SignatureMismatch {
+  return { field, value1, value2 };
 }
 
 function parseSignatureSafe(sigStr: string) {
@@ -62,14 +81,4 @@ function parseSignatureSafe(sigStr: string) {
   } catch {
     return null;
   }
-}
-
-// eslint-disable-next-line max-params
-function buildErrorMessage(key: string, field: string, value1: unknown, value2: unknown) {
-  return [
-    `Signature mismatch (${field}). `,
-    `Please ensure you don't call globalCache.get("${key}") from multiple places.\n`,
-    `1-st call ${field}: ${value1}\n`,
-    `2-nd call ${field}: ${value2}`,
-  ].join('');
 }

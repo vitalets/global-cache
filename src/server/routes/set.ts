@@ -1,5 +1,7 @@
 import { Express, Router } from 'express';
 import { getConfig } from '../config';
+import { TestRunValueInfo } from '../../shared/value-info';
+import { Setter } from '../setter';
 import { getStorage } from '../storage';
 
 export const router = Router();
@@ -10,13 +12,16 @@ export type SetValueParams = {
   error?: string; // An error occured during value computing.
 };
 
+export type SetValueResponse = TestRunValueInfo;
+
 router.post('/run/:runId/set', async (req, res) => {
   const { runId } = req.params;
   const { key, value, error } = req.body as SetValueParams;
   const config = getConfig(req.app as Express);
 
-  const storage = getStorage(config, runId);
-  const valueInfo = await storage.setComputed({ key, value, error });
+  const { testRunStorage, persistentStorage } = getStorage(config, runId);
+  const setter = new Setter(testRunStorage, persistentStorage);
+  const valueInfo = await setter.set({ key, value, error });
 
   res.json(valueInfo);
 });

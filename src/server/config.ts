@@ -7,6 +7,7 @@ import { removeUndefined } from '../shared/utils/object';
 export type GlobalStorageServerConfig = {
   port?: number;
   basePath?: string;
+  multiInstance?: boolean;
 };
 
 const defaults: Pick<Required<GlobalStorageServerConfig>, 'basePath'> = {

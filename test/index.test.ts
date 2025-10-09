@@ -1,6 +1,7 @@
 import fs from 'node:fs';
-import { beforeAll, afterAll, afterEach, test, expect, describe } from 'vitest';
+import { beforeAll, afterAll, afterEach, test, expect, describe, vi } from 'vitest';
 import { globalCache } from '../src';
+import { beforeEach } from 'node:test';
 
 const basePath = './test/.global-cache';
 
@@ -23,7 +24,7 @@ afterAll(async () => {
 });
 
 afterEach(async () => {
-  await globalCache.clearSession();
+  await globalCache.clear();
 });
 
 describe('get', () => {
@@ -151,7 +152,7 @@ describe('getStale', () => {
     const value1 = await globalCache.getStale(key);
     const value2 = await fn();
     const value3 = await globalCache.getStale(key);
-    await globalCache.clearSession();
+    await globalCache.clear();
     await new Promise((r) => setTimeout(r, ttl + 10)); // wait for value to expire
     const value4 = await fn();
     const value5 = await globalCache.getStale(key);
@@ -193,7 +194,7 @@ describe('getStaleList', () => {
     await fnExcluded();
     const values1 = await globalCache.getStaleList(prefix);
 
-    await globalCache.clearSession();
+    await globalCache.clear();
     await new Promise((r) => setTimeout(r, ttl + 10)); // wait for value to expire
 
     await fn1();
@@ -220,7 +221,7 @@ describe('ignoreTTL: true', () => {
     const fn = () => globalCache.get(key, { ttl: 1000 }, () => ++callCount);
     const value1 = await fn();
     const value2 = await globalCache.getStale(key); // returns current value because it is not persistent
-    await globalCache.clearSession();
+    await globalCache.clear();
     const value3 = await fn(); // increments callCount as ttl is ignored
 
     expect(value1).toEqual(1);
@@ -229,13 +230,22 @@ describe('ignoreTTL: true', () => {
   });
 });
 
-describe('invalid signature', () => {
+describe('Signature mismatch', () => {
+  const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const expectConsoleWarn = (str: string) => {
+    expect(consoleWarn).toHaveBeenCalledWith(expect.stringContaining(str));
+  };
+
+  beforeEach(() => {
+    consoleWarn.mockClear();
+  });
+
   test('different locations', async () => {
     const key = `invalid-signature-different-locations`;
-    const computeFn = () => 1;
-    await globalCache.get(key, computeFn);
-    const promise = globalCache.get(key, () => 2);
-    await expect(promise).rejects.toThrow(`Failed to get key "${key}": Signature mismatch (stack)`);
+    const fn = () => 1;
+    await globalCache.get(key, fn);
+    await globalCache.get(key, fn);
+    expectConsoleWarn('Signature mismatch (stack)');
   });
 
   test('different ttl', async () => {
@@ -244,9 +254,10 @@ describe('invalid signature', () => {
     const fn = () => globalCache.get(key, { ttl }, () => 1);
     await fn();
     ttl = 100;
-    await expect(fn()).rejects.toThrow(`Failed to get key "${key}": Signature mismatch (ttl)`);
-    await expect(fn()).rejects.toThrow(`1-st call ttl: 50`);
-    await expect(fn()).rejects.toThrow(`2-nd call ttl: 100`);
+    await fn();
+    expectConsoleWarn('Signature mismatch (ttl)');
+    expectConsoleWarn('1-st call ttl: 50');
+    expectConsoleWarn('2-nd call ttl: 100');
   });
 
   test('different functions', async () => {
@@ -257,8 +268,10 @@ describe('invalid signature', () => {
     const fn = () => globalCache.get(key, flag ? computeFn1 : computeFn2);
     await fn();
     flag = false;
-    await expect(fn()).rejects.toThrow(`Failed to get key "${key}": Signature mismatch (fn)`);
-    await expect(fn()).rejects.toThrow(`1-st call fn: () => 1`);
+    await fn();
+    expectConsoleWarn('Signature mismatch (fn)');
+    expectConsoleWarn('1-st call fn: () => 1');
+    expectConsoleWarn('2-nd call fn: () => 2');
   });
 });
 

@@ -24,7 +24,7 @@ export default class GlobalCacheReporter {
 
   async onEnd() {
     if (storageServer.isRunning) {
-      await globalCache.clearSession();
+      await globalCache.clear();
     }
   }
 }

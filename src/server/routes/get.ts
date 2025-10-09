@@ -1,6 +1,7 @@
 import { Express, Router } from 'express';
 import { parseTTL } from '../../shared/ttl';
 import { getConfig } from '../config';
+import { Getter, GetterResult } from '../getter';
 import { getStorage } from '../storage';
 
 export const router = Router();
@@ -11,6 +12,8 @@ export type GetValueParams = {
   ttl?: string;
 };
 
+export type GetValueResponse = GetterResult;
+
 /**
  * Route for geting a value.
  */
@@ -20,16 +23,9 @@ router.get('/run/:runId/get', async (req, res) => {
   const config = getConfig(req.app as Express);
   const ttl = parseTTL(ttlParam);
 
-  const storage = getStorage(config, runId);
-  let valueInfo = await storage.loadInfo({ key, sig, ttl });
+  const { testRunStorage, persistentStorage } = getStorage(config, runId);
+  const getter = new Getter(testRunStorage, persistentStorage);
+  const data = await getter.get(key, sig, ttl);
 
-  if (valueInfo.state === 'computed') {
-    res.json(valueInfo);
-  } else if (valueInfo.state === 'computing') {
-    valueInfo = await storage.waitValue(key);
-    res.json(valueInfo);
-  } else {
-    await storage.setComputing(valueInfo);
-    res.status(404).json(valueInfo);
-  }
+  res.json(data);
 });

@@ -3,6 +3,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { IPersistentStorage } from '../types';
 import { TestRunValueInfo } from '../../../shared/value-info';
 
 export type StoredInfo = {
@@ -11,15 +12,26 @@ export type StoredInfo = {
   value: unknown;
 };
 
-export class FileSystemStorage {
+export class FilesystemStorage implements IPersistentStorage {
   constructor(private basePath: string) {}
 
-  async load(key: string) {
+  async load(key: string): Promise<TestRunValueInfo | undefined> {
     const filePath = this.getFilePath(key);
     const fileExists = fs.existsSync(filePath);
     if (!fileExists) return;
+
     const content = await fs.promises.readFile(filePath, 'utf8');
-    return JSON.parse(content) as StoredInfo;
+    // todo: json parse safe (with warning)
+    const storedInfo: StoredInfo = JSON.parse(content);
+
+    return {
+      key,
+      state: 'computed',
+      persistent: true,
+      computedAt: storedInfo.computedAt,
+      value: storedInfo.value,
+      sig: storedInfo.sig,
+    };
   }
 
   async save({ key, value, sig }: TestRunValueInfo) {

@@ -5,6 +5,7 @@ import { previewValue } from './utils/preview-value';
 import { StorageApi } from './api';
 import { DefaultSchema, GetArgs, Keys } from './types';
 import { PlaywrightLikeConfig, wrapPlaywrightConfig } from '../playwright/config';
+import { logger } from '../shared/logger';
 
 export type GlobalCacheConfig = GlobalConfigInput;
 
@@ -18,6 +19,9 @@ export class GlobalCache<S extends DefaultSchema = DefaultSchema> {
     globalConfig.update(config);
   }
 
+  /**
+   * Playwright config wrapper.
+   */
   playwright<T extends PlaywrightLikeConfig>(config: T) {
     return globalConfig.disabled ? config : wrapPlaywrightConfig(config);
   }
@@ -65,15 +69,33 @@ export class GlobalCache<S extends DefaultSchema = DefaultSchema> {
     const sig = calcSignature({ fn, ttl, stack });
 
     debugKey(key, `Fetching value...`);
-    const { state, value: cachedValue } = await this.api.get({ key, sig, ttl });
-    if (state === 'computed') {
-      debugKey(key, `Cache hit: ${previewValue(cachedValue)}`);
-      return cachedValue as S[K];
+    const body = await this.api.get({ key, sig, ttl });
+
+    if (body.result === 'cache-hit') {
+      const { value } = body.valueInfo;
+      debugKey(key, `${body.result}: ${previewValue(value)}`);
+      return value as S[K];
     }
 
-    debugKey(key, `Cache miss (${state}), computing...`);
+    if (body.result === 'error') {
+      throw new Error(body.message);
+    }
+
+    if (body.result === 'sig-mismatch') {
+      logger.warn(body.message);
+      debugKey(key, `${body.result}, computing...`);
+    } else {
+      debugKey(key, `${body.result} (${body.message}), computing...`);
+    }
+
     const { value, error } = await this.computeValue(fn);
     debugKey(key, error ? `Error: ${error.message}` : `Computed: ${previewValue(value)}`);
+
+    if (body.result === 'sig-mismatch') {
+      debugKey(key, `Not saving value because of signature mismatch.`);
+      if (error) throw error;
+      return value;
+    }
 
     debugKey(key, `Saving value...`);
     const valueInfo = await this.api.set({ key, value, error });
@@ -81,6 +103,8 @@ export class GlobalCache<S extends DefaultSchema = DefaultSchema> {
 
     if (error) throw error;
 
+    // We return 'valueInfo.value' instead of 'value' to have exact the same value
+    // as stored (in case of serialization changes).
     return valueInfo.value as S[K];
   }
 
@@ -110,10 +134,10 @@ export class GlobalCache<S extends DefaultSchema = DefaultSchema> {
     return values as ValueType[];
   }
 
-  async clearSession() {
-    debug('Clearing session...');
-    await this.api.clearSession();
-    debug('Session cleared.');
+  async clear() {
+    debug('Clearing test-run values...');
+    await this.api.clear();
+    debug('Cleared.');
   }
 
   private async computeValue<ValueType>(fn: () => ValueType) {
