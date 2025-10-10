@@ -30,3 +30,5 @@ export class GlobalCache<
     return require.resolve('./reporter.js');
   }
 }
+
+export const globalCache = new GlobalCache();
