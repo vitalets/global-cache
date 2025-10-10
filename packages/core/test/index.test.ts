@@ -1,26 +1,21 @@
 import fs from 'node:fs';
+import path from 'node:path';
 import { beforeAll, afterAll, afterEach, test, expect, describe, vi } from 'vitest';
-import { globalCache } from '../src';
+import { GlobalCacheClient } from '../src';
+import { globalCacheServer } from '../src/server';
 import { beforeEach } from 'node:test';
 
-const basePath = './test/.global-cache';
+const basePath = path.join(__dirname, '.global-cache');
+const globalCache = new GlobalCacheClient();
 
 beforeAll(async () => {
-  if (fs.existsSync(basePath)) {
-    fs.rmSync(basePath, { recursive: true });
-  }
-
-  globalCache.defineConfig({ basePath });
-
-  const { default: globalSetup } = await import('../src/setup.js');
-  // @ts-expect-error callable
-  await globalSetup();
+  clearDir(basePath);
+  await globalCacheServer.start({ basePath });
+  globalCache.config({ serverUrl: globalCacheServer.localUrl });
 });
 
 afterAll(async () => {
-  const { default: globalTeardown } = await import('../src/teardown.js');
-  // @ts-expect-error callable
-  await globalTeardown();
+  await globalCacheServer.stop();
 });
 
 afterEach(async () => {
@@ -208,11 +203,11 @@ describe('getStaleList', () => {
 
 describe('ignoreTTL: true', () => {
   beforeAll(() => {
-    globalCache.defineConfig({ ignoreTTL: true });
+    globalCache.config({ ignoreTTL: true });
   });
 
   afterAll(() => {
-    globalCache.defineConfig({ ignoreTTL: false });
+    globalCache.config({ ignoreTTL: false });
   });
 
   test('value with ttl is not persistent', async () => {
@@ -277,4 +272,8 @@ describe('Signature mismatch', () => {
 
 async function waitForExpire(ttl: number) {
   await new Promise((r) => setTimeout(r, ttl + 10));
+}
+
+function clearDir(pathToDir: string) {
+  if (fs.existsSync(pathToDir)) fs.rmSync(pathToDir, { recursive: true });
 }

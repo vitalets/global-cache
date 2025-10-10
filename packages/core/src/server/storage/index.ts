@@ -1,8 +1,8 @@
-import { GlobalStorageServerConfigResolved } from '../config';
+import { GlobalCacheServerConfigResolved } from '../config';
 import { getFsStorage, getMemoryStorage } from './single-instance';
 
 export function getStorage(
-  { multiInstance, basePath }: GlobalStorageServerConfigResolved,
+  { multiInstance, basePath }: GlobalCacheServerConfigResolved,
   runId: string,
 ) {
   if (multiInstance) {

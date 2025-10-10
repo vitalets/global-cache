@@ -9,6 +9,6 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["**/*.ts", "src/server/storage"],
-  "exclude": ["dist"]
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }

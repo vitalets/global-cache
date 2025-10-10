@@ -1,0 +1,38 @@
+{
+  "name": "@global-cache/playwright",
+  "description": "Key-value cache for sharing data between parallel workers.",
+  "version": "0.2.2",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "@global-cache/core": "^0.2.2"
+  },
+  "keywords": [
+    "global cache",
+    "global storage",
+    "global setup",
+    "global teardown",
+    "playwright",
+    "workers",
+    "testing",
+    "e2e",
+    "performance",
+    "optimization"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "funding": "https://github.com/sponsors/vitalets",
+  "license": "MIT"
+}

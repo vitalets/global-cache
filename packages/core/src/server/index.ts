@@ -15,9 +15,11 @@ import { router as routeGetStale } from './routes/get-stale';
 import { router as routeGetStaleList } from './routes/get-stale-list';
 import { router as routeClearSession } from './routes/clear';
 import { errorHandler } from './error';
-import { GlobalStorageServerConfig, setConfig } from './config';
+import { getConfig, GlobalCacheServerConfig, setConfig } from './config';
+import { getStorage } from './storage';
+import { startExpressServer } from './utils/express';
 
-export class StorageServer {
+export class GlobalCacheServer {
   private app = express();
   private server: http.Server | null = null;
 
@@ -41,22 +43,19 @@ export class StorageServer {
     return port;
   }
 
+  get localUrl() {
+    return `http://localhost:${this.port}`;
+  }
+
   get isRunning() {
     return Boolean(this.server?.listening);
   }
 
-  /**
-   * Start server.
-   * See: https://github.com/nodejs/node/issues/21482#issuecomment-626025579
-   */
-  async start(config: GlobalStorageServerConfig = {}) {
+  async start(config: GlobalCacheServerConfig) {
+    // todo: if server is already running?
     debug('Starting server...');
     setConfig(this.app, config);
-    await new Promise<void>((resolve, reject) => {
-      this.server = this.app.listen(config.port || 0);
-      this.server.once('listening', resolve);
-      this.server.once('error', reject);
-    });
+    this.server = await startExpressServer(this.app, config.port);
     debug(`Server started on port: ${this.port}`);
   }
 
@@ -69,7 +68,14 @@ export class StorageServer {
     this.server = null;
     debug('Server stopped.');
   }
+
+  async clearTestRun(runId: string) {
+    if (!this.isRunning) return;
+    const config = getConfig(this.app);
+    const { testRunStorage } = getStorage(config, runId);
+    await testRunStorage.clear();
+  }
 }
 
-/* Export a default instance for easier access in single instance mode */
-export const storageServer = new StorageServer();
+/* Export a default instance - convenient for usage */
+export const globalCacheServer = new GlobalCacheServer();

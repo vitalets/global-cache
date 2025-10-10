@@ -1,41 +1,21 @@
-import { globalConfig, GlobalConfigInput } from '../config';
-import { calcSignature } from '../shared/sig';
+import { globalConfig, GlobalCacheConfig } from '../config';
 import { debug, debugKey } from '../shared/debug';
-import { previewValue } from './utils/preview-value';
-import { StorageApi } from './api';
-import { DefaultSchema, GetArgs, Keys } from './types';
-import { PlaywrightLikeConfig, wrapPlaywrightConfig } from '../playwright/config';
 import { logger } from '../shared/logger';
+import { calcSignature } from '../shared/sig';
+import { StorageApi } from './api';
+import { DefaultKeysSchema, GetArgs, StringKeys } from './types';
+import { previewValue } from './utils/preview-value';
 
-export type GlobalCacheConfig = GlobalConfigInput;
+export { DefaultKeysSchema };
 
-export class GlobalCache<S extends DefaultSchema = DefaultSchema> {
+export class GlobalCacheClient<S extends DefaultKeysSchema = DefaultKeysSchema> {
   #api?: StorageApi;
 
   /*
    * Helper method to set global config via storage instance (for conveniency)
    */
-  defineConfig(config: GlobalCacheConfig) {
+  config(config: GlobalCacheConfig) {
     globalConfig.update(config);
-  }
-
-  /**
-   * Playwright config wrapper.
-   */
-  playwright<T extends PlaywrightLikeConfig>(config: T) {
-    return globalConfig.disabled ? config : wrapPlaywrightConfig(config);
-  }
-
-  get setup() {
-    return require.resolve('../setup.js');
-  }
-
-  get teardown() {
-    return require.resolve('../teardown.js');
-  }
-
-  get reporter() {
-    return require.resolve('../playwright/reporter.js');
   }
 
   private get api() {
@@ -44,8 +24,7 @@ export class GlobalCache<S extends DefaultSchema = DefaultSchema> {
       if (!serverUrl) {
         throw new Error('Global-cache url is empty. Did you run the global-cache setup?');
       }
-      const baseUrl = new URL(`/run/${runId}/`, serverUrl).toString();
-      this.#api = new StorageApi(baseUrl);
+      this.#api = new StorageApi(serverUrl, runId);
     }
     return this.#api;
   }
@@ -54,7 +33,7 @@ export class GlobalCache<S extends DefaultSchema = DefaultSchema> {
    * Get value by key or compute it if not found.
    */
   // eslint-disable-next-line visual/complexity, max-statements
-  async get<K extends Keys<S>>(...args: GetArgs<K, S>): Promise<S[K]> {
+  async get<K extends StringKeys<S>>(...args: GetArgs<K, S>): Promise<S[K]> {
     const { key, params, fn } = resolveGetArgs(args);
 
     if (globalConfig.disabled) {
@@ -113,7 +92,7 @@ export class GlobalCache<S extends DefaultSchema = DefaultSchema> {
    * - for non-persistant keys it would be the current value
    * - for persistent keys it would be the old value if it was changed during this run
    */
-  async getStale<K extends Keys<S>>(key: K) {
+  async getStale<K extends StringKeys<S>>(key: K) {
     debugKey(key, `Fetching stale value...`);
     const value = await this.api.getStale({ key });
     debugKey(key, `Fetched: ${previewValue(value)}`);
@@ -151,11 +130,8 @@ export class GlobalCache<S extends DefaultSchema = DefaultSchema> {
   }
 }
 
-function resolveGetArgs<K extends Keys<S>, S extends DefaultSchema>(args: GetArgs<K, S>) {
+function resolveGetArgs<K extends StringKeys<S>, S extends DefaultKeysSchema>(args: GetArgs<K, S>) {
   return args.length === 2
     ? { key: args[0], params: {}, fn: args[1] }
     : { key: args[0], params: { ...args[1] }, fn: args[2] };
 }
-
-// Export singleton
-export const globalCache = new GlobalCache();

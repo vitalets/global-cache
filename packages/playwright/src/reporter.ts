@@ -11,11 +11,9 @@
  *
  * The solution is to use a reporter to clear the current run cache.
  * Reporter's onEnd is called on every test execution.
- *
- * TODO: handle external server.
  */
-import { storageServer } from '../server';
-import { globalCache } from '../client';
+import { globalConfig } from '@global-cache/core';
+import { globalCacheServer } from '@global-cache/core/server';
 
 export default class GlobalCacheReporter {
   printsToStdio() {
@@ -23,8 +21,7 @@ export default class GlobalCacheReporter {
   }
 
   async onEnd() {
-    if (storageServer.isRunning) {
-      await globalCache.clear();
-    }
+    // TODO: handle external server.
+    await globalCacheServer.clearTestRun(globalConfig.runId);
   }
 }

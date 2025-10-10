@@ -5,9 +5,13 @@
 # npm
 node_modules
 npm-debug.log
+.pnp
+.pnp.js
+
+.turbo
 
 # my
-/dist
+dist
 test-results
 playwright-report
 /todo.txt

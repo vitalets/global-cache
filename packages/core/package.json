@@ -1,0 +1,37 @@
+{
+  "name": "@global-cache/core",
+  "description": "Key-value cache for sharing data between parallel workers.",
+  "version": "0.2.2",
+  "type": "commonjs",
+  "exports": {
+    ".": "./dist/index.js",
+    "./server": "./dist/server/index.js",
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run --no-cache --testTimeout 5000 --dir ./test",
+    "test:d": "DEBUG=global-cache* npm t"
+  },
+  "dependencies": {
+    "@types/debug": "^4.1.12",
+    "@types/express": "^5.0.3",
+    "@types/ms": "^2.1.0",
+    "debug": "^4.4.1",
+    "express": "^5.1.0",
+    "ms": "^2.1.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "funding": "https://github.com/sponsors/vitalets",
+  "license": "MIT"
+}

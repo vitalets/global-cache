@@ -1,7 +1,7 @@
-import { GetValueParams, GetValueResponse } from '../server/routes/get';
-import { SetValueParams, SetValueResponse } from '../server/routes/set';
-import { GetStaleParams, SetStaleResponse } from '../server/routes/get-stale';
-import { GetStaleListParams, SetStaleListResponse } from '../server/routes/get-stale-list';
+import type { GetValueParams, GetValueResponse } from '../server/routes/get';
+import type { SetValueParams, SetValueResponse } from '../server/routes/set';
+import type { GetStaleParams, SetStaleResponse } from '../server/routes/get-stale';
+import type { GetStaleListParams, SetStaleListResponse } from '../server/routes/get-stale-list';
 import { TTL } from '../shared/ttl';
 import { HttpJson } from './utils/http-json';
 import { prepareQueryParams } from './utils/http-query';
@@ -11,7 +11,8 @@ import { getStaleValue } from '../shared/value-info';
 export class StorageApi {
   private http: HttpJson;
 
-  constructor(baseUrl: string) {
+  constructor(serverUrl: string, runId: string) {
+    const baseUrl = new URL(`/run/${runId}/`, serverUrl).toString();
     this.http = new HttpJson(baseUrl);
   }
 
