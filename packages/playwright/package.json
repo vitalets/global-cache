@@ -1,6 +1,6 @@
 {
   "name": "@global-cache/playwright",
-  "description": "Key-value cache for sharing data between parallel workers.",
+  "description": "Key-value cache for sharing data between Playwright workers.",
   "version": "0.2.2",
   "type": "commonjs",
   "main": "dist/index.js",
@@ -19,16 +19,16 @@
     "@global-cache/core": "^0.2.2"
   },
   "keywords": [
+    "playwright",
+    "performance",
     "global cache",
     "global storage",
     "global setup",
     "global teardown",
-    "playwright",
     "workers",
+    "optimization",
     "testing",
-    "e2e",
-    "performance",
-    "optimization"
+    "e2e"
   ],
   "publishConfig": {
     "access": "public"
