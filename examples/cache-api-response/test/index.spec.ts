@@ -1,26 +1,25 @@
-import { test, expect } from '@playwright/test';
 import { pathToFileURL } from 'node:url';
+import { test, expect } from '@playwright/test';
 import { globalCache } from '@global-cache/playwright';
 
-const url = pathToFileURL(__dirname + '/../index.html').toString();
+const url = pathToFileURL(__dirname + '/../app.html').toString();
 
 test.use({
   page: async ({ page }, use) => {
     // setup request mock
     await page.route('https://jsonplaceholder.typicode.com/users', async (route) => {
-      // send real request only once and store the response JSON
-      const json = await globalCache.get('users-response', async () => {
+      // send real request only once and store the response in the global cache
+      const json = await globalCache.get('users-api-response', async () => {
         console.log(`Sending real request to: ${route.request().url()}`);
-
-        await new Promise((r) => setTimeout(r, 1000)); // emulate the delay
         const response = await route.fetch();
-
         return response.json();
       });
 
-      json[0].name = 'Dummy'; // modify the response for testing purposes
+      // modify the response for testing purposes
+      json[0].name = 'Dummy';
 
-      await route.fulfill({ json }); // fulfill the request with the modified response
+      // fulfill the request with the modified response
+      await route.fulfill({ json });
     });
     await use(page);
   },

@@ -3,10 +3,11 @@
   <body>
     <pre id="users"></pre>
     <script>
+      // Fetch users from the external API and display them.
       fetch('https://jsonplaceholder.typicode.com/users')
         .then((res) => res.json())
         .then(
-          (posts) => (document.getElementById('users').innerHTML = JSON.stringify(posts, null, 2)),
+          (users) => (document.getElementById('users').innerHTML = JSON.stringify(users, null, 2)),
         );
     </script>
   </body>

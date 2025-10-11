@@ -11,7 +11,7 @@ An example of caching API response with the global cache.
 
 ## Running tests
 
-Real request is sent only once. Execution time: **~2s**.
+Real request is sent only once:
 ```
 cd examples/cache-api-response
 npx playwright test
@@ -28,7 +28,11 @@ Sending real request to: https://jsonplaceholder.typicode.com/users
 
 ## Running tests (without global cache)
 
-Real request is sent in each worker, 3 times in total. Execution time: **~6s**.
+Real request is sent in each worker, 3 times in total:
+```
+GLOBAL_CACHE_DISABLE=1 npx playwright test
+```
+Output:
 ```
 Running 3 tests using 1 worker
 
