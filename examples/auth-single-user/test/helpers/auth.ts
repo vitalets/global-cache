@@ -6,7 +6,7 @@ import { globalCache } from '@global-cache/playwright';
  */
 export async function signIn(browser: Browser, credentials: { email: string; password: string }) {
   return globalCache.get(`auth-state`, { ttl: '5 min' }, async () => {
-    console.log('Performing sing-in...');
+    console.log(`Singing-in as: ${credentials.email}`);
 
     const loginPage = await browser.newPage();
     await loginPage.goto('https://authenticationtest.com/simpleFormAuth/');

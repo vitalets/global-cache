@@ -3,12 +3,12 @@ import { globalCache } from '@global-cache/playwright';
 import { users } from './users';
 
 /**
- * Performs sign-in for a given role and caches the auth state.
+ * Performs sign-in for a given role and caches the auth state for the test run.
  */
 export async function signIn(browser: Browser, role: 'user' | 'admin') {
   const { email, password } = users[role];
   return globalCache.get(`auth-state-${role}`, async () => {
-    console.log(`Singing-in as ${role}`);
+    console.log(`Singing-in as: ${role}`);
 
     const loginPage = await browser.newPage();
     await loginPage.goto('https://authenticationtest.com/simpleFormAuth/');

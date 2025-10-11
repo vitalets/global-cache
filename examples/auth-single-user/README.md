@@ -21,7 +21,7 @@ Running 3 tests using 2 workers
   ✓  1 test/no-auth.spec.ts:5:5 › no-auth test @no-auth (2.0s)
   ✘  2 test/auth.spec.ts:4:5 › test 1 (4.6s)
   ✘  3 test/auth.spec.ts:11:5 › test 2 (1.8s)
-Performing sing-in...
+Singing-in as: simpleForm@authenticationtest.com
 Worker 1, user is NOT authenticated.
 Worker 0, user is authenticated.
 Worker 2, user is authenticated.

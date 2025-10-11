@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test';
-import { test } from './fixtures';
+import { test } from './helpers/fixtures';
 
 test('test 1', async ({ page }, testInfo) => {
   await page.goto('https://authenticationtest.com');

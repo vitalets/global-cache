@@ -5,8 +5,10 @@ An example of authentication via API request with the global cache.
 The approach is more efficient than making auth request in a [separate project](https://playwright.dev/docs/auth#authenticate-with-api-request), because it authenticates on demand and doesn't require additional project.
 
 ## Details
-- `auth.spec.ts` runs tests for authenticated user, and `no-auth.spec.ts` for non-authenticated.
-- `fixtures.ts` overwrites `storageState` fixture to lazily perform authetication if the current test does not marked with `@no-auth` tag.
+- `auth.spec.ts` runs tests for authenticated user.
+- `no-auth.spec.ts` runs tests for non-authenticated user.
+- `helpers/fixtures.ts` overwrites `storageState` fixture to lazily perform authetication if the current test does not marked with `@no-auth` tag.
+- `helpers/auth.ts` performs sign-in via API request.
 
 ## Running all tests
 When running all tests with 2 workers, authentication performed only in one worker (where it's really needed):
@@ -20,15 +22,15 @@ Running 3 tests using 2 workers
 
   ✓  1 test/no-auth.spec.ts:5:5 › no auth test @no-auth (2.6s)
   ✘  2 test/auth.spec.ts:4:5 › test 1 (3.6s)
-Performing sing-in...
+  ✘  3 test/auth.spec.ts:11:5 › test 2 (1.9s)
+Singing-in as: simpleForm@authenticationtest.com
 Worker 1, user is NOT authenticated.
 Worker 0, user is authenticated.
-  ✘  3 test/auth.spec.ts:11:5 › test 2 (1.9s)
 Worker 2, user is authenticated.
 ```
 
 ## Running no-auth test 
-When running only no-auth test, authentication is skipped and test runs faster:
+When running only `@no-auth` test, authentication is skipped and test runs faster:
 ```
 npx playwright test no-auth.spec.ts
 ```
