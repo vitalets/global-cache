@@ -33,7 +33,7 @@
     "eslint-plugin-visual-complexity": "0.1.4",
     "globals": "^16.3.0",
     "knip": "^5.62.0",
-    "lint-staged": "^16.1.5",
+    "lint-staged": "^16.2.4",
     "markdown-magic": "^3.4.0",
     "prettier": "^3.6.2",
     "publint": "^0.3.7",
