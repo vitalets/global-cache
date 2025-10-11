@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { pathToFileURL } from 'node:url';
-import { globalCache } from '@vitalets/global-cache';
+import { globalCache } from '@global-cache/playwright';
 
 const url = pathToFileURL(__dirname + '/../index.html').toString();
 

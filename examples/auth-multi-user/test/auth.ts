@@ -1,5 +1,5 @@
 import { Browser, expect } from '@playwright/test';
-import { globalCache } from '@vitalets/global-cache';
+import { globalCache } from '@global-cache/playwright';
 import { users } from './users';
 
 /**

@@ -1,5 +1,5 @@
 import { test } from '@playwright/test';
-import { globalCache } from '@vitalets/global-cache';
+import { globalCache } from '@global-cache/playwright';
 
 let userId = '';
 

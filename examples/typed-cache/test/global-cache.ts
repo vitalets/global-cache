@@ -1,4 +1,4 @@
-import { globalCache as genericGlobalCache, GlobalCache } from '@vitalets/global-cache';
+import { globalCache as genericGlobalCache, GlobalCache } from '@global-cache/playwright';
 
 export type GlobalCacheSchema = {
   'user-id': string;

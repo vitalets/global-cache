@@ -1,4 +1,4 @@
-import { globalCache } from '@vitalets/global-cache';
+import { globalCache } from '@global-cache/playwright';
 
 export default async function cleanup() {
   const userId = await globalCache.getStale('db-user-id');

@@ -1,8 +1,8 @@
 import { defineConfig } from '@playwright/test';
-import { globalCache } from '@vitalets/global-cache';
+import { globalCache } from '@global-cache/playwright';
 
-export default globalCache.playwright(
-  defineConfig({
-    testDir: './test',
-  }),
-);
+const config = defineConfig({
+  testDir: './test',
+});
+
+export default globalCache.wrap(config);

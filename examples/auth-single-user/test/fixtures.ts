@@ -1,5 +1,5 @@
 import { test as baseTest, expect } from '@playwright/test';
-import { globalCache } from '@vitalets/global-cache';
+import { globalCache } from '@global-cache/playwright';
 
 export const test = baseTest.extend({
   storageState: async ({ storageState, browser }, use, testInfo) => {

@@ -1,9 +1,9 @@
 import { defineConfig } from '@playwright/test';
-import { globalCache } from '@vitalets/global-cache';
+import { globalCache } from '@global-cache/playwright';
 
-export default globalCache.playwright(
-  defineConfig({
-    testDir: './test',
-    globalTeardown: require.resolve('./test/cleanup'), // <-- custom teardown script for cleanup
-  }),
-);
+const config = defineConfig({
+  testDir: './test',
+  globalTeardown: require.resolve('./test/cleanup'), // <-- custom teardown script for cleanup
+});
+
+export default globalCache.wrap(config);
