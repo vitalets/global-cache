@@ -5,7 +5,7 @@ let userId = '';
 
 test.beforeAll(async () => {
   userId = await globalCache.get('db-user-id', async () => {
-    const userId = Date.now().toString(); // emulate user creation in db
+    const userId = Date.now().toString().slice(-2); // emulate user creation in db
     await new Promise((r) => setTimeout(r, 1000)); // emulate delay
     console.log(`User created in db: ${userId}`);
 

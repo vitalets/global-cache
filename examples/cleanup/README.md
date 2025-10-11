@@ -18,10 +18,10 @@ Running 2 tests using 1 worker
 
   ✓  1 test/index.spec.ts:16:5 › test 1 (0ms)
   ✓  2 test/index.spec.ts:20:5 › test 2 (0ms)
-User created in db: 1758876115179
-Running test 1 with user id: 1758876115179
-Running test 2 with user id: 1758876115179
-Removing user from db: 1758876115179
+User created in db: 79
+Running test 1 with user id: 79
+Running test 2 with user id: 79
+Removing user from db: 79
 
   2 passed (1.5s)
 ```

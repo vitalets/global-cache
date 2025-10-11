@@ -1,10 +1,10 @@
 import { test } from '@playwright/test';
-import { globalCache, GlobalCacheSchema } from './global-cache';
+import { globalCache, GlobalCacheSchema } from './helpers/global-cache';
 
 let userInfo: GlobalCacheSchema['user-info'];
 
 test.beforeAll(async () => {
-  // only known keys are allowed, userInfo is properly typed
+  // only known keys are allowed, userInfo is properly typed as { name, email }
   userInfo = await globalCache.get('user-info', async () => {
     const userInfo = { name: 'test-user', email: 'test@email.com' };
     return userInfo;
