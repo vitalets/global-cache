@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { signInOnce } from './auth';
+import { signInOnce } from './helpers/auth';
 
 test.use({
   storageState: async ({ storageState, browser }, use) => {

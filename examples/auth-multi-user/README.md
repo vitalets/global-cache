@@ -2,12 +2,12 @@
 
 An example of multi-user authentication with global cache. 
 
-The approach is more efficient than the [multi-role auth project](https://playwright.dev/docs/auth#multiple-signed-in-roles), because only needed roles get authenticated.
+The approach is more efficient than the [multi-role auth project](https://playwright.dev/docs/auth#multiple-signed-in-roles), because only needed users get authenticated.
 
 ## Details
-- User credentials are stored in `test/users.ts`.
+- User credentials are stored in `test/helpers/users.ts`.
 - Two spec files `test/{user,admin}.spec.ts` perform lazy authentication of the respective user and run test scenarios.
-- Helper file `test/auth.ts` contains common auth function that is re-used in all tests.
+- Helper file `test/helpers/auth.ts` contains common auth function that is re-used in all tests.
 
 ## Running all tests
 When running all tests with 2 workers, each file triggers authentication for its role:
@@ -28,7 +28,7 @@ Singing-in as user
 ```
 
 ## Running single test 
-Running single test file triggers authentication **only for the required role**:
+Running a single test file `user.spec.ts` triggers authentication **only for the 'user' role**:
 ```
 npx playwright test user.spec.ts
 ```
@@ -41,7 +41,8 @@ Singing-in as user
 ```
 
 ## Running on shards
-When running on 2 shards, each shard executes faster, because authenticates only the required user.
+When running on 2 shards, each shard executes faster. 
+The first shard authenticates only `admin` and the second authenticates only `user`:
 
 Shard 1:
 ```
