@@ -4,12 +4,11 @@ import { globalCache } from '@global-cache/playwright';
 let userId = '';
 
 test.beforeAll(async () => {
-  // This code in beforeAll will run exactly once across all workers.
-  // It's how most people expect beforeAll to work.
+  // This code will create a user once for all workers.
   userId = await globalCache.get('user-id', async () => {
     console.log('Creating user in db...');
 
-    const userId = Math.random().toString(); // emulate user creation in db
+    const userId = Math.random().toString().slice(-2); // emulate user creation in db
     await new Promise((r) => setTimeout(r, 1000)); // emulate delay
 
     return userId;
