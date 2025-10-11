@@ -1,0 +1,11 @@
+{
+  "name": "cleanup",
+  "private": true,
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@global-cache/playwright": "^0.2.2",
+    "@playwright/test": "^1.56.0"
+  }
+}
