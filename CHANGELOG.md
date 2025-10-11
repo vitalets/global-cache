@@ -3,11 +3,9 @@
 > This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
 
 ## [Unreleased]
-* chore: use relative path in sig
-* fix: check TTL within single test run
-* feat: split values per `runId`
-* feat: add `globalCache.reporter`
-* feat: add `globalCache.playwright()` helper
+* breaking: Move to a monorepo and publish new packages under the `@global-cache` scope:
+  - `@global-cache/core` — core, framework-agnostic package
+  - `@global-cache/playwright` — Playwright integration package
 
 ## [0.2.2] - 2025-09-03
 * feat: better signature checks.
@@ -21,7 +19,7 @@
 
 ## [0.1.2] - 2025-08-08
 
-* Initial release.
+* Initial release
 
 
 [unreleased]: https://github.com/vitalets/global-cache/compare/0.2.2...HEAD

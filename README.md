@@ -1,8 +1,7 @@
-# @vitalets/global-cache
+# global-cache
 
 [![lint](https://github.com/vitalets/global-cache/actions/workflows/lint.yaml/badge.svg)](https://github.com/vitalets/global-cache/actions/workflows/lint.yaml)
 [![test](https://github.com/vitalets/global-cache/actions/workflows/test.yaml/badge.svg)](https://github.com/vitalets/global-cache/actions/workflows/test.yaml)
-[![npm version](https://img.shields.io/npm/v/@vitalets/global-cache)](https://www.npmjs.com/package/@vitalets/global-cache)
 [![license](https://img.shields.io/npm/l/%40vitalets%2Fglobal-cache)](https://github.com/vitalets/global-cache/blob/main/LICENSE)
 
 > Key-value cache for sharing data between parallel workers and subsequent runs.
@@ -68,37 +67,41 @@ When running E2E tests in parallel, you might need to:
 * Reuse the state even if a worker fails.
 * Keep some values persistently to speed up subsequent test runs.
 
-## Installation
-
-```sh
-npm i -D @vitalets/global-cache
-```
-
 ## Usage (Playwright)
 
-### Basic
+Currently the main
 
-1. Enable the global cache in the Playwright config:
+### Install
+
+```sh
+npm i -D @global-cache/playwright
+```
+
+### Configure
+
+Enable the global cache in the Playwright config:
+
+```ts
+// playwright.config.ts
+import { defineConfig } from '@playwright/test';
+import { globalCache } from '@global-cache/playwright';
+
+const config = defineConfig({
+  // ...your Playwright config
+});
+
+export default globalCache.wrap(config);
+```
+
+<details>
+    <summary>Manual configuration</summary>
+
+    You can manually adjust Playwright config to enable global cache:
 
     ```ts
     // playwright.config.ts
     import { defineConfig } from '@playwright/test';
-    import { globalCache } from '@vitalets/global-cache';
-
-    export default globalCache.playwright(defineConfig({
-      // ...your Playwright config
-    }));
-    ```
-
-   <details>
-    <summary>Manual configuration (used previously)</summary>
-
-    You can manually adjust `globalSetup`, `globalTeardown` and `reporter` options:
-
-    ```ts
-    // playwright.config.ts
-    import { defineConfig } from '@playwright/test';
-    import { globalCache } from '@vitalets/global-cache';
+    import { globalCache } from '@global-cache/playwright';
 
     export default defineConfig({
       globalSetup: globalCache.setup,        // <-- Setup globalCache
@@ -110,29 +113,32 @@ npm i -D @vitalets/global-cache
       // ...
     });
     ```
-   </details> 
 
+</details> 
 
-2. In tests and hooks, wrap heavy operations with `globalCache.get(key, fn)` to compute the value once:
-    ```ts
-    import { globalCache } from '@vitalets/global-cache';
-    
-    // ...
+### Use
 
-    const value = await globalCache.get('key', async () => {
-      const value = /* ...heavy operation */
-      return value;
-    });
-    ```
+In tests and hooks, wrap heavy operations with `globalCache.get(key, computeFn)` to compute the value once and cache for all workers:
 
-  * If `key` is not populated, the function will be called, and its result will be cached.
-  * If `key` is already populated, the cached value will be returned instantly.
+```ts
+import { globalCache } from '@global-cache/playwright';
 
-  > **NOTE**: The return value must be **serializable**: only plain JavaScript objects and primitive types can be used, e.g., string, boolean, number, or JSON.
+// ...
 
-  You can use `globalCache.get()` anywhere in your tests. Typically, it could be [fixtures](https://playwright.dev/docs/test-fixtures) or `before / beforeAll` hooks. See [more examples](#use-cases) below.
+const value = await globalCache.get('key', async () => {
+  const value = /* ...heavy operation */
+  return value;
+});
+```
 
-### Dynamic keys
+* If `key` is not populated yet, the function will be called, and its result will be cached.
+* If `key` is already populated, the cached value will be returned instantly.
+
+> **NOTE**: The return value must be **serializable**: only plain JavaScript objects and primitive types can be used, e.g., string, boolean, number, or JSON.
+
+You can use `globalCache.get()` anywhere in your tests. Typically, it could be [fixtures](https://playwright.dev/docs/test-fixtures) or `beforeAll / before` hooks. See [more examples](#examples) below.
+
+## Dynamic keys
 
 If your computation depends on some variables, you should add these variables to the key for proper data caching:
 
@@ -143,14 +149,15 @@ const value = await globalCache.get(`some-key-${id}`, async () => {
 });
 ```
 
-### Persistent values
+## Persistent values
 
-By default, all values are stored in memory and cleared when the test run finishes. 
+By default, all values are stored in memory and cached during the test run. 
 However, you can store data permanently on the file system and reuse it between subsequent runs. 
 For example, you can authenticate a user once and save the auth state for 1 hour.
 During this period, all test runs will reuse the auth state and execute faster.
 
 To make a value persistent, pass the `{ ttl }` (time-to-live) option in the second argument of the `.get()` method. TTL can be an [ms-compatible](https://github.com/vercel/ms) string or a number of milliseconds:
+
 ```ts
 // Cache auth for 1 hour
 const authState = await globalCache.get('auth-state', { ttl: '1 hour' }, async () => {
@@ -168,7 +175,7 @@ After running this test, the auth state will be cached in the file:
 
 > By default, all persistent values are stored in the `.global-cache` directory, but you can change this location in the [config](#globalcachedefineconfigconfig). Make sure to add the chosen directory to your `.gitignore` file to avoid committing it.
 
-## Use Cases
+## Examples
 All code samples are currently for Playwright.
 
 ### Authentication (single user)
@@ -180,7 +187,7 @@ This approach is more efficient than the [separate auth project](https://playwri
 ```ts
 // fixtures.ts
 import { test as baseTest, expect } from '@playwright/test';
-import { globalCache } from '@vitalets/global-cache';
+import { globalCache } from '@global-cache/playwright';
 
 export const test = baseTest.extend({
   storageState: async ({ storageState, browser }, use, testInfo) => {
@@ -235,14 +242,14 @@ npx playwright test -g "@no-auth"
 
 ### Authentication (multi user)
 
-If you need to authenticate multiple users, you should add username to the key, to split their auth data. 
+If you run tests with multiple users, you should add username to the cache key, to separate their auth states. 
 
 For example, you are testing your app under `user` and `admin` roles. You can create two separte test files `user.spec.ts` and `admin.spec.ts`:
 
 ```ts
 // user.spec.ts
 import { test } from '@playwright/test';
-import { globalCache } from '@vitalets/global-cache';
+import { globalCache } from '@global-cache/playwright';
 
 // Use your logic to define a username for this test file
 const USERNAME = 'user';
@@ -266,7 +273,7 @@ Test for `admin`:
 ```ts
 // admin.spec.ts
 import { test } from '@playwright/test';
-import { globalCache } from '@vitalets/global-cache';
+import { globalCache } from '@global-cache/playwright';
 
 // Use your logic to define a username for this test file
 const USERNAME = 'admin';
@@ -301,7 +308,7 @@ You can use either `beforeAll` or `before` hook, in this case it does not matter
 
 ```ts
 import { test } from '@playwright/test';
-import { globalCache } from '@vitalets/global-cache';
+import { globalCache } from '@global-cache/playwright';
 
 let userId = '';
 
@@ -329,14 +336,14 @@ test('test 2', async () => {
 You can store and re-use result of a network request: 
 ```ts
 import { test } from '@playwright/test';
-import { globalCache } from '@vitalets/global-cache';
+import { globalCache } from '@global-cache/playwright';
 
 test.use({
   page: async ({ page }, use) => {
     // setup request mock
     await page.route('https://jsonplaceholder.typicode.com/users', async (route) => {
       // send real request once and store the response JSON
-      const json = await globalCache.get('users-response', async () => {
+      const json = await globalCache.get('users-api-response', async () => {
         const response = await route.fetch();
         return response.json();
       });
@@ -360,7 +367,7 @@ If the response depends on query parameters or body, you should add these value 
 await page.route('/api/cats/**', (route, req) => {
   const query = new URL(req.url()).searchParams;
   const reqBody = req.postDataJSON();
-  const cacheKey = `cats-response-${query.get('id')}-${reqBody.page}`;
+  const cacheKey = `cats-api-response-${query.get('id')}-${reqBody.page}`;
   const json = globalCache.get(cacheKey, async () => {
       const response = await route.fetch();
       return response.json();
@@ -383,7 +390,7 @@ The solution is to preform cleanup in a custom teardown script via `globalCache.
 ```ts
 // playwright.config.ts
 import { defineConfig } from '@playwright/test';
-import { globalCache } from '@vitalets/global-cache';
+import { globalCache } from '@global-cache/playwright';
 
 export default defineConfig({
   globalSetup: globalCache.setup,
@@ -400,7 +407,7 @@ export default defineConfig({
 ```ts
 // cleanup.js
 import { defineConfig } from '@playwright/test';
-import { globalCache } from '@vitalets/global-cache';
+import { globalCache } from '@global-cache/playwright';
 
 export default async function() {
     const userId = await globalCache.getStale('user-id');
@@ -417,14 +424,14 @@ The result of `globalCache.getStale(key)` is different for non-presistent and pe
 > [!TIP]
 > Check out a fully working example of [cleanup](/examples/cleanup/).
 
-### Cleanup (by prefix)
+### Cleanup (dynamic keys)
 
 When using dynamic keys, you can use `globalCache.getStaleList(prefix)` to retrieve all values for the provided prefix:
 
 ```ts
 // cleanup.ts
 import { defineConfig } from '@playwright/test';
-import { globalCache } from '@vitalets/global-cache';
+import { globalCache } from '@global-cache/playwright';
 
 export default async function() {
     const userIds = await globalCache.getStaleList('user-');
@@ -441,7 +448,7 @@ To achieve it, create own `global-cache.ts` file, define cache schema and re-exp
 
 ```ts
 // global-cache.ts
-import { globalCache as genericGlobalCache, GlobalCache } from '@vitalets/global-cache';
+import { globalCache as genericGlobalCache, GlobalCache } from '@global-cache/playwright';
 
 export type GlobalCacheSchema = {
   'user-id': string;
@@ -469,13 +476,13 @@ const value = await globalCache.get('foo', fn);
 
 ## Configuration
 
-To provide configuration options, call `globalCache.defineConfig()` in the Playwright config:
+To provide configuration options, call `globalCache.config()`:
 
 ```ts
-import { globalCache } from '@vitalets/global-cache';
+import { globalCache } from '@global-cache/playwright';
 
-globalCache.defineConfig({ 
-  // ...options
+globalCache.config({ 
+  // ...global cache options
 });
 ```
 
@@ -486,10 +493,10 @@ globalCache.defineConfig({
 `globalCache` is a singleton used to manage cache values. Import it directly from the package:
 
 ```ts
-import { globalCache } from '@vitalets/global-cache';
+import { globalCache } from '@global-cache/playwright';
 ```
 
-#### `globalCache.playwright(config)`
+#### `globalCache.wrap(config)`
 
 A helper method to adjust Playwright config for global cache usage.
 
@@ -512,7 +519,7 @@ Configures global cache.
 
 **Example**:
 ```ts
-import { globalCache } from '@vitalets/global-cache';
+import { globalCache } from '@global-cache/playwright';
 
 globalCache.defineConfig({ 
   basePath: 'path/to/cache',
@@ -610,23 +617,25 @@ See [CHANGELOG.md](./CHANGELOG.md).
 
 #### How to use Global Cache in AfterAll hook?
 
-Running an `AfterAll` hook exactly once is tricky. The intent is usually to run it only in the **last worker** - the inverse of `BeforeAll`, which you often want in the **first** worker. But reliably detecting that “last call” is hard, as other tests may still be scheduled that use the same hook.
-
-In this example, the cleanup would run as soon as the first worker finishes, while other workers might still depend on the resource:
+Running some code once in a `AfterAll` hook is a bit tricky. 
+Unlike a `BeforeAll`, cleanup code is expected to run for the **last worker**, not for the first one.
+But reliably detecting that “last call” is hard, as other tests may still be scheduled to access the value.
 
 ```ts
 // ❌ Don't do this in `afterAll`
 test.afterAll(async () => {
   await globalCache.get('key', async () => {
-    // ...cleanup code
+    // ...cleanup code 
   });
 });
 ```
 
-**Do this instead:** move any "run-once-after-everything" logic to a global teardown. That guarantees all workers have finished. During teardown, use Global Cache’s [API](#globalcachegetstalekey) to check whether the key exists and then perform the once-only cleanup.
+The cleanup would run as soon as the first worker finishes, while other workers might still use the resource.
+
+**Do this instead:** move any "run-once-after-everything" logic to a global teardown. That guarantees all workers have finished. During the teardown, use Global Cache’s [getStale()](#globalcachegetstale) method to access the value and perform the cleanup.
 
 ## Feedback
-Feel free to share your feedback and suggestions in the [issues](https://github.com/vitalets/@vitalets/global-cache/issues).
+Feel free to share your feedback and suggestions in the [issues](https://github.com/vitalets/global-cache/issues).
 
 ## License
-[MIT](https://github.com/vitalets/@vitalets/global-cache/blob/main/LICENSE)
+[MIT](https://github.com/vitalets/global-cache/blob/main/LICENSE)
