@@ -19,7 +19,11 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "test": "vitest run --no-cache --testTimeout 5000 --dir ./test",
-    "test:d": "DEBUG=global-cache* npm t"
+    "test:d": "DEBUG=global-cache* npm t",
+    "release": "release-it"
+  },
+  "release-it": {
+    "git": false
   },
   "dependencies": {
     "@types/debug": "^4.1.12",

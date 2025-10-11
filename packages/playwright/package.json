@@ -13,7 +13,21 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json"
+    "build": "tsc -p tsconfig.build.json",
+    "release": "release-it"
+  },
+  "release-it": {
+    "git": false,
+    "plugins": {
+      "@release-it/bumper": {
+        "out": {
+          "file": "package.json",
+          "path": [
+            "dependencies.@global-cache/core"
+          ]
+        }
+      }
+    }
   },
   "dependencies": {
     "@global-cache/core": "^0.2.2"

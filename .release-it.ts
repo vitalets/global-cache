@@ -1,21 +1,13 @@
 import type { Config } from 'release-it';
 
+// See: https://github.com/release-it/release-it/blob/main/docs/recipes/monorepo.md
+
 export default {
+  npm: {
+    publish: false,
+  },
   git: {
     requireCleanWorkingDir: false,
-  },
-  hooks: {
-    'before:init': [
-      'npm ci',
-      'npm run lint',
-      'npm run prettier',
-      'npx publint',
-      'npm run build',
-      'npm test',
-      // don't run example, b/c it's expected to fail
-      // 'npm run example',
-      'npm run tsc',
-    ],
   },
   github: {
     release: true,
@@ -27,5 +19,16 @@ export default {
       addUnreleased: true,
       addVersionUrl: true,
     },
+  },
+  hooks: {
+    'before:init': [
+      'npm ci',
+      'npm run lint',
+      'npm run prettier',
+      'npm run tsc',
+      // 'npx publint',
+      'npm run build',
+      'npm test',
+    ],
   },
 } satisfies Config;
