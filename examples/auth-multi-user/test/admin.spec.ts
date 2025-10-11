@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { signInOnce } from './helpers/auth';
+import { signIn } from './helpers/auth';
 
 test.use({
   storageState: async ({ storageState, browser }, use) => {
-    storageState = await signInOnce(browser, 'admin');
+    storageState = await signIn(browser, 'admin');
     await use(storageState);
   },
 });

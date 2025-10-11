@@ -6,7 +6,7 @@ This approach is more efficient than the [separate auth project](https://playwri
 
 ## Details
 - `auth.spec.ts` runs tests for authenticated user, and `no-auth.spec.ts` for non-authenticated.
-- `fixtures.ts` overwrites `storageState` fixture to lazily perform authetication if the current test does not marked with `@no-auth` tag. Auth state is persisted in the `.global-cache` dir for 5 minutes.
+- `helpers/fixtures.ts` overwrites `storageState` fixture to lazily perform authetication if the current test does not marked with `@no-auth` tag. Auth state is persisted in the `.global-cache` dir for 5 minutes.
 
 ## Running all tests
 When running all tests with 2 workers, authentication performed only in one worker (where it's really needed):
@@ -20,10 +20,10 @@ Running 3 tests using 2 workers
 
   ✓  1 test/no-auth.spec.ts:5:5 › no-auth test @no-auth (2.0s)
   ✘  2 test/auth.spec.ts:4:5 › test 1 (4.6s)
+  ✘  3 test/auth.spec.ts:11:5 › test 2 (1.8s)
 Performing sing-in...
 Worker 1, user is NOT authenticated.
 Worker 0, user is authenticated.
-  ✘  3 test/auth.spec.ts:11:5 › test 2 (1.8s)
 Worker 2, user is authenticated.
 ```
 

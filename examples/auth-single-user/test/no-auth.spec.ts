@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test';
-import { test } from './fixtures';
+import { test } from './helpers/fixtures';
 
 // this test does not trigger auth because of @no-auth tag
 test('no-auth test', { tag: '@no-auth' }, async ({ page }, testInfo) => {
