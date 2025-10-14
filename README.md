@@ -13,11 +13,11 @@ A key-value cache for sharing data between parallel workers and test runs.
 
 When running E2E tests in parallel, you might need to:
 
-✅ Authenticate the user only once  
-✅ Seed the database only once  
-✅ Compute heavy values on demand  
-✅ Reuse those values across workers  
-✅ Persist some values between test runs  
+✅ Authenticate the user only once\
+✅ Seed the database only once\
+✅ Compute heavy values on demand\
+✅ Reuse those values across workers\
+✅ Persist some values between test runs
 
 Global Cache makes all of this possible.
 
@@ -71,6 +71,8 @@ Currently Global Cache is primarily developed for [Playwright](https://playwrigh
 
 ### Install
 
+Install `@global-cache/playwright` via any package manager:
+
 ```sh
 npm i -D @global-cache/playwright
 ```
@@ -94,7 +96,6 @@ export default globalCache.wrap(config);
 <details>
     <summary>Manual configuration</summary>
 
-````
 You can manually adjust Playwright config to enable global cache:
 
 ```ts
@@ -112,7 +113,6 @@ export default defineConfig({
   // ...
 });
 ```
-````
 
 </details> 
 
@@ -125,14 +125,14 @@ import { globalCache } from '@global-cache/playwright';
 
 // ...
 
-const value = await globalCache.get('key', async () => {
+const value = await globalCache.get('cache-key', async () => {
   const value = /* ...heavy operation */
   return value;
 });
 ```
 
-* If `key` is not populated yet, the function will be called, and its result will be cached.
-* If `key` is already populated, the cached value will be returned instantly.
+* If `cache-key` is not populated yet, the function will be called, and its result will be cached.
+* If `cache-key` is already populated, the cached value will be returned instantly.
 
 > **NOTE**: The return value must be **serializable**: only plain JavaScript objects and primitive types can be used, e.g., string, boolean, number, or JSON.
 
@@ -144,7 +144,7 @@ If your computation depends on some variables, you should add these variables to
 
 ```ts
 const value = await globalCache.get(`some-key-${id}`, async () => {
-  const value = /* ...heavy operation that depends on `id` */
+  const value = /* ...computation that depends on `id` */
   return value;
 });
 ```
@@ -182,9 +182,9 @@ All code samples are currently for Playwright.
 
 ### Authentication (single user)
 
-You can perform lazy, on-demand authentication. Use the `storageState` fixture to authenticate once, save the auth state, and share it with all subsequent tests.
+You can perform lazy, on-demand authentication with Global Cache. Use the `storageState` fixture to authenticate once, save the auth state, and share it with all subsequent tests.
 
-This approach is more efficient than the [separate auth project](https://playwright.dev/docs/auth#basic-shared-account-in-all-tests), because authentication runs only when needed and doesn't require an additional project.
+This approach is more efficient than a [dependency project](https://playwright.dev/docs/auth#basic-shared-account-in-all-tests), because authentication runs only when needed, and there is no extra projects in the Playwright config.
 
 ```ts
 // fixtures.ts
@@ -367,7 +367,7 @@ test('test', async ({ page }) => {
 });
 ```
 
-If the response depends on query parameters or body, you should add these value to the key:
+If the response depends on query parameters or body, you should add these value to the cache key:
 
 ```ts
 await page.route('/api/cats/**', (route, req) => {
