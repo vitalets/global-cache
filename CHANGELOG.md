@@ -3,6 +3,8 @@
 > This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
 
 ## [Unreleased]
+
+## [0.2.8] - 2025-10-14
 * fix: handle Playwright UI mode and VSCode extension runs.
 
 ## [0.2.4] - 2025-10-14
@@ -25,7 +27,7 @@
 * Initial release
 
 
-[unreleased]: https://github.com/vitalets/global-cache/compare/0.2.6...HEAD
+[unreleased]: https://github.com/vitalets/global-cache/compare/0.2.8...HEAD
 [0.2.6]: https://github.com/vitalets/global-cache/compare/0.2.4...0.2.6
 [0.2.5]: https://github.com/vitalets/global-cache/compare/0.2.4...0.2.5
 [0.2.4]: https://github.com/vitalets/global-cache/compare/0.2.3...0.2.4
@@ -34,3 +36,5 @@
 [0.2.1]: https://github.com/vitalets/global-cache/compare/0.2.0...0.2.1
 [0.2.0]: https://github.com/vitalets/global-cache/compare/0.1.2...0.2.0
 [0.1.2]: https://github.com/vitalets/global-cache/compare/0.1.1...0.1.2
+
+[0.2.8]: https://github.com/vitalets/global-cache/compare/0.2.4...0.2.8
