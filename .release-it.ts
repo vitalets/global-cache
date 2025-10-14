@@ -27,7 +27,7 @@ export default {
   },
   hooks: {
     'before:version:bump': [
-      'npm ci',
+      // 'npm ci',
       'npm run lint',
       'npm run prettier',
       'npm run tsc',
