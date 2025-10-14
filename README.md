@@ -2,26 +2,35 @@
 
 [![lint](https://github.com/vitalets/global-cache/actions/workflows/lint.yaml/badge.svg)](https://github.com/vitalets/global-cache/actions/workflows/lint.yaml)
 [![test](https://github.com/vitalets/global-cache/actions/workflows/test.yaml/badge.svg)](https://github.com/vitalets/global-cache/actions/workflows/test.yaml)
-[![license](https://img.shields.io/npm/l/%40vitalets%2Fglobal-cache)](https://github.com/vitalets/global-cache/blob/main/LICENSE)
+![license](https://img.shields.io/github/license/vitalets/global-cache)
 
-> Key-value cache for sharing data between parallel workers and subsequent runs.
+**Global Cache** is a key-value store for sharing data between parallel workers and test runs.
 
-With the global cache, the first worker that requests a value becomes responsible for computing it. Others wait until the result is ready — and all workers get the same value. The value is cached in memory or on the file system and reused by later workers and test runs.
+> \[!IMPORTANT]
+> Package name was changed from `@vitalets/global-cache` to `@global-cache/playwright` to provide dedicated Playwright integration.
 
-This can significantly boost your E2E test performance.
+## Why use it?
+
+When running E2E tests in parallel, you might need to:
+
+* Authenticate the user only once
+* Seed the database only once
+* Compute heavy values on demand
+* Reuse those values across workers
+* Persist some values between test runs
+
+Global Cache makes all of this possible and improves your E2E test performance.
+
+## How it works
+
+The first worker that requests a value becomes responsible for computing it. Others wait until the result is ready — and all workers get the same value. The value is cached in memory or on the file system and reused by later workers and test runs:
 
 <img align="center" alt="Global cache schema" src="https://raw.githubusercontent.com/vitalets/global-cache/refs/heads/main/scripts/img/schema-1628.png" />
 
 ## Index
 
-<details>
-<summary>Click to expand</summary>
+<details><summary>Click to expand</summary>
 
-<!-- doc-gen TOC maxDepth="4" excludeText="Index" -->
-
-* [Index](#index)
-* [Features](#features)
-* [Why use it?](#why-use-it)
 * [Usage (Playwright)](#usage-playwright)
   * [Install](#install)
   * [Configure](#configure)
@@ -54,28 +63,11 @@ This can significantly boost your E2E test performance.
 * [Feedback](#feedback)
 * [License](#license)
 
-<!-- end-doc-gen -->
-
 </details>
-
-## Features
-
-* **On-demand execution**: Computes heavy values only when they’re actually needed.
-* **Deduplicated**: Ensures each key is computed exactly once.
-* **Worker-safe**: Designed for test environments with parallel workers (e.g. [Playwright](https://playwright.dev/)).
-
-## Why use it?
-
-When running E2E tests in parallel, you might need to:
-
-* Authenticate a user only once.
-* Populate a database only once.
-* Reuse the state even if a worker fails.
-* Keep some values persistently to speed up subsequent test runs.
 
 ## Usage (Playwright)
 
-Currently the main
+Currently Global Cache is primarily developed for [Playwright](https://playwright.dev/), but can be integrated with other frameworks.
 
 ### Install
 
@@ -513,7 +505,7 @@ globalCache.config({
 import { globalCache } from '@global-cache/playwright';
 ```
 
-#### `globalCache.wrap(config)`
+### `globalCache.wrap(config)`
 
 A helper method to adjust Playwright config for global cache usage.
 
@@ -523,7 +515,7 @@ A helper method to adjust Playwright config for global cache usage.
 
 **Returns**: `object` - Playwright config with global cache configured.
 
-#### `globalCache.defineConfig(config)`
+### `globalCache.defineConfig(config)`
 
 Configures global cache.
 
@@ -547,7 +539,7 @@ globalCache.defineConfig({
 });
 ```
 
-#### `globalCache.get(key,[ params,] computeFn)`
+### `globalCache.get(key,[ params,] computeFn)`
 
 Get value by key or compute it if not found.
 
@@ -560,7 +552,7 @@ Get value by key or compute it if not found.
 
 **Returns**: `Promise`
 
-#### `globalCache.getStale(key)`
+### `globalCache.getStale(key)`
 
 Get "stale" value for cleanup. The result is different for presistent and non-persistent keys:
 
@@ -573,7 +565,7 @@ Get "stale" value for cleanup. The result is different for presistent and non-pe
 
 **Returns**: `Promise`
 
-#### `globalCache.getStaleList(prefix)`
+### `globalCache.getStaleList(prefix)`
 
 Get a list of "stale" values by prefix. The result follow the same rules as for `.getStale()`.
 
@@ -583,25 +575,25 @@ Get a list of "stale" values by prefix. The result follow the same rules as for 
 
 **Returns**: `Promise<Array>`
 
-#### `globalCache.clear()`
+### `globalCache.clear()`
 
 Clears all non-peristent keys for the current run.
 
 **Returns**: `Promise`
 
-#### `globalCache.setup`
+### `globalCache.setup`
 
 Returns an absolute path to the file, that performs the global cache setup.
 
 **Returns**: `string`
 
-#### `globalCache.teardown`
+### `globalCache.teardown`
 
 Returns an absolute path to the file, that performs the global cache teardown.
 
 **Returns**: `string`
 
-#### `globalCache.reporter`
+### `globalCache.reporter`
 
 Returns an absolute path to the global cache Playwright reporter, used for improving user experience with VSCode and UI-mode.
 
@@ -643,7 +635,7 @@ See [CHANGELOG.md](./CHANGELOG.md).
 
 ## FAQ
 
-#### How to use Global Cache in AfterAll hook?
+### How to use Global Cache in AfterAll hook?
 
 Running some code once in a `AfterAll` hook is a bit tricky.
 Unlike a `BeforeAll`, cleanup code is expected to run for the **last worker**, not for the first one.

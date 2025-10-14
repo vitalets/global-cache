@@ -3,9 +3,9 @@
 > This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
 
 ## [Unreleased]
-* breaking: Move to a monorepo and publish new packages under the `@global-cache` scope:
-  - `@global-cache/core` — core, framework-agnostic package
-  - `@global-cache/playwright` — Playwright integration package
+* breaking: move to a monorepo and publish packages under the **new scope**:
+  - `@global-cache/core`: framework-agnostic core package.
+  - `@global-cache/playwright`: Playwright integration package.
 
 ## [0.2.2] - 2025-09-03
 * feat: better signature checks.
@@ -14,7 +14,7 @@
 * chore: better error message for missing setup
 
 ## [0.2.0] - 2025-08-15
-* feat: store value metadata on the file system
+* feat: store value metadata on the file system.
 * feat: check signature to invalidate cache after code changes
 
 ## [0.1.2] - 2025-08-08
