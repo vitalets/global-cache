@@ -10,6 +10,9 @@ export default {
   git: {
     // allow dirty dir, because packages will have version bumped
     requireCleanWorkingDir: false,
+    commitArgs: ['--no-verify'],
+    tagArgs: ['--no-verify'],
+    pushArgs: ['--no-verify'],
   },
   github: {
     release: true,
