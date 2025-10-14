@@ -1,7 +1,7 @@
 {
   "name": "@global-cache/core",
   "description": "Key-value cache for sharing data between parallel workers.",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "type": "commonjs",
   "exports": {
     ".": "./dist/index.js",
@@ -17,6 +17,7 @@
     "README.md"
   ],
   "scripts": {
+    "tsc": "tsc",
     "build": "tsc -p tsconfig.build.json",
     "test": "vitest run --no-cache --testTimeout 5000 --dir ./test",
     "test:d": "DEBUG=global-cache* npm t",

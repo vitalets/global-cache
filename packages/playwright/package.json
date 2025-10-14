@@ -1,7 +1,7 @@
 {
   "name": "@global-cache/playwright",
   "description": "Key-value cache for sharing data between Playwright workers.",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "type": "commonjs",
   "main": "dist/index.js",
   "engines": {
@@ -13,6 +13,7 @@
     "README.md"
   ],
   "scripts": {
+    "tsc": "tsc",
     "build": "tsc -p tsconfig.build.json",
     "release": "release-it"
   },
@@ -30,7 +31,7 @@
     }
   },
   "dependencies": {
-    "@global-cache/core": "0.2.4"
+    "@global-cache/core": "0.2.5"
   },
   "keywords": [
     "playwright",

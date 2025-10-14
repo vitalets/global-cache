@@ -25,7 +25,8 @@
 * Initial release
 
 
-[unreleased]: https://github.com/vitalets/global-cache/compare/0.2.4...HEAD
+[unreleased]: https://github.com/vitalets/global-cache/compare/0.2.5...HEAD
+[0.2.5]: https://github.com/vitalets/global-cache/compare/0.2.4...0.2.5
 [0.2.4]: https://github.com/vitalets/global-cache/compare/0.2.3...0.2.4
 [0.2.3]: https://github.com/vitalets/global-cache/compare/0.2.2...0.2.3
 [0.2.2]: https://github.com/vitalets/global-cache/compare/0.2.1...0.2.2
