@@ -13,13 +13,13 @@ A key-value cache for sharing data between parallel workers and test runs.
 
 When running E2E tests in parallel, you might need to:
 
-* Authenticate the user only once
-* Seed the database only once
-* Compute heavy values on demand
-* Reuse those values across workers
-* Persist some values between test runs
+✅ Authenticate the user only once  
+✅ Seed the database only once  
+✅ Compute heavy values on demand  
+✅ Reuse those values across workers  
+✅ Persist some values between test runs  
 
-Global Cache makes all of this possible and improves your E2E test performance.
+Global Cache makes all of this possible.
 
 ## How it works
 
