@@ -3,7 +3,7 @@ import { getConfig } from '../config';
 import { getStorage } from '../storage';
 import { TestRunValueInfo } from '../../shared/value-info';
 
-export const router = Router();
+export const router: ReturnType<typeof Router> = Router();
 
 export type GetStaleListParams = {
   prefix: string;

@@ -17,6 +17,9 @@
     "build": "tsc -p tsconfig.build.json",
     "release": "release-it"
   },
+  "dependencies": {
+    "@global-cache/core": "workspace:*"
+  },
   "release-it": {
     "git": false,
     "plugins": {
@@ -29,9 +32,6 @@
         }
       }
     }
-  },
-  "dependencies": {
-    "@global-cache/core": "0.2.12"
   },
   "keywords": [
     "playwright",

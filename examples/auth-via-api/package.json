@@ -5,7 +5,7 @@
     "test": "playwright test"
   },
   "devDependencies": {
-    "@global-cache/playwright": "latest",
+    "@global-cache/playwright": "workspace:*",
     "@playwright/test": "latest"
   }
 }

@@ -4,7 +4,8 @@ import { getConfig } from '../config';
 import { Getter, GetterResult } from '../getter';
 import { getStorage } from '../storage';
 
-export const router = Router();
+// See: https://github.com/microsoft/TypeScript/issues/47663#issuecomment-1519138189
+export const router: ReturnType<typeof Router> = Router();
 
 export type GetValueParams = {
   key: string;

@@ -18,6 +18,7 @@ export default {
     web: true,
   },
   plugins: {
+    'release-it-pnpm': {},
     '@release-it/keep-a-changelog': {
       filename: 'CHANGELOG.md',
       addUnreleased: true,
@@ -26,16 +27,17 @@ export default {
   },
   hooks: {
     'before:init': [
-      'npm ci',
-      'npm run lint', // prettier-ignore
-      'npm run prettier',
-      'npm run tsc',
-      'npm run build',
-      'npm test',
+      'pnpm i',
+      'pnpm run lint', // prettier-ignore
+      'pnpm run prettier',
+      'pnpm run tsc',
+      'pnpm run build',
+      'pnpm test',
     ],
     'before:version:bump': [
       // publish all packages, then run repo-related steps (git tag, GitHub release)
-      'npx turbo run release -- -i ${version} --ci',
+      // 'pnpm publish --recursive --filter "@global-cache/*" --no-git-checks --dry-run',
+      'npx turbo run release -- -i ${version} --only-version --verbose',
     ],
   },
 } satisfies Config;

@@ -2,7 +2,7 @@ import { Express, Router } from 'express';
 import { getConfig } from '../config';
 import { getStorage } from '../storage';
 
-export const router = Router();
+export const router: ReturnType<typeof Router> = Router();
 
 router.post('/run/:runId/clear', async (req, res) => {
   const { runId } = req.params;

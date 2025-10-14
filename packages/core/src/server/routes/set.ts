@@ -4,7 +4,7 @@ import { TestRunValueInfo } from '../../shared/value-info';
 import { Setter } from '../setter';
 import { getStorage } from '../storage';
 
-export const router = Router();
+export const router: ReturnType<typeof Router> = Router();
 
 export type SetValueParams = {
   key: string;
