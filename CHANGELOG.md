@@ -3,6 +3,8 @@
 > This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
 
 ## [Unreleased]
+
+## [0.2.4] - 2025-10-14
 * breaking: move to a monorepo and publish packages under the **new scope**:
   - `@global-cache/core`: framework-agnostic core package.
   - `@global-cache/playwright`: Playwright integration package.
@@ -22,7 +24,8 @@
 * Initial release
 
 
-[unreleased]: https://github.com/vitalets/global-cache/compare/0.2.3...HEAD
+[unreleased]: https://github.com/vitalets/global-cache/compare/0.2.4...HEAD
+[0.2.4]: https://github.com/vitalets/global-cache/compare/0.2.3...0.2.4
 [0.2.3]: https://github.com/vitalets/global-cache/compare/0.2.2...0.2.3
 [0.2.2]: https://github.com/vitalets/global-cache/compare/0.2.1...0.2.2
 [0.2.1]: https://github.com/vitalets/global-cache/compare/0.2.0...0.2.1
