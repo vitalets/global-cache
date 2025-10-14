@@ -8,7 +8,8 @@
     "test": {},
     "release": {
       "dependsOn": ["^release"],
-      "cache": false
+      "cache": false,
+      "interactive": true
     }
   }
 }
