@@ -1,7 +1,7 @@
 {
   "name": "global-cache-monorepo",
   "private": true,
-  "version": "0.2.5",
+  "version": "0.2.7",
   "packageManager": "npm@11.6.0",
   "repository": {
     "type": "git",
@@ -17,7 +17,7 @@
     "prettier:w": "prettier --write --ignore-unknown .",
     "pw:install": "PLAYWRIGHT_SKIP_BROWSER_GC=1 npx playwright install chromium",
     "toc": "remark README.md --frail -o",
-    "release": "release-it",
+    "release": "release-it --only-version",
     "dev": "turbo watch build",
     "build": "turbo run build",
     "test": "turbo run test"
