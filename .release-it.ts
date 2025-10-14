@@ -18,7 +18,6 @@ export default {
     web: true,
   },
   plugins: {
-    'release-it-pnpm': {},
     '@release-it/keep-a-changelog': {
       filename: 'CHANGELOG.md',
       addUnreleased: true,
@@ -36,8 +35,8 @@ export default {
     ],
     'before:version:bump': [
       // publish all packages, then run repo-related steps (git tag, GitHub release)
-      // 'pnpm publish --recursive --filter "@global-cache/*" --no-git-checks --dry-run',
-      'npx turbo run release -- -i ${version} --only-version --verbose',
+      'npx turbo run bump --filter "@global-cache/*" -- ${version}',
+      'pnpm publish --recursive --filter "@global-cache/*" --no-git-checks --dry-run',
     ],
   },
 } satisfies Config;
