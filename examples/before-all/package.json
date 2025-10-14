@@ -6,6 +6,6 @@
   },
   "devDependencies": {
     "@global-cache/playwright": "latest",
-    "@playwright/test": "^1.56.0"
+    "@playwright/test": "latest"
   }
 }

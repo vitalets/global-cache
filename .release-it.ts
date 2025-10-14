@@ -29,7 +29,7 @@ export default {
       // 'npx publint',
       'npm run build',
       'npm test',
-      'npx turbo run release',
+      'npx turbo run release --ui=tui',
     ],
   },
 } satisfies Config;
