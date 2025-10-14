@@ -3,8 +3,6 @@
 > This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
 
 ## [Unreleased]
-
-## [0.2.3] - 2025-10-14
 * breaking: move to a monorepo and publish packages under the **new scope**:
   - `@global-cache/core`: framework-agnostic core package.
   - `@global-cache/playwright`: Playwright integration package.
