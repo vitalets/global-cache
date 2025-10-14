@@ -17,7 +17,7 @@
     "prettier:w": "prettier --write --ignore-unknown .",
     "pw:install": "PLAYWRIGHT_SKIP_BROWSER_GC=1 npx playwright install chromium",
     "toc": "remark README.md --frail -o",
-    "release": "release-it",
+    "release": "turbo run release && release-it",
     "dev": "turbo watch build",
     "build": "turbo run build",
     "test": "turbo run test --filter=./packages/*"

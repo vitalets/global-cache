@@ -4,7 +4,7 @@
 [![test](https://github.com/vitalets/global-cache/actions/workflows/test.yaml/badge.svg)](https://github.com/vitalets/global-cache/actions/workflows/test.yaml)
 ![license](https://img.shields.io/github/license/vitalets/global-cache)
 
-**Global Cache** is a key-value store for sharing data between parallel workers and test runs.
+A key-value cache for sharing data between parallel workers and test runs.
 
 > \[!IMPORTANT]
 > Package name was changed from `@vitalets/global-cache` to `@global-cache/playwright` to provide dedicated Playwright integration.

@@ -5,6 +5,10 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
-    "test": {}
+    "test": {},
+    "release": {
+      "dependsOn": ["^release"],
+      "cache": false
+    }
   }
 }
