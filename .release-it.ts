@@ -25,13 +25,15 @@ export default {
     },
   },
   hooks: {
-    'before:version:bump': [
-      // 'npm ci',
-      'npm run lint',
+    'before:init': [
+      'npm ci',
+      'npm run lint', // prettier-ignore
       'npm run prettier',
       'npm run tsc',
       'npm run build',
       'npm test',
+    ],
+    'before:version:bump': [
       // publish all packages, then run repo-related steps (git tag, GitHub release)
       'npx turbo run release -- -i ${version} --ci',
     ],
