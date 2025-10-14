@@ -3,10 +3,10 @@ import type { Config } from 'release-it';
 // See: https://github.com/release-it/release-it/blob/main/docs/recipes/monorepo.md
 
 export default {
-  npm: {
-    publish: false,
-  },
+  // @ts-expect-error don't publish root package
+  npm: false,
   git: {
+    // allow dirty dir, because packages will have version bumped
     requireCleanWorkingDir: false,
   },
   github: {
@@ -26,9 +26,9 @@ export default {
       'npm run lint',
       'npm run prettier',
       'npm run tsc',
-      // 'npx publint',
       'npm run build',
       'npm test',
+      // publish all packages, then make repo-related release steps (git tag, GitHub release)
       'npx turbo run release --ui=tui',
     ],
   },
