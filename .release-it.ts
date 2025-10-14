@@ -30,7 +30,7 @@ export default {
       'npm run tsc',
       'npm run build',
       'npm test',
-      // publish all packages, then make repo-related release steps (git tag, GitHub release)
+      // publish all packages, then run repo-related steps (git tag, GitHub release)
       'npx turbo run release -- -i ${version} --ci',
     ],
   },
