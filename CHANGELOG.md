@@ -3,6 +3,7 @@
 > This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
 
 ## [Unreleased]
+* fix: handle Playwright UI mode and VSCode extension runs.
 
 ## [0.2.4] - 2025-10-14
 * breaking: move to a monorepo and publish packages under the **new scope**:
