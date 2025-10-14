@@ -29,6 +29,7 @@ export default {
       // 'npx publint',
       'npm run build',
       'npm test',
+      'npx turbo run release',
     ],
   },
 } satisfies Config;
