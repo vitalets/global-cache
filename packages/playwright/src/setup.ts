@@ -7,12 +7,13 @@ export default async function globalSetup() {
   // Generate unique runId on every global setup call
   globalConfig.newTestRun();
 
-  // If external server url provided or server is already running -> skip
-  if (globalConfig.serverUrl) return;
+  // If external server url provided -> skip
+  if (globalConfig.externalServerUrl) return;
+
+  // If local server already running -> skip
+  if (globalCacheServer.isRunning) return;
 
   await globalCacheServer.start({ basePath: globalConfig.basePath });
 
-  globalConfig.update({
-    serverUrl: `http://localhost:${globalCacheServer.port}`,
-  });
+  globalConfig.update({ localServerUrl: `http://localhost:${globalCacheServer.port}` });
 }

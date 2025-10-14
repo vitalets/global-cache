@@ -22,7 +22,7 @@ export class GlobalCacheClient<S extends DefaultKeysSchema = DefaultKeysSchema> 
     if (!this.#api) {
       const { serverUrl, runId } = globalConfig;
       if (!serverUrl) {
-        throw new Error('Global-cache url is empty. Did you run the global-cache setup?');
+        throw new Error('Global-cache server URL is empty. Did you run the global-cache setup?');
       }
       this.#api = new StorageApi(serverUrl, runId);
     }

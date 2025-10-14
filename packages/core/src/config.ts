@@ -17,19 +17,16 @@ export type GlobalCacheConfig = {
 };
 
 type GlobalConfigInternal = GlobalCacheConfig & {
-  serverUrl: string;
-  runId: string;
+  runId?: string;
+  localServerUrl?: string;
 };
 
 export class GlobalConfig {
-  private config: GlobalConfigInternal = {
-    serverUrl: '', // will be set later, when server starts.
-    runId: '', // will be set later
-  };
+  private config: GlobalConfigInternal = {};
 
   constructor() {
     Object.assign(this.config, getConfigFromEnv());
-    if (!this.runId) this.newTestRun();
+    if (!this.config.runId) this.newTestRun();
   }
 
   update(config: Partial<GlobalConfigInternal>) {
@@ -45,8 +42,16 @@ export class GlobalConfig {
     this.update({ runId: process.env.GLOBAL_CACHE_RUN_ID || randomUUID() });
   }
 
-  get serverUrl() {
+  get localServerUrl() {
+    return this.config.localServerUrl;
+  }
+
+  get externalServerUrl() {
     return this.config.serverUrl;
+  }
+
+  get serverUrl() {
+    return this.externalServerUrl || this.localServerUrl;
   }
 
   get ignoreTTL() {
@@ -62,7 +67,9 @@ export class GlobalConfig {
   }
 
   get runId() {
-    return this.config.runId;
+    const { runId } = this.config;
+    if (!runId) throw new Error('RunId is not set.');
+    return runId;
   }
 }
 
