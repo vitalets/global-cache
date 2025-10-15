@@ -3,6 +3,7 @@
 > This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
 
 ## [Unreleased]
+* improve release script.
 
 ## [0.3.0] - 2025-10-15
 * rename `globalCache.clear()` to `globalCache.clearTestRun()`.
