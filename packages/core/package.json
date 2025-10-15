@@ -3,10 +3,19 @@
   "description": "Key-value cache for sharing data between parallel workers.",
   "version": "0.3.1",
   "type": "commonjs",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": "./dist/index.js",
     "./server": "./dist/server/index.js",
     "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "server": [
+        "./dist/server/index.d.ts"
+      ]
+    }
   },
   "engines": {
     "node": ">=20"
