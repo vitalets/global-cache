@@ -7,7 +7,7 @@
 A key-value cache for sharing data between parallel workers and test runs.
 
 > \[!IMPORTANT]
-> Package name was changed from **@vitalets/global-cache** to **@global-cache/playwright** to provide dedicated Playwright integration.
+> The main package was recently **renamed** from `@vitalets/global-cache` to `@global-cache/playwright` to provide a dedicated Playwright integration.
 
 ## Why use it?
 
