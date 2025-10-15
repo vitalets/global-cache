@@ -13,8 +13,8 @@ A key-value cache for sharing data between parallel workers and test runs.
 
 When running E2E tests in parallel, you might need to:
 
-✅ Authenticate the user only once\
-✅ Seed the database only once\
+✅ Authenticate user only once\
+✅ Seed database only once\
 ✅ Compute heavy values on demand\
 ✅ Reuse those values across workers\
 ✅ Persist some values between test runs
