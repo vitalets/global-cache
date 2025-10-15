@@ -1,7 +1,7 @@
 /**
  * A workaround to reliably work in Playwright UI mode and VSCode extension.
  *
- * The problem: in these modes test run is a long-running process,
+ * The problem: in these modes test-run is a long-running process,
  * that by default executes global setup only once:
  * See: https://github.com/microsoft/playwright/issues/33193
  * See: https://github.com/microsoft/playwright/issues/37524
@@ -13,7 +13,7 @@
  * Reporter's onEnd is called on every test execution.
  */
 import { globalConfig } from '@global-cache/core';
-import { globalCacheServer } from '@global-cache/core/server';
+import { globalCache } from '.';
 
 export default class GlobalCacheReporter {
   printsToStdio() {
@@ -21,7 +21,8 @@ export default class GlobalCacheReporter {
   }
 
   async onEnd() {
-    // TODO: handle external server.
-    await globalCacheServer.clearTestRun(globalConfig.runId);
+    if (globalConfig.serverUrl) {
+      await globalCache.clearTestRun();
+    }
   }
 }

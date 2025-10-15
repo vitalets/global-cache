@@ -21,9 +21,6 @@ export class GlobalCacheClient<S extends DefaultKeysSchema = DefaultKeysSchema> 
   private get api() {
     if (!this.#api) {
       const { serverUrl, runId } = globalConfig;
-      if (!serverUrl) {
-        throw new Error('Global-cache server URL is empty. Did you run the global-cache setup?');
-      }
       this.#api = new StorageApi(serverUrl, runId);
     }
     return this.#api;
@@ -113,9 +110,9 @@ export class GlobalCacheClient<S extends DefaultKeysSchema = DefaultKeysSchema> 
     return values as ValueType[];
   }
 
-  async clear() {
-    debug('Clearing test-run values...');
-    await this.api.clear();
+  async clearTestRun() {
+    debug(`Clearing test-run: ${globalConfig.runId}`);
+    await this.api.clearTestRun();
     debug('Cleared.');
   }
 

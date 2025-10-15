@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { beforeAll, afterAll, afterEach, test, expect, describe, vi } from 'vitest';
-import { GlobalCacheClient } from '../src';
+import { GlobalCacheClient, globalConfig } from '../src';
 import { globalCacheServer } from '../src/server';
 import { beforeEach } from 'node:test';
 
@@ -11,7 +11,7 @@ const globalCache = new GlobalCacheClient();
 beforeAll(async () => {
   clearDir(basePath);
   await globalCacheServer.start({ basePath });
-  globalCache.config({ serverUrl: globalCacheServer.localUrl });
+  globalConfig.update({ localServerUrl: globalCacheServer.localUrl });
 });
 
 afterAll(async () => {
@@ -19,7 +19,7 @@ afterAll(async () => {
 });
 
 afterEach(async () => {
-  await globalCache.clear();
+  await globalCache.clearTestRun();
 });
 
 describe('get', () => {
@@ -147,7 +147,7 @@ describe('getStale', () => {
     const value1 = await globalCache.getStale(key);
     const value2 = await fn();
     const value3 = await globalCache.getStale(key);
-    await globalCache.clear();
+    await globalCache.clearTestRun();
     await new Promise((r) => setTimeout(r, ttl + 10)); // wait for value to expire
     const value4 = await fn();
     const value5 = await globalCache.getStale(key);
@@ -189,7 +189,7 @@ describe('getStaleList', () => {
     await fnExcluded();
     const values1 = await globalCache.getStaleList(prefix);
 
-    await globalCache.clear();
+    await globalCache.clearTestRun();
     await new Promise((r) => setTimeout(r, ttl + 10)); // wait for value to expire
 
     await fn1();
@@ -216,7 +216,7 @@ describe('ignoreTTL: true', () => {
     const fn = () => globalCache.get(key, { ttl: 1000 }, () => ++callCount);
     const value1 = await fn();
     const value2 = await globalCache.getStale(key); // returns current value because it is not persistent
-    await globalCache.clear();
+    await globalCache.clearTestRun();
     const value3 = await fn(); // increments callCount as ttl is ignored
 
     expect(value1).toEqual(1);

@@ -52,7 +52,7 @@ The first worker that requests a value becomes responsible for computing it. Oth
   * [`globalCache.get(key,[ params,] computeFn)`](#globalcachegetkey-params-computefn)
   * [`globalCache.getStale(key)`](#globalcachegetstalekey)
   * [`globalCache.getStaleList(prefix)`](#globalcachegetstalelistprefix)
-  * [`globalCache.clear()`](#globalcacheclear)
+  * [`globalCache.clearTestRun()`](#globalcachecleartestrun)
   * [`globalCache.setup`](#globalcachesetup)
   * [`globalCache.teardown`](#globalcacheteardown)
   * [`globalCache.reporter`](#globalcachereporter)
@@ -575,9 +575,9 @@ Get a list of "stale" values by prefix. The result follow the same rules as for 
 
 **Returns**: `Promise<Array>`
 
-### `globalCache.clear()`
+### `globalCache.clearTestRun()`
 
-Clears all non-peristent keys for the current run.
+Clears all non peristent keys for the current test-run.
 
 **Returns**: `Promise`
 

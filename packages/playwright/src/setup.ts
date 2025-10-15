@@ -14,6 +14,5 @@ export default async function globalSetup() {
   if (globalCacheServer.isRunning) return;
 
   await globalCacheServer.start({ basePath: globalConfig.basePath });
-
-  globalConfig.update({ localServerUrl: `http://localhost:${globalCacheServer.port}` });
+  globalConfig.update({ localServerUrl: globalCacheServer.localUrl });
 }

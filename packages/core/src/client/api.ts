@@ -11,7 +11,10 @@ import { getStaleValue } from '../shared/value-info';
 export class StorageApi {
   private http: HttpJson;
 
-  constructor(serverUrl: string, runId: string) {
+  constructor(serverUrl: string | undefined, runId: string) {
+    if (!serverUrl) {
+      throw new Error('Global-cache server URL is empty. Did you run the global-cache setup?');
+    }
     const baseUrl = new URL(`/run/${runId}/`, serverUrl).toString();
     this.http = new HttpJson(baseUrl);
   }
@@ -44,7 +47,7 @@ export class StorageApi {
     return valueInfoList.map((valueInfo) => getStaleValue(valueInfo));
   }
 
-  async clear() {
+  async clearTestRun() {
     const res = await this.http.post('clear');
     await throwIfHttpError(res, 'Failed to clear session:');
   }
