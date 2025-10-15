@@ -10,8 +10,8 @@
     "bump": {
       "cache": false
     },
-    "release": {
-      "dependsOn": ["^release"],
+    "publish-to-npm": {
+      "dependsOn": ["^publish-to-npm"],
       "cache": false
     }
   }

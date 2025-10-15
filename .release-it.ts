@@ -35,8 +35,8 @@ export default {
     ],
     'before:version:bump': [
       // publish all packages, then run repo-related steps (git tag, GitHub release)
-      'npx turbo run bump --filter "@global-cache/*" -- ${version}',
-      'pnpm publish --recursive --filter "@global-cache/*" --no-git-checks',
+      'turbo run bump --filter "./packages/*" -- ${version}',
+      'turbo run publish-to-npm --filter "./packages/*"',
     ],
   },
 } satisfies Config;

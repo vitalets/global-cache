@@ -16,7 +16,7 @@
     "tsc": "tsc",
     "build": "tsc -p tsconfig.build.json",
     "bump": "npm version",
-    "release": "release-it"
+    "publish-to-npm": "pnpm publish --no-git-checks"
   },
   "dependencies": {
     "@global-cache/core": "workspace:*"
