@@ -22,4 +22,5 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install
       - run: pnpm playwright install --with-deps chromium
+      - run: pnpm run build
       - run: pnpm test
