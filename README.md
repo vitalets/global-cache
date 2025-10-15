@@ -389,23 +389,20 @@ await page.route('/api/cats/**', (route, req) => {
 
 After the test run, you may need to cleanup the created resources. For example, remove the user from the database. It can't be just called in `after / afterAll` hook, because at this point other workers may still need the value.
 
-The solution is to preform cleanup in a custom teardown script via `globalCache.getStale()` method.
+The solution is to perform cleanup in a custom teardown script..
 
-1. Define a custom teardown script in the Playwright config:
+1. Define a custom teardown script in the `playwright.config.ts`:
 
 ```ts
-// playwright.config.ts
 import { defineConfig } from '@playwright/test';
 import { globalCache } from '@global-cache/playwright';
 
-export default defineConfig({
-  globalSetup: globalCache.setup,
-  globalTeardown: [
-    require.resolve('./cleanup'), // <-- custom teardown script before globalCache.teardown
-    globalCache.teardown,
-  ],
+const config = defineConfig({
+  globalTeardown: require.resolve('./cleanup'), // <-- custom teardown script
   // ...
 });
+
+export default globalCache.wrap(config);
 ```
 
 2. In the cleanup script use `globalCache.getStale()` method to access outdated values:
@@ -416,7 +413,7 @@ import { defineConfig } from '@playwright/test';
 import { globalCache } from '@global-cache/playwright';
 
 export default async function() {
-    const userId = await globalCache.getStale('user-id');
+    const userId = await globalCache.getStale('user-id'); // <-- get value for cleanup
     if (userId) {
         /* remove user from database */
     }
@@ -425,8 +422,8 @@ export default async function() {
 
 The result of `globalCache.getStale(key)` is different for non-presistent and persistent keys:
 
-* **non-persistent**: returns the current value (as it will be cleared right after test run end)
-* **persistent**: returns the previous value that was updated during the test run (as the current value may be reused in the subsequent runs)
+* **non-persistent**: returns the *current value* (as it will be cleared right after test-run end)
+* **persistent**: returns the *previous value* that was updated during the test run (current value should not be cleared, because it may be reused in the subsequent runs)
 
 > \[!TIP]
 > Check out a fully working example of [cleanup](/examples/cleanup/).
@@ -634,11 +631,13 @@ See [CHANGELOG.md](./CHANGELOG.md).
 
 ## FAQ
 
-### How to use Global Cache in AfterAll hook?
+### How to use Global Cache in the AfterAll hook?
 
 Running some code once in a `AfterAll` hook is a bit tricky.
 Unlike a `BeforeAll`, cleanup code is expected to run for the **last worker**, not for the first one.
 But reliably detecting that “last call” is hard, as other tests may still be scheduled to access the value.
+
+In the example below the cleanup would run as soon as the first worker finishes, while other workers might still use the resource:
 
 ```ts
 // ❌ Don't do this in `afterAll`
@@ -648,8 +647,6 @@ test.afterAll(async () => {
   });
 });
 ```
-
-The cleanup would run as soon as the first worker finishes, while other workers might still use the resource.
 
 **Do this instead:** move any "run-once-after-everything" logic to a global teardown. That guarantees all workers have finished. During the teardown, use Global Cache’s [getStale()](#globalcachegetstalekey) method to access the value and perform the cleanup.
 
