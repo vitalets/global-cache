@@ -2,4 +2,4 @@
 
 [![npm version](https://img.shields.io/npm/v/@global-cache/playwright)](https://www.npmjs.com/package/@global-cache/playwright)
 
-Global-cache integration with Playwright.
+Global Cache integration with Playwright. Refer to the main [README](https://github.com/vitalets/global-cache) for setup and examples.
