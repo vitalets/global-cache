@@ -3,6 +3,7 @@
 > This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
 
 ## [Unreleased]
+* fix typing for module resolution `node`.
 
 ## [0.3.1] - 2025-10-15
 * improve release script.
