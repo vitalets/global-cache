@@ -20,9 +20,7 @@
     "tsc": "tsc",
     "build": "tsc -p tsconfig.build.json",
     "test": "vitest run --no-cache --testTimeout 5000 --dir ./test",
-    "test:d": "DEBUG=global-cache* npm t",
-    "bump": "npm version",
-    "publish-to-npm": "pnpm publish --no-git-checks"
+    "test:d": "DEBUG=global-cache* npm t"
   },
   "dependencies": {
     "@types/debug": "^4.1.12",

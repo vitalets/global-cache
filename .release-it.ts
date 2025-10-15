@@ -34,9 +34,9 @@ export default {
       'pnpm test',
     ],
     'before:version:bump': [
-      // publish all packages, then run repo-related steps (git tag, GitHub release)
-      'turbo run bump --filter "./packages/*" -- ${version}',
-      'turbo run publish-to-npm --filter "./packages/*"',
+      // publish all packages individually before repo-related steps (git tag, GitHub release)
+      'pnpm -r --filter "./packages/*" exec npm version ${version}',
+      'pnpm -r --filter "./packages/*" --no-git-checks publish',
     ],
   },
 } satisfies Config;

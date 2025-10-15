@@ -15,9 +15,7 @@
   "scripts": {
     "tsc": "tsc",
     "build": "tsc -p tsconfig.build.json",
-    "test": "npx playwright test -c ./test/playwright.config.ts",
-    "bump": "npm version",
-    "publish-to-npm": "pnpm publish --no-git-checks"
+    "test": "npx playwright test -c ./test/playwright.config.ts"
   },
   "dependencies": {
     "@global-cache/core": "workspace:*"

@@ -6,13 +6,6 @@
       "outputs": ["dist/**"]
     },
     "test": {},
-    "tsc": {},
-    "bump": {
-      "cache": false
-    },
-    "publish-to-npm": {
-      "dependsOn": ["^publish-to-npm"],
-      "cache": false
-    }
+    "tsc": {}
   }
 }
