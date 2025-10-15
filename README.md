@@ -23,7 +23,7 @@ Global Cache makes all of this possible.
 
 ## How it works
 
-The first worker that requests a value becomes responsible for computing it. Others wait until the result is ready — and all workers get the same value. The value is cached in memory or on the file system and reused by later workers and test runs:
+The first worker that requests a value becomes responsible for computing it. Others wait until the result is ready — and all workers get the same value. The value is cached in memory or on the filesystem and reused by subsequent workers and test runs:
 
 <img align="center" alt="Global cache schema" src="https://raw.githubusercontent.com/vitalets/global-cache/refs/heads/main/scripts/img/schema-1628.png" />
 
@@ -71,7 +71,7 @@ Currently Global Cache is primarily developed for [Playwright](https://playwrigh
 
 ### Install
 
-Install `@global-cache/playwright` via any package manager:
+Install via any package manager:
 
 ```sh
 npm i -D @global-cache/playwright
@@ -79,10 +79,9 @@ npm i -D @global-cache/playwright
 
 ### Configure
 
-Enable the global cache in the Playwright config:
+Enable Global Cache in the `playwright.config.ts`:
 
 ```ts
-// playwright.config.ts
 import { defineConfig } from '@playwright/test';
 import { globalCache } from '@global-cache/playwright';
 
@@ -96,18 +95,17 @@ export default globalCache.wrap(config);
 <details>
     <summary>Manual configuration</summary>
 
-You can manually adjust Playwright config to enable global cache:
+You can manually adjust Playwright config to enable Global Cache:
 
 ```ts
-// playwright.config.ts
 import { defineConfig } from '@playwright/test';
 import { globalCache } from '@global-cache/playwright';
 
 export default defineConfig({
-  globalSetup: globalCache.setup,        // <-- Setup globalCache
-  globalTeardown: globalCache.teardown,  // <-- Teardown globalCache
+  globalSetup: globalCache.setup,        // <-- Add globalCache setup script
+  globalTeardown: globalCache.teardown,  // <-- Add globalCache teardown script
   reporter: [
-    globalCache.reporter,
+    globalCache.reporter,                // <-- Add globalCache reporter
     // ...
   ],
   // ...
@@ -118,7 +116,7 @@ export default defineConfig({
 
 ### Use in tests
 
-In tests and hooks, wrap heavy operations with `globalCache.get(key, computeFn)` to compute the value once and cache for all workers:
+In tests and hooks, wrap heavy operations with `globalCache.get(key, computeFn)` to compute the value once and share between workers:
 
 ```ts
 import { globalCache } from '@global-cache/playwright';
@@ -131,16 +129,17 @@ const value = await globalCache.get('cache-key', async () => {
 });
 ```
 
-* If `cache-key` is not populated yet, the function will be called, and its result will be cached.
+* If `cache-key` is not populated yet, the function will be evaluated, its result will be returned and cached.
 * If `cache-key` is already populated, the cached value will be returned instantly.
 
-> **NOTE**: The return value must be **serializable**: only plain JavaScript objects and primitive types can be used, e.g., string, boolean, number, or JSON.
+> \[!IMPORTANT]
+> The return value must be **serializable**: only plain JavaScript objects and primitive types can be used, e.g., string, boolean, number, or JSON.
 
 You can use `globalCache.get()` anywhere in your tests. Typically, it could be [fixtures](https://playwright.dev/docs/test-fixtures) or `beforeAll / before` hooks. See [more examples](#examples) below.
 
 ### Dynamic keys
 
-If your computation depends on some variables, you should add these variables to the key for proper data caching:
+If your computation depends on some variables, you should add these variables to the cache key for proper data separation:
 
 ```ts
 const value = await globalCache.get(`some-key-${id}`, async () => {
@@ -152,7 +151,7 @@ const value = await globalCache.get(`some-key-${id}`, async () => {
 ### Persistent values
 
 By default, all values are stored in memory and cached during the test run.
-However, you can store data permanently on the file system and reuse it between subsequent runs.
+However, you can store data permanently on the filesystem and reuse it between subsequent runs.
 For example, you can authenticate a user once and save the auth state for 1 hour.
 During this period, all test runs will reuse the auth state and execute faster.
 
@@ -167,14 +166,14 @@ const authState = await globalCache.get('auth-state', { ttl: '1 hour' }, async (
 });
 ```
 
-After running this test, the auth state will be cached in the file:
+After running this test, the auth state will be stored in a file:
 
 ```
 .global-cache
  └── auth-state.json
 ```
 
-> By default, all persistent values are stored in the `.global-cache` directory, but you can change this location in the [config](#globalcachedefineconfigconfig). Make sure to add the chosen directory to your `.gitignore` file to avoid committing it.
+> The default directory for persistent values is `.global-cache`, but you can change this location in the [config](#globalcachedefineconfigconfig). Make sure to add the chosen directory to your `.gitignore` file to avoid committing it.
 
 ## Examples
 
