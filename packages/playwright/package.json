@@ -1,7 +1,7 @@
 {
   "name": "@global-cache/playwright",
   "description": "Key-value cache for sharing data between Playwright workers.",
-  "version": "0.2.16",
+  "version": "0.3.0",
   "type": "commonjs",
   "main": "dist/index.js",
   "engines": {

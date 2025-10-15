@@ -1,7 +1,7 @@
 {
   "name": "global-cache-monorepo",
   "private": true,
-  "version": "0.2.16",
+  "version": "0.3.0",
   "packageManager": "pnpm@10.18.3",
   "repository": {
     "type": "git",
