@@ -16,16 +16,24 @@ When running E2E tests in parallel, you might need to:
 ✅ Authenticate user only once\
 ✅ Seed database only once\
 ✅ Compute heavy values on demand\
-✅ Reuse those values across workers\
-✅ Persist some values between test runs
+✅ Reuse heavy-computed values across workers\
+✅ Persist heavy-computed values between test runs
 
 Global Cache makes all of this possible.
 
-## How it works
+## How it works?
 
 The first worker that requests a value becomes responsible for computing it. Others wait until the result is ready — and all workers get the same value. The value is cached in memory or on the filesystem and reused by subsequent workers and test runs:
 
-<img align="center" alt="Global cache schema" src="https://raw.githubusercontent.com/vitalets/global-cache/refs/heads/main/scripts/img/schema-1628.png" />
+<p align="center">
+<img  alt="Global cache schema" src="https://raw.githubusercontent.com/vitalets/global-cache/refs/heads/main/scripts/img/schema-1628.png" />
+</p>
+
+<details><summary>What happens under the hood?</summary>
+
+Under the hood, Global Cache spins up a tiny HTTP server, with a simple REST API for getting and setting values. This server is a single storage point for all workers. When a worker needs a value, it performs a `GET` request to the server, and either gets a cached value instantly or computes the value and sets it via the `POST` request.
+
+</details>
 
 ## Index
 
@@ -59,7 +67,7 @@ The first worker that requests a value becomes responsible for computing it. Oth
 * [Debug](#debug)
 * [Changelog](#changelog)
 * [FAQ](#faq)
-  * [How to use Global Cache in AfterAll hook?](#how-to-use-global-cache-in-afterall-hook)
+  * [How to use Global Cache in the AfterAll hook?](#how-to-use-global-cache-in-the-afterall-hook)
 * [Feedback](#feedback)
 * [License](#license)
 
@@ -71,7 +79,7 @@ Currently Global Cache is primarily developed for [Playwright](https://playwrigh
 
 ### Install
 
-Install via any package manager:
+Install via any package manager. For example, npm:
 
 ```sh
 npm i -D @global-cache/playwright
@@ -83,17 +91,16 @@ Enable Global Cache in the `playwright.config.ts`:
 
 ```ts
 import { defineConfig } from '@playwright/test';
-import { globalCache } from '@global-cache/playwright';
+import { globalCache } from '@global-cache/playwright'; // <-- import global cache
 
 const config = defineConfig({
-  // ...your Playwright config
+  // ...
 });
 
-export default globalCache.wrap(config);
+export default globalCache.wrap(config); // <-- wrap Playwright config
 ```
 
-<details>
-    <summary>Manual configuration</summary>
+<details><summary>Manual configuration</summary>
 
 You can manually adjust Playwright config to enable Global Cache:
 
