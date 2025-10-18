@@ -1,13 +1,17 @@
-# global-cache
+<h1 align="center">⚡ global-cache</h1>
+
+<div align="center">
+
+<p>A key-value cache for sharing data between parallel workers and test runs</p>
 
 [![lint](https://github.com/vitalets/global-cache/actions/workflows/lint.yaml/badge.svg)](https://github.com/vitalets/global-cache/actions/workflows/lint.yaml)
 [![test](https://github.com/vitalets/global-cache/actions/workflows/test.yaml/badge.svg)](https://github.com/vitalets/global-cache/actions/workflows/test.yaml)
 ![license](https://img.shields.io/github/license/vitalets/global-cache)
 
-A key-value cache for sharing data between parallel workers and test runs.
+</div>
 
 > \[!IMPORTANT]
-> The main package was recently **renamed** from `@vitalets/global-cache` to `@global-cache/playwright` to provide a dedicated Playwright integration.
+> **The package was renamed** from `@vitalets/global-cache` to `@global-cache/playwright` to provide a dedicated Playwright integration.
 
 ## Why use it?
 
@@ -79,17 +83,27 @@ Currently Global Cache is primarily developed for [Playwright](https://playwrigh
 
 ### Install
 
-Install via any package manager. For example, npm:
+Install via any package manager.
 
+Npm:
 ```sh
 npm i -D @global-cache/playwright
+```
+Pnpm:
+```sh
+pnpm add -D @global-cache/playwright
+```
+Yarn:
+```sh
+yarn add -D @global-cache/playwright
 ```
 
 ### Configure
 
-Enable Global Cache in the `playwright.config.ts`:
+Wrap your Playwright config with `globalCache.wrap()`:
 
 ```ts
+// playwright.config.ts
 import { defineConfig } from '@playwright/test';
 import { globalCache } from '@global-cache/playwright'; // <-- import global cache
 
