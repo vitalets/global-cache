@@ -11,7 +11,7 @@
 </div>
 
 > \[!IMPORTANT]
-> **The package was renamed** from `@vitalets/global-cache` to `@global-cache/playwright` to provide a dedicated Playwright integration.
+> **The package was renamed** from `@vitalets/global-cache` to `@global-cache/playwright` to provide better Playwright integration.
 
 ## Why use it?
 
