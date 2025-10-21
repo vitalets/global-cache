@@ -1,14 +1,20 @@
 <h1 align="center">⚡ global-cache</h1>
 
-<div align="center">
+<p align="center">
+A key-value cache for sharing data between parallel workers and test runs
+</p>
 
-<p>A key-value cache for sharing data between parallel workers and test runs</p>
-
-[![lint](https://github.com/vitalets/global-cache/actions/workflows/lint.yaml/badge.svg)](https://github.com/vitalets/global-cache/actions/workflows/lint.yaml)
-[![test](https://github.com/vitalets/global-cache/actions/workflows/test.yaml/badge.svg)](https://github.com/vitalets/global-cache/actions/workflows/test.yaml)
-![license](https://img.shields.io/github/license/vitalets/global-cache)
-
-</div>
+<p align="center">
+<a href="https://github.com/vitalets/global-cache/actions/workflows/lint.yaml">
+  <img alt="lint" src="https://github.com/vitalets/global-cache/actions/workflows/lint.yaml/badge.svg" />
+</a>
+<a href="https://github.com/vitalets/global-cache/actions/workflows/test.yaml">
+  <img alt="test" src="https://github.com/vitalets/global-cache/actions/workflows/test.yaml/badge.svg" />
+</a>
+<a href="https://github.com/vitalets/global-cache/blob/main/LICENSE">
+<img alt="license" src="https://img.shields.io/github/license/vitalets/global-cache" />
+</a>
+</p>
 
 > \[!IMPORTANT]
 > **The package was renamed** from `@vitalets/global-cache` to `@global-cache/playwright` to provide better Playwright integration.
@@ -39,66 +45,43 @@ Under the hood, Global Cache spins up a tiny HTTP server, with a simple REST API
 
 </details>
 
-## Index
+## `@global-cache/playwright`
 
-<details><summary>Click to expand</summary>
+Currently Global Cache is primarily focused on [Playwright](https://playwright.dev/) and provides a dedicated package `@global-cache/playwright`.
 
-* [Usage (Playwright)](#usage-playwright)
-  * [Install](#install)
-  * [Configure](#configure)
-  * [Use in tests](#use-in-tests)
-  * [Dynamic keys](#dynamic-keys)
-  * [Persistent values](#persistent-values)
-* [Examples](#examples)
-  * [Authentication (single user)](#authentication-single-user)
-  * [Authentication (multi user)](#authentication-multi-user)
-  * [Sharing a variable (BeforeAll)](#sharing-a-variable-beforeall)
-  * [Caching network request](#caching-network-request)
-  * [Cleanup (single value)](#cleanup-single-value)
-  * [Cleanup (dynamic keys)](#cleanup-dynamic-keys)
-  * [Typed cache](#typed-cache)
+<!-- section-toc start -->
+
+* [Installation](#installation)
 * [Configuration](#configuration)
-* [API](#api)
-  * [`globalCache.wrap(config)`](#globalcachewrapconfig)
-  * [`globalCache.defineConfig(config)`](#globalcachedefineconfigconfig)
-  * [`globalCache.get(key,[ params,] computeFn)`](#globalcachegetkey-params-computefn)
-  * [`globalCache.getStale(key)`](#globalcachegetstalekey)
-  * [`globalCache.getStaleList(prefix)`](#globalcachegetstalelistprefix)
-  * [`globalCache.clearTestRun()`](#globalcachecleartestrun)
-  * [`globalCache.setup`](#globalcachesetup)
-  * [`globalCache.teardown`](#globalcacheteardown)
-  * [`globalCache.reporter`](#globalcachereporter)
-* [Debug](#debug)
-* [Changelog](#changelog)
-* [FAQ](#faq)
-  * [How to use Global Cache in the AfterAll hook?](#how-to-use-global-cache-in-the-afterall-hook)
-* [Feedback](#feedback)
-* [License](#license)
+* [Usage](#usage)
+* [Dynamic keys](#dynamic-keys)
+* [Persistent values](#persistent-values)
 
-</details>
+<!-- section-toc end -->
 
-## Usage (Playwright)
-
-Currently Global Cache is primarily developed for [Playwright](https://playwright.dev/), but can be integrated with other frameworks.
-
-### Install
+### Installation
 
 Install via any package manager.
 
 Npm:
+
 ```sh
 npm i -D @global-cache/playwright
 ```
+
 Pnpm:
+
 ```sh
 pnpm add -D @global-cache/playwright
 ```
+
 Yarn:
+
 ```sh
 yarn add -D @global-cache/playwright
 ```
 
-### Configure
+### Configuration
 
 Wrap your Playwright config with `globalCache.wrap()`:
 
@@ -135,7 +118,19 @@ export default defineConfig({
 
 </details> 
 
-### Use in tests
+To provide [Global Cache options](#globalcachedefineconfigconfig), call `globalCache.config()`:
+
+```ts
+import { globalCache } from '@global-cache/playwright';
+
+globalCache.config({ 
+  // ...global cache options
+});
+
+// ...
+```
+
+### Usage
 
 In tests and hooks, wrap heavy operations with `globalCache.get(key, computeFn)` to compute the value once and share between workers:
 
@@ -499,20 +494,6 @@ const value = await globalCache.get('foo', fn);
 
 > \[!TIP]
 > Check out a fully working example of [typed cache](/examples/typed-cache/).
-
-## Configuration
-
-To provide configuration options, call `globalCache.config()`:
-
-```ts
-import { globalCache } from '@global-cache/playwright';
-
-globalCache.config({ 
-  // ...global cache options
-});
-```
-
-[Available options](#globalcachedefineconfigconfig).
 
 ## API
 

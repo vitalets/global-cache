@@ -53,12 +53,9 @@ importers:
       remark-cli:
         specifier: ^12.0.1
         version: 12.0.1
-      remark-collapse:
-        specifier: ^0.1.2
-        version: 0.1.2
-      remark-toc:
-        specifier: ^9.0.0
-        version: 9.0.0
+      remark-section-toc:
+        specifier: ^1.0.0
+        version: 1.0.0
       remark-validate-links:
         specifier: ^13.1.0
         version: 13.1.0
@@ -82,7 +79,7 @@ importers:
         version: link:../../packages/playwright
       '@playwright/test':
         specifier: latest
-        version: 1.56.0
+        version: 1.56.1
 
   examples/auth-single-user:
     devDependencies:
@@ -91,7 +88,7 @@ importers:
         version: link:../../packages/playwright
       '@playwright/test':
         specifier: latest
-        version: 1.56.0
+        version: 1.56.1
 
   examples/auth-via-api:
     devDependencies:
@@ -100,7 +97,7 @@ importers:
         version: link:../../packages/playwright
       '@playwright/test':
         specifier: latest
-        version: 1.56.0
+        version: 1.56.1
 
   examples/before-all:
     devDependencies:
@@ -109,7 +106,7 @@ importers:
         version: link:../../packages/playwright
       '@playwright/test':
         specifier: latest
-        version: 1.56.0
+        version: 1.56.1
 
   examples/cache-api-response:
     devDependencies:
@@ -118,7 +115,7 @@ importers:
         version: link:../../packages/playwright
       '@playwright/test':
         specifier: latest
-        version: 1.56.0
+        version: 1.56.1
 
   examples/cleanup:
     devDependencies:
@@ -127,7 +124,7 @@ importers:
         version: link:../../packages/playwright
       '@playwright/test':
         specifier: latest
-        version: 1.56.0
+        version: 1.56.1
 
   examples/typed-cache:
     devDependencies:
@@ -136,7 +133,7 @@ importers:
         version: link:../../packages/playwright
       '@playwright/test':
         specifier: latest
-        version: 1.56.0
+        version: 1.56.1
 
   packages/core:
     dependencies:
@@ -746,6 +743,11 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
+  '@playwright/test@1.56.1':
+    resolution: {integrity: sha512-vSMYtL/zOcFpvJCW71Q/OEGQb7KYBPAdKh35WNSkaZA75JlAO8ED8UN6GUNTm3drWomcbcqRPFqQbLae8yBTdg==}
+    engines: {node: '>=18'}
+    hasBin: true
+
   '@publint/pack@0.1.2':
     resolution: {integrity: sha512-S+9ANAvUmjutrshV4jZjaiG8XQyuJIZ8a4utWmN/vW1sgQ9IfBnPndwkmQYw53QmouOIytT874u65HEmu6H5jw==}
     engines: {node: '>=18'}
@@ -889,6 +891,9 @@ packages:
 
   '@types/deep-eql@4.0.2':
     resolution: {integrity: sha512-c9h9dVVMigMPc4bwTvC5dxqtqJZwQPePsWjPlpSOnojbor6pGqdk541lfA7AqFQr5pB1BRdq0juY9db81BwyFw==}
+
+  '@types/estree-jsx@1.0.5':
+    resolution: {integrity: sha512-52CcUVNFyfb1A2ALocQw/Dd1BQFNmSdkuC3BkZ6iqhdMfQz7JWOFRuJFloOzjk+6WijU56m9oKXFAXc7o3Towg==}
 
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
@@ -1947,11 +1952,14 @@ packages:
     resolution: {integrity: sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g==}
     engines: {node: '>= 0.4'}
 
+  mdast-comment-marker@3.0.0:
+    resolution: {integrity: sha512-bt08sLmTNg00/UtVDiqZKocxqvQqqyQZAg1uaRuO/4ysXV5motg7RolF5o5yy/sY1rG0v2XgZEqFWho1+2UquA==}
+
   mdast-util-from-markdown@2.0.2:
     resolution: {integrity: sha512-uZhTV/8NBuw0WHkPTrCqDOl0zVe1BIng5ZtHoDk49ME1qqcjYmmLmOf0gELgcRMxN4w2iuIeVso5/6QymSrgmA==}
 
-  mdast-util-heading-range@2.1.5:
-    resolution: {integrity: sha512-jXbFD0C+MfRkwsaze+btzG9CmVrxnc5kpcJLtx3SvSlPWnNdGMlDRHKDB9/TIPEq9nRHnkixppT8yvaUJ5agJg==}
+  mdast-util-mdx-expression@2.0.1:
+    resolution: {integrity: sha512-J6f+9hUp+ldTZqKRSg7Vw5V6MqjATc+3E4gf3CFNcuZNWD8XdyI6zQ8GqH7f8169MM6P7hMBRDVGnn7oHB9kXQ==}
 
   mdast-util-phrasing@4.1.0:
     resolution: {integrity: sha512-TqICwyvJJpBwvGAMZjj4J2n0X8QWp21b9l0o7eXyVJ25YNWYbJDVIyD1bZXE6WtV6RmKJVYmQAKWa0zWOABz2w==}
@@ -1962,14 +1970,14 @@ packages:
   mdast-util-to-markdown@2.1.2:
     resolution: {integrity: sha512-xj68wMTvGXVOKonmog6LwyJKrYXZPvlwabaryTjLh9LuvovB/KAH+kvi8Gjj+7rJjsFi23nkUxRQv1KqSroMqA==}
 
-  mdast-util-to-string@1.1.0:
-    resolution: {integrity: sha512-jVU0Nr2B9X3MU4tSK7JP1CMkSvOj7X5l/GboG1tKRw52lLF1x2Ju92Ms9tNetCcbfX3hzlM73zYo2NKkWSfF/A==}
-
   mdast-util-to-string@4.0.0:
     resolution: {integrity: sha512-0H44vDimn51F0YwvxSJSm0eCDOJTRlmN0R1yBh4HLj9wiV1Dn0QoXGbvFAWj2hSItVTlCmBF1hqKlIyUBVFLPg==}
 
   mdast-util-toc@7.1.0:
     resolution: {integrity: sha512-2TVKotOQzqdY7THOdn2gGzS9d1Sdd66bvxUyw3aNpWfcPXCLYSJCCgfPy30sEtuzkDraJgqF35dzgmz6xlvH/w==}
+
+  mdast-zone@6.1.0:
+    resolution: {integrity: sha512-5SlLJ6Z+MwF1jPlSDm0WFPssgbHeaV0rS/SuyAUJc4Nhozzb1ua5HQvNP5lu667VCESGe2q2o9o93nrTJhUhfA==}
 
   media-typer@1.1.0:
     resolution: {integrity: sha512-aisnrDP4GNe06UcKFnV5bfMNPBUw4jsLGaWwWfnH3v02GnBuXX2MCVn5RbrWo0j3pczUilYblq7fQ7Nw2t5XKw==}
@@ -2294,8 +2302,18 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
+  playwright-core@1.56.1:
+    resolution: {integrity: sha512-hutraynyn31F+Bifme+Ps9Vq59hKuUCz7H1kDOcBs+2oGguKkWTU50bBWrtz34OUWmIwpBTWDxaRPXrIXkgvmQ==}
+    engines: {node: '>=18'}
+    hasBin: true
+
   playwright@1.56.0:
     resolution: {integrity: sha512-X5Q1b8lOdWIE4KAoHpW3SE8HvUB+ZZsUoN64ZhjnN8dOb1UpujxBtENGiZFE+9F/yhzJwYa+ca3u43FeLbboHA==}
+    engines: {node: '>=18'}
+    hasBin: true
+
+  playwright@1.56.1:
+    resolution: {integrity: sha512-aFi5B0WovBHTEvpM3DzXTUaeN6eN0qWnTkKx4NQaH4Wvcmc153PdaY2UBdSYKaGYw+UyWXSVyxDUg5DoPEttjw==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -2397,17 +2415,14 @@ packages:
     resolution: {integrity: sha512-2NAEOACoTgo+e+YAaCTODqbrWyhMVmlUyjxNCkTrDRHHQvH6+NbrnqVvQaLH/Q8Ket3v90A43dgAJmXv8y5Tkw==}
     hasBin: true
 
-  remark-collapse@0.1.2:
-    resolution: {integrity: sha512-x2lhtaT4nR1Tkp/hftoeiMHbdAntxu5Q9D6lymwMqUtoF2pg3bqNaa8NO/8yyOVhddYk0d0dkhGc+avGUf0lZA==}
-
   remark-parse@11.0.0:
     resolution: {integrity: sha512-FCxlKLNGknS5ba/1lmpYijMUzX2esxW5xQqjWxw2eHFfS2MSdaHVINFmhjo+qN1WhZhNimq0dZATN9pH0IDrpA==}
 
+  remark-section-toc@1.0.0:
+    resolution: {integrity: sha512-TYQLIAVJPVDmaJ5iuH7hRJKv+OgHNp8D+4trmrOhd7x9haFVApDNP6FeZ79XQUkdG/rHxMvU2iip71xrLJ/+rw==}
+
   remark-stringify@11.0.0:
     resolution: {integrity: sha512-1OSmLd3awB/t8qdoEOMazZkNsfVTeY4fTsgzcQFdXNq8ToTN4ZGwrMnlda4K6smTFKD+GRV6O48i6Z4iKgPPpw==}
-
-  remark-toc@9.0.0:
-    resolution: {integrity: sha512-KJ9txbo33GjDAV1baHFze7ij4G8c7SGYoY8Kzsm2gzFpbhL/bSoVpMMzGa3vrNDSWASNd/3ppAqL7cP2zD6JIA==}
 
   remark-validate-links@13.1.0:
     resolution: {integrity: sha512-z+glZ4zoRyrWimQHtoqJEFJdPoIR1R1SDr/JoWjmS6EsYlyhxNuCHtIt165gmV7ltOSFJ+rGsipqRGfBPInd7A==}
@@ -3503,6 +3518,10 @@ snapshots:
     dependencies:
       playwright: 1.56.0
 
+  '@playwright/test@1.56.1':
+    dependencies:
+      playwright: 1.56.1
+
   '@publint/pack@0.1.2': {}
 
   '@release-it/keep-a-changelog@7.0.0(release-it@19.0.5(@types/node@20.19.21))':
@@ -3607,6 +3626,10 @@ snapshots:
       '@types/ms': 2.1.0
 
   '@types/deep-eql@4.0.2': {}
+
+  '@types/estree-jsx@1.0.5':
+    dependencies:
+      '@types/estree': 1.0.8
 
   '@types/estree@1.0.8': {}
 
@@ -4732,6 +4755,13 @@ snapshots:
 
   math-intrinsics@1.1.0: {}
 
+  mdast-comment-marker@3.0.0:
+    dependencies:
+      '@types/mdast': 4.0.4
+      mdast-util-mdx-expression: 2.0.1
+    transitivePeerDependencies:
+      - supports-color
+
   mdast-util-from-markdown@2.0.2:
     dependencies:
       '@types/mdast': 4.0.4
@@ -4749,9 +4779,16 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  mdast-util-heading-range@2.1.5:
+  mdast-util-mdx-expression@2.0.1:
     dependencies:
-      mdast-util-to-string: 1.1.0
+      '@types/estree-jsx': 1.0.5
+      '@types/hast': 3.0.4
+      '@types/mdast': 4.0.4
+      devlop: 1.1.0
+      mdast-util-from-markdown: 2.0.2
+      mdast-util-to-markdown: 2.1.2
+    transitivePeerDependencies:
+      - supports-color
 
   mdast-util-phrasing@4.1.0:
     dependencies:
@@ -4782,8 +4819,6 @@ snapshots:
       unist-util-visit: 5.0.0
       zwitch: 2.0.4
 
-  mdast-util-to-string@1.1.0: {}
-
   mdast-util-to-string@4.0.0:
     dependencies:
       '@types/mdast': 4.0.4
@@ -4797,6 +4832,15 @@ snapshots:
       mdast-util-to-string: 4.0.0
       unist-util-is: 6.0.0
       unist-util-visit: 5.0.0
+
+  mdast-zone@6.1.0:
+    dependencies:
+      '@types/mdast': 4.0.4
+      '@types/unist': 3.0.3
+      mdast-comment-marker: 3.0.0
+      unist-util-visit: 5.0.0
+    transitivePeerDependencies:
+      - supports-color
 
   media-typer@1.1.0: {}
 
@@ -5195,9 +5239,17 @@ snapshots:
 
   playwright-core@1.56.0: {}
 
+  playwright-core@1.56.1: {}
+
   playwright@1.56.0:
     dependencies:
       playwright-core: 1.56.0
+    optionalDependencies:
+      fsevents: 2.3.2
+
+  playwright@1.56.1:
+    dependencies:
+      playwright-core: 1.56.1
     optionalDependencies:
       fsevents: 2.3.2
 
@@ -5332,11 +5384,6 @@ snapshots:
       - bluebird
       - supports-color
 
-  remark-collapse@0.1.2:
-    dependencies:
-      mdast-util-heading-range: 2.1.5
-      mdast-util-to-string: 1.1.0
-
   remark-parse@11.0.0:
     dependencies:
       '@types/mdast': 4.0.4
@@ -5346,16 +5393,21 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  remark-section-toc@1.0.0:
+    dependencies:
+      '@types/mdast': 4.0.4
+      mdast-comment-marker: 3.0.0
+      mdast-util-toc: 7.1.0
+      mdast-zone: 6.1.0
+      unist-util-visit: 5.0.0
+    transitivePeerDependencies:
+      - supports-color
+
   remark-stringify@11.0.0:
     dependencies:
       '@types/mdast': 4.0.4
       mdast-util-to-markdown: 2.1.2
       unified: 11.0.5
-
-  remark-toc@9.0.0:
-    dependencies:
-      '@types/mdast': 4.0.4
-      mdast-util-toc: 7.1.0
 
   remark-validate-links@13.1.0:
     dependencies:
