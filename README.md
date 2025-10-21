@@ -1,4 +1,4 @@
-<h1 align="center">⚡ global-cache</h1>
+<h1 align="center">⚡ global-cache ⚡</h1>
 
 <p align="center">
 A key-value cache for sharing data between parallel workers and test runs
