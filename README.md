@@ -16,6 +16,14 @@ A key-value cache for sharing data between parallel workers and test runs
 </a>
 </p>
 
+<p align="center">
+  <a href="#installation">Installation</a> |
+  <a href="#usage">Usage</a> |
+  <a href="#examples">Examples</a> |
+  <a href="#api">API</a> |  
+  <a href="https://github.com/vitalets/global-cache/blob/main/CHANGELOG.md">Changelog</a>
+</p>
+
 > \[!IMPORTANT]
 > **The package was renamed** from `@vitalets/global-cache` to `@global-cache/playwright` to provide better Playwright integration.
 
@@ -194,6 +202,18 @@ After running this test, the auth state will be stored in a file:
 ## Examples
 
 All code samples are currently for Playwright.
+
+<!-- section-toc start -->
+
+* [Authentication (single user)](#authentication-single-user)
+* [Authentication (multi user)](#authentication-multi-user)
+* [Sharing a variable (BeforeAll)](#sharing-a-variable-beforeall)
+* [Caching network request](#caching-network-request)
+* [Cleanup (single value)](#cleanup-single-value)
+* [Cleanup (dynamic keys)](#cleanup-dynamic-keys)
+* [Typed cache](#typed-cache)
+
+<!-- section-toc end -->
 
 ### Authentication (single user)
 
