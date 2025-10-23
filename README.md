@@ -55,7 +55,7 @@ Under the hood, Global Cache spins up a tiny HTTP server, with a simple REST API
 
 ## `@global-cache/playwright`
 
-Currently Global Cache is primarily focused on [Playwright](https://playwright.dev/) and provides a dedicated package `@global-cache/playwright`.
+Currently Global Cache is primarily focused on [Playwright](https://playwright.dev/) and provides a dedicated package **@global&#8209;cache/playwright**.
 
 <!-- section-toc start -->
 
