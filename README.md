@@ -55,7 +55,7 @@ Under the hood, Global Cache spins up a tiny HTTP server, with a simple REST API
 
 ## `@global-cache/playwright`
 
-Currently Global Cache is primarily focused on [Playwright](https://playwright.dev/) and provides a dedicated package **@global&#8209;cache/playwright**.
+Currently Global Cache is primarily focused on [Playwright](https://playwright.dev/) and provides a dedicated package **@global‑cache/playwright**.
 
 <!-- section-toc start -->
 
@@ -140,7 +140,7 @@ globalCache.config({
 
 ### Usage
 
-In tests and hooks, wrap heavy operations with `globalCache.get(key, computeFn)` to compute the value once and share between workers:
+In tests and hooks, wrap heavy operations with [`globalCache.get(key, computeFn)`](#globalcachegetkey-params-computefn) to compute the value once and share between workers:
 
 ```ts
 import { globalCache } from '@global-cache/playwright';
@@ -266,7 +266,7 @@ test('test 2', async ({ page }) => {
 });
 
 test('test 3', { tag: '@no-auth' }, async ({ page }) => {
-  // ...page is NOT authenticated
+  // ...page is NOT authenticated because of '@no-auth' tag
 });
 ```
 
