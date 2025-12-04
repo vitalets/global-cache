@@ -56,24 +56,26 @@ export class GlobalCacheServer {
     debug('Starting server...');
     setConfig(this.app, config);
     this.server = await startExpressServer(this.app, config.port);
-    debug(`Server started on port: ${this.port}`);
+    debug(`Starting server: done on port ${this.port}.`);
   }
 
   async stop() {
     if (!this.isRunning) return;
-    debug('Stopping server...');
+    debug(`Stopping server on port: ${this.port}`);
     await new Promise<void>((resolve, reject) => {
       this.server?.close((err) => (err ? reject(err) : resolve()));
     });
     this.server = null;
-    debug('Server stopped.');
+    debug('Stopping server: done.');
   }
 
   async clearTestRun(runId: string) {
     if (!this.isRunning) return;
+    debug(`Clearing test run "${runId}" on port: ${this.port}`);
     const config = getConfig(this.app);
     const { testRunStorage } = getStorage(config, runId);
     await testRunStorage.clear();
+    debug('Clearing test run: done.');
   }
 }
 
