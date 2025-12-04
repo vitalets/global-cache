@@ -64,6 +64,7 @@ Currently Global Cache is primarily focused on [Playwright](https://playwright.d
 * [Usage](#usage)
 * [Dynamic keys](#dynamic-keys)
 * [Persistent values](#persistent-values)
+* [Debug](#debug)
 
 <!-- section-toc end -->
 
@@ -198,6 +199,42 @@ After running this test, the auth state will be stored in a file:
 ```
 
 > The default directory for persistent values is `.global-cache`, but you can change this location in the [config](#globalcachedefineconfigconfig). Make sure to add the chosen directory to your `.gitignore` file to avoid committing it.
+
+### Debug
+
+To debug global cache, run Playwright with the following `DEBUG` environment variable:
+
+```sh
+DEBUG=global-cache* npx playwright test 
+```
+
+Or add this line to the `playwright.config.ts`:
+
+```diff
++ process.env.DEBUG = 'global-cache:*';
+```
+
+Example output:
+
+```
+global-cache Starting server... +0ms
+global-cache Server started on port: 50138 +1ms
+global-cache:auth-state Fetching value... +0ms
+global-cache:auth-state Cache miss. Computing... +0ms
+global-cache:auth-state Computed: {"cookies":[{"name":"PHPSESSID","value":"372lp9jct... +0ms
+global-cache:auth-state Saving value... +0ms
+global-cache:auth-state Saved. +0ms
+global-cache:auth-state Fetching value... +0ms
+global-cache:auth-state Cache hit: {"cookies":[{"name":"PHPSESSID","value":"372lp9jct... +0ms
+global-cache Stopping server... +6s
+global-cache Server stopped. +0ms
+```
+
+To debug particular key, use `global-cache:KEY` format. For example, to debug `auth-state` key:
+
+```sh
+DEBUG=global-cache:auth-state npx playwright test 
+```
 
 ## Examples
 
@@ -616,36 +653,6 @@ Returns an absolute path to the file, that performs the global cache teardown.
 Returns an absolute path to the global cache Playwright reporter, used for improving user experience with VSCode and UI-mode.
 
 **Returns**: `string`
-
-## Debug
-
-To debug global cache, run Playwright with the following `DEBUG` environment variable:
-
-```sh
-DEBUG=global-cache* npx playwright test 
-```
-
-Example output:
-
-```
-global-cache Starting server... +0ms
-global-cache Server started on port: 50138 +1ms
-global-cache:auth-state Fetching value... +0ms
-global-cache:auth-state Cache miss. Computing... +0ms
-global-cache:auth-state Computed: {"cookies":[{"name":"PHPSESSID","value":"372lp9jct... +0ms
-global-cache:auth-state Saving value... +0ms
-global-cache:auth-state Saved. +0ms
-global-cache:auth-state Fetching value... +0ms
-global-cache:auth-state Cache hit: {"cookies":[{"name":"PHPSESSID","value":"372lp9jct... +0ms
-global-cache Stopping server... +6s
-global-cache Server stopped. +0ms
-```
-
-To debug particular key use `global-cache:KEY` format:
-
-```sh
-DEBUG=global-cache:auth-state npx playwright test 
-```
 
 ## Changelog
 
