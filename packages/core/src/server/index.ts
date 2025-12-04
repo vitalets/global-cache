@@ -13,10 +13,9 @@ import { router as routeGet } from './routes/get';
 import { router as routeSet } from './routes/set';
 import { router as routeGetStale } from './routes/get-stale';
 import { router as routeGetStaleList } from './routes/get-stale-list';
-import { router as routeClearSession } from './routes/clear';
+import { router as routeClearTestRun } from './routes/clear';
 import { errorHandler } from './error';
-import { getConfig, GlobalCacheServerConfig, setConfig } from './config';
-import { getStorage } from './storage';
+import { GlobalCacheServerConfig, setConfig } from './config';
 import { startExpressServer } from './utils/express';
 
 export class GlobalCacheServer {
@@ -29,7 +28,7 @@ export class GlobalCacheServer {
     this.app.use('/', routeSet);
     this.app.use('/', routeGetStale);
     this.app.use('/', routeGetStaleList);
-    this.app.use('/', routeClearSession);
+    this.app.use('/', routeClearTestRun);
     // todo:
     // this.app.get('/', (req, res) => {
     //   res.send('Global Storage Server is running.');
@@ -69,14 +68,16 @@ export class GlobalCacheServer {
     debug('Stopping server: done.');
   }
 
-  async clearTestRun(runId: string) {
-    if (!this.isRunning) return;
-    debug(`Clearing test run "${runId}" on port: ${this.port}`);
-    const config = getConfig(this.app);
-    const { testRunStorage } = getStorage(config, runId);
-    await testRunStorage.clear();
-    debug('Clearing test run: done.');
-  }
+  // Commented out for now - not used.
+  // Instead, clearing is done via API call from client.
+  // async clearTestRun(runId: string) {
+  //   if (!this.isRunning) return;
+  //   debug(`Clearing test run "${runId}" on port: ${this.port}`);
+  //   const config = getConfig(this.app);
+  //   const { testRunStorage } = getStorage(config, runId);
+  //   await testRunStorage.clear();
+  //   debug('Clearing test run: done.');
+  // }
 }
 
 /* Export a default instance - convenient for usage */

@@ -49,6 +49,6 @@ export class StorageApi {
 
   async clearTestRun() {
     const res = await this.http.post('clear');
-    await throwIfHttpError(res, 'Failed to clear session:');
+    await throwIfHttpError(res, 'Failed to clear test run:');
   }
 }
