@@ -74,12 +74,12 @@ export class GlobalConfig {
 }
 
 function getConfigFromEnv() {
-  const configFromEnv = process.env.GLOBAL_STORAGE_CONFIG;
+  const configFromEnv = process.env.GLOBAL_CACHE_CONFIG;
   return configFromEnv ? (JSON.parse(configFromEnv) as GlobalCacheConfig) : undefined;
 }
 
 function saveConfigToEnv(config: GlobalCacheConfig) {
-  process.env.GLOBAL_STORAGE_CONFIG = JSON.stringify(config);
+  process.env.GLOBAL_CACHE_CONFIG = JSON.stringify(config);
 }
 
 /* Export singleton instance */
