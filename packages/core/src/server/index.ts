@@ -16,7 +16,7 @@ import { router as routeGetStale } from './routes/get-stale';
 import { router as routeGetStaleList } from './routes/get-stale-list';
 import { router as routeClearTestRun } from './routes/clear';
 import { errorHandler } from './error';
-import { GlobalCacheServerConfig, setConfig } from './config';
+import { GlobalCacheServerConfig, resolveConfig, setConfig } from './config';
 import { startExpressServer, stopExpressServer } from './utils/express';
 
 export class GlobalCacheServer {
@@ -48,9 +48,10 @@ export class GlobalCacheServer {
     return Boolean(this.server?.listening);
   }
 
-  async start(config: GlobalCacheServerConfig) {
+  async start(providedConfig?: GlobalCacheServerConfig) {
     // todo: if server is already running?
     debug('Starting server...');
+    const config = resolveConfig(providedConfig);
     setConfig(this.app, config);
     this.server = await startExpressServer(this.app, config.port);
     debug(`Starting server: done on port ${this.port}.`);
@@ -66,17 +67,6 @@ export class GlobalCacheServer {
     }
     debug('Stopping server: done.');
   }
-
-  // Commented out for now - not used.
-  // Instead, clearing is done via API call from client.
-  // async clearTestRun(runId: string) {
-  //   if (!this.isRunning) return;
-  //   debug(`Clearing test run "${runId}" on port: ${this.port}`);
-  //   const config = getConfig(this.app);
-  //   const { testRunStorage } = getStorage(config, runId);
-  //   await testRunStorage.clear();
-  //   debug('Clearing test run: done.');
-  // }
 }
 
 /* Export a default instance - convenient for usage */

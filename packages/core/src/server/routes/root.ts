@@ -25,7 +25,7 @@ router.get('/', async (req, res) => {
       <body>
         <h2>Global Cache Server is running (v${version})</h2>
         <div class="info">
-          <h3>Config</h3>
+          <h3>Resolved config:</h3>
           <code>${JSON.stringify(config, null, 2)}</code>
         </div>
       </body>
