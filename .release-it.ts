@@ -1,6 +1,10 @@
+/**
+ * Release script publishes all packages in the monorepo under the same version.
+ * Pros: it's simpler than manage different versions per package.
+ * Cons: all packages are published even if only one changed.
+ * See: https://github.com/release-it/release-it/blob/main/docs/recipes/monorepo.md
+ */
 import type { Config } from 'release-it';
-
-// See: https://github.com/release-it/release-it/blob/main/docs/recipes/monorepo.md
 
 export default {
   npm: {
