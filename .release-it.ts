@@ -42,7 +42,11 @@ export default {
       ? []
       : [
           // publish all packages individually before repo-related steps (git tag, GitHub release)
-          'pnpm -r --filter "./packages/*" exec npm version ${version} $(case "${version}" in *-*) echo --preid next ;; esac)',
+          // Add `--preid next` for pre-releases (e.g., 1.0.0-next.0)
+          [
+            'extra=; case "${version}" in *-*) extra="--preid next" ;; esac;',
+            'pnpm -r --filter "./packages/*" exec npm version "${version}" $extra',
+          ].join(' '),
           'pnpm -r --filter "./packages/*" --no-git-checks publish',
         ],
   },
