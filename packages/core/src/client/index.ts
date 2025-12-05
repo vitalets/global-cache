@@ -9,8 +9,6 @@ import { previewValue } from './utils/preview-value';
 export { DefaultKeysSchema };
 
 export class GlobalCacheClient<S extends DefaultKeysSchema = DefaultKeysSchema> {
-  #api?: StorageApi;
-
   /*
    * Helper method to set global config via storage instance (for conveniency)
    */
@@ -18,12 +16,16 @@ export class GlobalCacheClient<S extends DefaultKeysSchema = DefaultKeysSchema> 
     globalConfig.update(config);
   }
 
+  /**
+   * Returns API instance.
+   * Always return new instance to pick actual config values.
+   * Previoulsy, it was stored in a #api property, but it causes a bug when running PW tests in VSCode.
+   * After teardown, globalConfig is updated with new serverUrl and runId, but #api still has old values.
+   * TODO: apply caching if performance becomes an issue.
+   */
   private get api() {
-    if (!this.#api) {
-      const { serverUrl, runId } = globalConfig;
-      this.#api = new StorageApi(serverUrl, runId);
-    }
-    return this.#api;
+    const { serverUrl, runId } = globalConfig;
+    return new StorageApi(serverUrl, runId);
   }
 
   /**
