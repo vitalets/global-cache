@@ -41,13 +41,14 @@ export default {
     'before:version:bump': isDryRun
       ? []
       : [
-          // publish all packages individually before repo-related steps (git tag, GitHub release)
-          // Add `--preid next` for pre-releases (e.g., 1.0.0-next.0)
+          // Bump all packages with the same version
+          'pnpm -r --filter "./packages/*" exec npm version "${version}"',
+          // Publish all packages individually before repo-related steps (git tag, GitHub release)
+          // Adjust `--tag` for pre-releases (e.g., 1.0.0-0)
           [
-            'extra=; case "${version}" in *-*) extra="--preid next" ;; esac;',
-            'pnpm -r --filter "./packages/*" exec npm version "${version}" $extra',
+            'tag=latest; case "${version}" in *-*) tag=next ;; esac;',
+            'pnpm -r --filter "./packages/*" publish --no-git-checks --tag "$tag"',
           ].join(' '),
-          'pnpm -r --filter "./packages/*" --no-git-checks publish',
         ],
   },
 } satisfies Config;
