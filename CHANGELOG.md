@@ -5,6 +5,7 @@
 ## [Unreleased]
 * minor: use live config values to better support VSCode extension.
 * patch: make `debug` initialize lazily to pick up env vars in runtime.
+* patch: add root route to global cache server.
 
 ## [0.3.2] - 2025-10-15
 * fix typing for module resolution `node`.
