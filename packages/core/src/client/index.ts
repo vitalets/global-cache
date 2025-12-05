@@ -75,9 +75,9 @@ export class GlobalCacheClient<S extends DefaultKeysSchema = DefaultKeysSchema> 
       return value;
     }
 
-    debugKey(key, `Saving value...`);
+    debugKey(key, `Saving value for ${ttl || 'current run'}...`);
     const valueInfo = await this.api.set({ key, value, error });
-    debugKey(key, `Saved.`);
+    debugKey(key, `Saving value: done.`);
 
     if (error) throw error;
 
