@@ -16,7 +16,7 @@ import { router as routeGetStaleList } from './routes/get-stale-list';
 import { router as routeClearTestRun } from './routes/clear';
 import { errorHandler } from './error';
 import { GlobalCacheServerConfig, setConfig } from './config';
-import { startExpressServer } from './utils/express';
+import { startExpressServer, stopExpressServer } from './utils/express';
 
 export class GlobalCacheServer {
   private app = express();
@@ -59,12 +59,13 @@ export class GlobalCacheServer {
   }
 
   async stop() {
-    if (!this.isRunning) return;
+    if (!this.isRunning || !this.server) return;
     debug(`Stopping server on port: ${this.port}`);
-    await new Promise<void>((resolve, reject) => {
-      this.server?.close((err) => (err ? reject(err) : resolve()));
-    });
-    this.server = null;
+    try {
+      await stopExpressServer(this.server);
+    } finally {
+      this.server = null;
+    }
     debug('Stopping server: done.');
   }
 

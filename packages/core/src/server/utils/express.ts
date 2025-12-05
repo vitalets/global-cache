@@ -12,3 +12,9 @@ export async function startExpressServer(app: express.Express, port = 0) {
     server.once('error', reject);
   });
 }
+
+export async function stopExpressServer(server: http.Server) {
+  return new Promise<void>((resolve, reject) => {
+    server.close((err) => (err ? reject(err) : resolve()));
+  });
+}
