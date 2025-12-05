@@ -1,5 +1,14 @@
-import { QueryParams } from './http-json';
+/**
+ * Utility functions for working with HTTP query parameters.
+ */
 
+export type QueryParams<T extends Record<string, unknown>> = {
+  [K in keyof T]: string;
+};
+
+/**
+ * Adds query parameters to the given URL.
+ */
 export function addSearchParams(url: URL, query?: Record<string, string>) {
   const preparedQuery = prepareQueryParams(query || {});
   Object.entries(preparedQuery).forEach(([key, value]) => {

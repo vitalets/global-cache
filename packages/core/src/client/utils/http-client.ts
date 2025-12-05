@@ -6,11 +6,7 @@ import { addSearchParams } from './http-query';
 
 const headers = { 'Content-Type': 'application/json' };
 
-export type QueryParams<T extends Record<string, unknown>> = {
-  [K in keyof T]: string;
-};
-
-export class HttpJson {
+export class HttpClient {
   constructor(private baseUrl: string) {}
 
   async get(pathname: string, query?: Record<string, string>) {

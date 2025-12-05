@@ -3,20 +3,20 @@ import type { SetValueParams, SetValueResponse } from '../server/routes/set';
 import type { GetStaleParams, SetStaleResponse } from '../server/routes/get-stale';
 import type { GetStaleListParams, SetStaleListResponse } from '../server/routes/get-stale-list';
 import { TTL } from '../shared/ttl';
-import { HttpJson } from './utils/http-json';
+import { HttpClient } from './utils/http-client';
 import { prepareQueryParams } from './utils/http-query';
 import { throwIfHttpError } from './utils/http-error';
 import { getStaleValue } from '../shared/value-info';
 
 export class StorageApi {
-  private http: HttpJson;
+  private http: HttpClient;
 
   constructor(serverUrl: string | undefined, runId: string) {
     if (!serverUrl) {
       throw new Error('Global-cache server URL is empty. Did you run the global-cache setup?');
     }
     const baseUrl = new URL(`/run/${runId}/`, serverUrl).toString();
-    this.http = new HttpJson(baseUrl);
+    this.http = new HttpClient(baseUrl);
   }
 
   async get({ key, sig, ttl }: { key: string; sig: string; ttl?: TTL }) {
