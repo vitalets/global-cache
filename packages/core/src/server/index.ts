@@ -9,6 +9,7 @@ import http from 'node:http';
 import { AddressInfo } from 'net';
 import express from 'express';
 import { debug } from '../shared/debug';
+import { router as routeRoot } from './routes/root';
 import { router as routeGet } from './routes/get';
 import { router as routeSet } from './routes/set';
 import { router as routeGetStale } from './routes/get-stale';
@@ -24,15 +25,12 @@ export class GlobalCacheServer {
 
   constructor() {
     this.app.use(express.json());
+    this.app.use('/', routeRoot);
     this.app.use('/', routeGet);
     this.app.use('/', routeSet);
     this.app.use('/', routeGetStale);
     this.app.use('/', routeGetStaleList);
     this.app.use('/', routeClearTestRun);
-    // todo:
-    // this.app.get('/', (req, res) => {
-    //   res.send('Global Storage Server is running.');
-    // });
     // Must be after all other middleware and routes
     this.app.use(errorHandler);
   }

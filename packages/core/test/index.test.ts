@@ -270,6 +270,13 @@ describe('Signature mismatch', () => {
   });
 });
 
+describe('root', () => {
+  test('shows version and config', async () => {
+    const html = await fetch(globalCacheServer.localUrl).then((res) => res.text());
+    expect(html).toContain('Global Cache Server is running');
+  });
+});
+
 async function waitForExpire(ttl: number) {
   await new Promise((r) => setTimeout(r, ttl + 10));
 }
