@@ -3,7 +3,7 @@
  * Assumption here is that all runners start workers with the same env.
  */
 import { randomUUID } from 'node:crypto';
-import { removeUndefined } from './shared/utils/object';
+import { removeUndefined } from '../shared/utils/object';
 
 export type GlobalCacheConfig = {
   /* Forces all values to be non-persistent, usefull for CI */

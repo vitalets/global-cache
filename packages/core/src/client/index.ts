@@ -1,4 +1,4 @@
-import { globalConfig, GlobalCacheConfig } from '../config';
+import { globalConfig, GlobalCacheConfig } from './config';
 import { debug, debugKey } from '../shared/debug';
 import { logger } from '../shared/logger';
 import { calcSignature } from '../shared/sig';
