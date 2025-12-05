@@ -14,6 +14,7 @@ export default {
     publish: false,
   },
   git: {
+    requireCleanWorkingDir: !isDryRun,
     commitArgs: ['--no-verify'],
     pushArgs: ['--no-verify'],
   },
@@ -41,7 +42,7 @@ export default {
       ? []
       : [
           // publish all packages individually before repo-related steps (git tag, GitHub release)
-          'pnpm -r --filter "./packages/*" exec npm version ${version}',
+          'pnpm -r --filter "./packages/*" exec npm version ${version} $(case "${version}" in *-*) echo --preid next ;; esac)',
           'pnpm -r --filter "./packages/*" --no-git-checks publish',
         ],
   },
