@@ -4,9 +4,6 @@ import { globalCacheServer } from '@global-cache/core/server';
 export default async function globalSetup() {
   if (globalConfig.disabled) return;
 
-  // Generate unique runId on every global setup call
-  globalConfig.newTestRun();
-
   // If external server url provided -> skip
   if (globalConfig.externalServerUrl) return;
 

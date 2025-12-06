@@ -112,10 +112,30 @@ export class GlobalCacheClient<S extends DefaultKeysSchema = DefaultKeysSchema> 
     return values as ValueType[];
   }
 
+  /**
+   * Clear current test run.
+   */
   async clearTestRun() {
+    // If there is no server URL for some reason, don't attempt to clear, to avoid Fetch Error.
+    if (!globalConfig.serverUrl) return;
+    // If there is no runId, nothing to clear.
+    // TODO: add warning.
+    if (!globalConfig.runId) return;
+
     debug(`Clearing test-run: ${globalConfig.runId}`);
-    await this.api.clearTestRun();
-    debug('Cleared.');
+    try {
+      await this.api.clearTestRun();
+      debug('Cleared.');
+    } catch (e) {
+      // Output this error as warning to not interfere with real tests errors.
+      logger.warn(`Failed to clear global-cache test run: ${(e as Error).message}`);
+    } finally {
+      // After clearing test run values, clear test run ID as well.
+      // This is useful for VSCode runs:
+      // when you make changes and re-run tests, it should grab the new values
+      // without trying to re-use cache.
+      globalConfig.update({ runId: '' });
+    }
   }
 
   private async computeValue<ValueType>(fn: () => ValueType) {

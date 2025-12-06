@@ -1,9 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { beforeAll, afterAll, afterEach, test, expect, describe, vi } from 'vitest';
+import { beforeAll, afterAll, beforeEach, afterEach, test, expect, describe, vi } from 'vitest';
 import { GlobalCacheClient, globalConfig } from '../src';
 import { globalCacheServer } from '../src/server';
-import { beforeEach } from 'node:test';
 
 const basePath = path.join(__dirname, '.global-cache');
 const globalCache = new GlobalCacheClient();
@@ -18,6 +17,10 @@ afterAll(async () => {
   await globalCacheServer.stop();
 });
 
+beforeEach(() => {
+  globalConfig.newTestRun();
+});
+
 afterEach(async () => {
   await globalCache.clearTestRun();
 });
@@ -25,46 +28,53 @@ afterEach(async () => {
 describe('get', () => {
   test('non-persistent (basic flow)', async () => {
     let callCount = 0;
-    const value = 'foo';
-    const fn = () =>
-      globalCache.get(`non-persistent-basic-flow`, async () => {
-        callCount++;
-        return value;
-      });
+    const fn = () => globalCache.get(`non-persistent-basic-flow`, async () => ++callCount);
 
+    // First calls, value is computed once and cached
     const [value1, value2] = await Promise.all([fn(), fn()]);
-    const value3 = await fn();
+    expect(value1).toEqual(1);
+    expect(value2).toEqual(1);
 
-    expect(callCount).toEqual(1);
-    expect(value1).toEqual(value);
-    expect(value2).toEqual(value);
-    expect(value3).toEqual(value);
+    // Another separate call, still cached
+    const value3 = await fn();
+    expect(value3).toEqual(1);
+
+    // New test run
+    await newTestRun();
+
+    // Re-computed
+    const value4 = await fn();
+    expect(value4).toEqual(2);
   });
 
   test('persistent (basic flow)', async () => {
     let callCount = 0;
-    const value = 'foo';
-    const ttl = 50;
+    const ttl = 100;
+    const fn = () => globalCache.get(`persistent-basic-flow`, { ttl }, async () => ++callCount);
 
-    const fn = () =>
-      globalCache.get(`persistent-basic-flow`, { ttl }, async () => {
-        callCount++;
-        return value;
-      });
-
+    // First calls, value is computed once and cached
     const [value1, value2] = await Promise.all([fn(), fn()]);
-    const value3 = await fn();
-    await waitForExpire(ttl);
-    const value4 = await fn();
+    expect(value1).toEqual(1);
+    expect(value2).toEqual(1);
 
-    expect(callCount).toEqual(2);
-    expect(value1).toEqual(value);
-    expect(value2).toEqual(value);
-    expect(value3).toEqual(value);
-    expect(value4).toEqual(value);
+    // Another separate call, still cached
+    const value3 = await fn();
+    expect(value3).toEqual(1);
+
+    // New test run
+    await newTestRun();
+
+    // Still cached
+    const value4 = await fn();
+    expect(value4).toEqual(1);
+
+    // Expired, re-computed
+    await waitForExpire(ttl);
+    const value5 = await fn();
+    expect(value5).toEqual(2);
   });
 
-  describe('non-persistent (different values)', () => {
+  describe('non-persistent (different value types)', () => {
     test('string', () => checkNonPersistentValue('hello'));
     test('number', () => checkNonPersistentValue(42));
     test('boolean', () => checkNonPersistentValue(true));
@@ -80,7 +90,7 @@ describe('get', () => {
     }
   });
 
-  describe('persistent (different values)', () => {
+  describe('persistent (different value types)', () => {
     test('string', () => checkPersistentValue('hello'));
     test('number', () => checkPersistentValue(42));
     test('boolean', () => checkPersistentValue(true));
@@ -144,19 +154,32 @@ describe('getStale', () => {
     const ttl = 50;
     const key = 'get-stale-persistent';
     const fn = () => globalCache.get(key, { ttl }, () => ++callCount);
-    const value1 = await globalCache.getStale(key);
-    const value2 = await fn();
-    const value3 = await globalCache.getStale(key);
-    await globalCache.clearTestRun();
-    await new Promise((r) => setTimeout(r, ttl + 10)); // wait for value to expire
-    const value4 = await fn();
-    const value5 = await globalCache.getStale(key);
 
+    // For unknown key, stale value is undefined
+    const value1 = await globalCache.getStale(key);
     expect(value1).toEqual(undefined);
+
+    // Value is computed to 1
+    const value2 = await fn();
     expect(value2).toEqual(1);
-    expect(value3).toEqual(undefined); // undefined is expected, as for persistent keys old value is returned
+
+    // Stale value is still undefined, as test run is not finished
+    const value3 = await globalCache.getStale(key);
+    expect(value3).toEqual(undefined);
+
+    // New test run
+    await newTestRun();
+
+    // Make value expired
+    await waitForExpire(ttl);
+
+    // Value re-computed to 2
+    const value4 = await fn();
     expect(value4).toEqual(2);
-    expect(value5).toEqual(1); // stale value is the old one
+
+    // getStale returns the previous value: 1
+    const value5 = await globalCache.getStale(key);
+    expect(value5).toEqual(1);
   });
 });
 
@@ -167,12 +190,13 @@ describe('getStaleList', () => {
     const fn1 = () => globalCache.get(`${prefix}-1`, () => ++callCount);
     const fn2 = () => globalCache.get(`${prefix}-2`, () => ++callCount);
     const fnExcluded = () => globalCache.get(`excluded-${prefix}`, () => 3);
+
     await fn1();
     await fn2();
     await fnExcluded();
 
+    // Returns all current values, because they are non-persistent.
     const values = await globalCache.getStaleList(prefix);
-
     expect(values).toEqual([1, 2]);
   });
 
@@ -187,17 +211,23 @@ describe('getStaleList', () => {
     await fn1();
     await fn2();
     await fnExcluded();
-    const values1 = await globalCache.getStaleList(prefix);
 
-    await globalCache.clearTestRun();
-    await new Promise((r) => setTimeout(r, ttl + 10)); // wait for value to expire
+    // no stale values in the first run, because they are persistent
+    const values1 = await globalCache.getStaleList(prefix);
+    expect(values1).toEqual([undefined, undefined]);
+
+    // new test run
+    await newTestRun();
+
+    // make values expired
+    await waitForExpire(ttl);
 
     await fn1();
-    fnExcluded();
-    const values2 = await globalCache.getStaleList(prefix);
+    await fnExcluded();
 
-    expect(values1).toEqual([undefined, undefined]); // no stale values in the first run, because they are persistent
-    expect(values2).toEqual([1]); // no '2' because it was not used in this run
+    // no '2' because it was not used in this run
+    const values2 = await globalCache.getStaleList(prefix);
+    expect(values2).toEqual([1]);
   });
 });
 
@@ -210,17 +240,24 @@ describe('ignoreTTL: true', () => {
     globalCache.config({ ignoreTTL: false });
   });
 
-  test('value with ttl is not persistent', async () => {
+  test('ttl is ignored, value behaves like non-persistent', async () => {
     const key = 'ignore-ttl-key';
     let callCount = 0;
     const fn = () => globalCache.get(key, { ttl: 1000 }, () => ++callCount);
-    const value1 = await fn();
-    const value2 = await globalCache.getStale(key); // returns current value because it is not persistent
-    await globalCache.clearTestRun();
-    const value3 = await fn(); // increments callCount as ttl is ignored
 
+    // First call, computes to 1
+    const value1 = await fn();
     expect(value1).toEqual(1);
+
+    // getStale returns current value 1 (because value is not persistent)
+    const value2 = await globalCache.getStale(key);
     expect(value2).toEqual(1);
+
+    // new test run
+    await newTestRun();
+
+    // Computes to 2, because ttl is ignored
+    const value3 = await fn();
     expect(value3).toEqual(2);
   });
 });
@@ -276,6 +313,11 @@ describe('root', () => {
     expect(html).toContain('Global Cache Server is running');
   });
 });
+
+async function newTestRun() {
+  await globalCache.clearTestRun();
+  globalConfig.newTestRun();
+}
 
 async function waitForExpire(ttl: number) {
   await new Promise((r) => setTimeout(r, ttl + 10));

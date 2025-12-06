@@ -26,6 +26,9 @@ export class GlobalConfig {
 
   constructor() {
     Object.assign(this.config, getConfigFromEnv());
+    // Set runId when the main process starts, workers will re-use it.
+    // In VSCode, every click on test run will generate a new run ID,
+    // that will be cleared in reporter onEnd.
     if (!this.config.runId) this.newTestRun();
   }
 
@@ -37,6 +40,10 @@ export class GlobalConfig {
   /**
    * Generate new runId or re-use from env variable.
    * There can be multiple test runs within single server session.
+   *
+   * Note: it could be a method on GlobalCacheClient, but having it here exposes it to public.
+   * Current approach is that test run is generated automatically on process start
+   * and cleared in reporter onEnd.
    */
   newTestRun() {
     this.update({ runId: process.env.GLOBAL_CACHE_RUN_ID || randomUUID() });
