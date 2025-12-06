@@ -3,12 +3,10 @@
 > This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
 
 ## [Unreleased]
-
-## [0.4.0-3] - 2025-12-06
 * minor: use live config values to better support VSCode extension.
 * patch: make `debug` initialize lazily to pick up env vars in runtime.
-* patch: add root route to global cache server.
-* patch: improve logs.
+* patch: add root route to the global cache server.
+* patch: improve logging.
 
 ## [0.3.2] - 2025-10-15
 * fix typing for module resolution `node`.
