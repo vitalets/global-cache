@@ -54,7 +54,7 @@ export class GlobalCacheServer {
     const config = resolveConfig(providedConfig);
     setConfig(this.app, config);
     this.server = await startExpressServer(this.app, config.port);
-    debug(`Starting server: done on port ${this.port}.`);
+    debug(`Starting server: done ${this.localUrl}`);
   }
 
   async stop() {
