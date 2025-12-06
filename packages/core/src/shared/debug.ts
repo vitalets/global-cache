@@ -17,6 +17,9 @@ export const debugKey = (key: string, message: string) => {
 function getDebug(key: string) {
   let debug = cache.get(key);
   if (!debug) {
+    // Re-enable debug to pick up any changes in DEBUG env variable (e.g. from Playwright config)
+    // See: https://github.com/debug-js/debug/blob/master/src/common.js#L287
+    if (process.env.DEBUG) Debug.enable(process.env.DEBUG);
     debug = Debug(key);
     cache.set(key, debug);
   }
