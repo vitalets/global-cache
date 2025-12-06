@@ -1,7 +1,7 @@
 {
   "name": "@global-cache/core",
   "description": "Key-value cache for sharing data between parallel workers.",
-  "version": "0.4.0-2",
+  "version": "0.4.0-3",
   "type": "commonjs",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
