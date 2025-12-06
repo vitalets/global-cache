@@ -118,6 +118,10 @@ export class GlobalCacheClient<S extends DefaultKeysSchema = DefaultKeysSchema> 
    * - generate new test run ID
    */
   async resetTestRun() {
+    // If server is stopped (CLI runs), no need to reset.
+    // But in VSCode runs, server is kept alive between test executions.
+    if (!globalConfig.serverUrl) return;
+
     // don't clear external run ID, as it can be used by other shards.
     if (globalConfig.externalRunId) return;
 

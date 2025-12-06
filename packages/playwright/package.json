@@ -16,7 +16,8 @@
   "scripts": {
     "tsc": "tsc",
     "build": "tsc -p tsconfig.build.json",
-    "test": "npx playwright test -c ./test/playwright.config.ts"
+    "test": "npx playwright test -c ./test/playwright.config.ts",
+    "test:d": "DEBUG=global-cache* npm t"
   },
   "dependencies": {
     "@global-cache/core": "workspace:*"

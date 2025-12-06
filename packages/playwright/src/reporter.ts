@@ -12,7 +12,6 @@
  * The solution is to use a reporter to clear the current run cache.
  * Reporter's onEnd is called on every test execution.
  */
-import { globalConfig } from '@global-cache/core';
 import { globalCache } from '.';
 
 export default class GlobalCacheReporter {
@@ -21,7 +20,6 @@ export default class GlobalCacheReporter {
   }
 
   async onEnd() {
-    if (globalConfig.disabled) return;
     await globalCache.resetTestRun();
   }
 }
