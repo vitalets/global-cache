@@ -3,6 +3,8 @@
 > This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
 
 ## [Unreleased]
+
+## [0.4.0-4] - 2025-12-06
 * minor: use live config values to better support VSCode extension.
 * patch: make `debug` initialize lazily to pick up env vars in runtime.
 * patch: add root route to the global cache server.
@@ -53,5 +55,6 @@
 [0.2.0]: https://github.com/vitalets/global-cache/compare/0.1.2...0.2.0
 [0.1.2]: https://github.com/vitalets/global-cache/compare/0.1.1...0.1.2
 
-[unreleased]: https://github.com/vitalets/global-cache/compare/0.4.0-3...HEAD
+[unreleased]: https://github.com/vitalets/global-cache/compare/0.4.0-4...HEAD
+[0.4.0-4]: https://github.com/vitalets/global-cache/compare/0.4.0-3...0.4.0-4
 [0.4.0-3]: https://github.com/vitalets/global-cache/compare/0.4.0-2...0.4.0-3
