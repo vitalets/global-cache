@@ -17,7 +17,11 @@ export type GlobalCacheConfig = {
 };
 
 type GlobalConfigInternal = GlobalCacheConfig & {
-  runId?: string;
+  /* Test run ID generated locally */
+  localRunId?: string;
+  /* Test run ID provided via env var (sharing) */
+  externalRunId?: string;
+  /* Local server URL started by setup */
   localServerUrl?: string;
 };
 
@@ -27,9 +31,9 @@ export class GlobalConfig {
   constructor() {
     Object.assign(this.config, getConfigFromEnv());
     // Set runId when the main process starts, workers will re-use it.
-    // In VSCode, every click on test run will generate a new run ID,
-    // that will be cleared in reporter onEnd.
-    if (!this.config.runId) this.newTestRun();
+    // In VSCode, every click on test does not restart the main process,
+    // so we reset test run in reporter onEnd.
+    if (!this.runId) this.newTestRun();
   }
 
   update(config: Partial<GlobalConfigInternal>) {
@@ -40,13 +44,23 @@ export class GlobalConfig {
   /**
    * Generate new runId or re-use from env variable.
    * There can be multiple test runs within single server session.
-   *
-   * Note: it could be a method on GlobalCacheClient, but having it here exposes it to public.
-   * Current approach is that test run is generated automatically on process start
-   * and cleared in reporter onEnd.
    */
   newTestRun() {
-    this.update({ runId: process.env.GLOBAL_CACHE_RUN_ID || randomUUID() });
+    const externalRunId = process.env.GLOBAL_CACHE_RUN_ID;
+    if (externalRunId) {
+      this.update({ externalRunId });
+    } else {
+      this.update({ localRunId: randomUUID() });
+    }
+  }
+
+  get runId() {
+    const { externalRunId, localRunId } = this.config;
+    return externalRunId || localRunId || '';
+  }
+
+  get externalRunId() {
+    return this.config.externalRunId;
   }
 
   get localServerUrl() {
@@ -71,12 +85,6 @@ export class GlobalConfig {
 
   get disabled() {
     return Boolean(this.config.disabled);
-  }
-
-  get runId() {
-    const { runId } = this.config;
-    if (!runId) throw new Error('RunId is not set.');
-    return runId;
   }
 }
 

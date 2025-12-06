@@ -17,12 +17,8 @@ afterAll(async () => {
   await globalCacheServer.stop();
 });
 
-beforeEach(() => {
-  globalConfig.newTestRun();
-});
-
 afterEach(async () => {
-  await globalCache.clearTestRun();
+  await globalCache.resetTestRun();
 });
 
 describe('get', () => {
@@ -315,8 +311,7 @@ describe('root', () => {
 });
 
 async function newTestRun() {
-  await globalCache.clearTestRun();
-  globalConfig.newTestRun();
+  await globalCache.resetTestRun();
 }
 
 async function waitForExpire(ttl: number) {

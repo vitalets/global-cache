@@ -113,29 +113,34 @@ export class GlobalCacheClient<S extends DefaultKeysSchema = DefaultKeysSchema> 
   }
 
   /**
-   * Clear current test run.
+   * Reset current test run:
+   * - clear all non-persistent values
+   * - generate new test run ID
    */
-  async clearTestRun() {
-    // If there is no server URL for some reason, don't attempt to clear, to avoid Fetch Error.
-    if (!globalConfig.serverUrl) return;
-    // If there is no runId, nothing to clear.
-    // TODO: add warning.
-    if (!globalConfig.runId) return;
+  async resetTestRun() {
+    // don't clear external run ID, as it can be used by other shards.
+    if (globalConfig.externalRunId) return;
+
+    if (!globalConfig.runId) {
+      logger.warn(`Expected test run ID.`);
+      return;
+    }
 
     debug(`Clearing test-run: ${globalConfig.runId}`);
     try {
       await this.api.clearTestRun();
       debug('Cleared.');
     } catch (e) {
-      // Output this error as warning to not interfere with real tests errors.
-      logger.warn(`Failed to clear global-cache test run: ${(e as Error).message}`);
-    } finally {
-      // After clearing test run values, clear test run ID as well.
-      // This is useful for VSCode runs:
-      // when you make changes and re-run tests, it should grab the new values
-      // without trying to re-use cache.
-      globalConfig.update({ runId: '' });
+      // Show error as one-line warning to not mix with tests output.
+      logger.warn(`Failed to clear global-cache test run: ${e?.message}`);
     }
+
+    // Generate new test run id.
+    // This is useful for VSCode: when you make changes and re-run tests by click,
+    // it should re-compute values without trying to re-use cache.
+    // There is no place to reliably detect test run start:
+    // on subsequent runs in VSCode, Playwright config is evaluated only in workers.
+    globalConfig.newTestRun();
   }
 
   private async computeValue<ValueType>(fn: () => ValueType) {
