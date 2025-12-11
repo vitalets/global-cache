@@ -24,9 +24,6 @@ A key-value cache for sharing data between parallel workers and test runs
   <a href="https://github.com/vitalets/global-cache/blob/main/CHANGELOG.md">Changelog</a>
 </p>
 
-> \[!IMPORTANT]
-> **The package was renamed** from `@vitalets/global-cache` to `@global-cache/playwright` to provide better Playwright integration.
-
 ## Why use it?
 
 When running E2E tests in parallel, you might need to:
