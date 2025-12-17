@@ -16,7 +16,9 @@ export class Setter {
       throw new Error(`Cannot set value for key "${key}" that is not loaded.`);
     }
     if (valueInfo.state !== 'computing') {
-      throw new Error(`Cannot set value for key "${key}" that is not in "computing" state.`);
+      throw new Error(
+        `Cannot set value for key "${key}" that is not in "computing" state (${valueInfo.state}).`,
+      );
     }
 
     if (error) {
