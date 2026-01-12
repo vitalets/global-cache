@@ -17,6 +17,7 @@ import { router as routeGetStaleList } from './routes/get-stale-list';
 import { router as routeClearTestRun } from './routes/clear';
 import { errorHandler } from './error';
 import { GlobalCacheServerConfig, resolveConfig, setConfig } from './config';
+import { globalConfig } from '../client/config';
 import { startExpressServer, stopExpressServer } from './utils/express';
 
 export class GlobalCacheServer {
@@ -24,7 +25,7 @@ export class GlobalCacheServer {
   private server: http.Server | null = null;
 
   constructor() {
-    this.app.use(express.json());
+    this.app.use(express.json({ limit: globalConfig.limit }));
     this.app.use('/', routeRoot);
     this.app.use('/', routeGet);
     this.app.use('/', routeSet);
