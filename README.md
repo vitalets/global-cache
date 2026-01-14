@@ -577,6 +577,7 @@ Configures global cache.
   * `basePath: string` - Path to a directory to store persistent values. Default is `.global-cache`.
   * `ignoreTTL: boolean` - Forces all values to be non-persistent, usefull for CI (where cross run caching is redundant). Default is `false`.
   * `disabled: boolean` - Disables global cache. All values will be computed each time. Default is `false`.
+  * `limit: number | string` - Set the maximum allowed size in bytes of each cached value. [Default is from Express](https://expressjs.com/en/resources/middleware/body-parser.html#bodyparserjsonoptions): `'100kb'` 
 
 **Returns**: `void`
 
