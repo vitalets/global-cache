@@ -17,11 +17,11 @@ A key-value cache for sharing data between parallel workers and test runs
 </p>
 
 <p align="center">
-  <a href="#installation">Installation</a> |
-  <a href="#usage">Usage</a> |
-  <a href="#examples">Examples</a> |
-  <a href="#api">API</a> |  
-  <a href="https://github.com/vitalets/global-cache/blob/main/CHANGELOG.md">Changelog</a>
+  🚀 <a href="#installation">Installation</a>&nbsp;
+  ▶️ <a href="#usage">Usage</a>&nbsp;
+  💡 <a href="#examples">Examples</a>&nbsp;
+  📚 <a href="#api">API</a>&nbsp;
+  📝 <a href="https://github.com/vitalets/global-cache/blob/main/CHANGELOG.md">Changelog</a>
 </p>
 
 ## Why use it?
