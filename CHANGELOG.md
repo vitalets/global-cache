@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+- feat: add `limit` option to override Express' default request body size limit
+
 ## [0.4.0] - 2025-12-06
 * minor: use live config values to better support VSCode extension.
 * patch: make `debug` initialize lazily to pick up env vars in runtime.

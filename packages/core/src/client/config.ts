@@ -14,6 +14,8 @@ export type GlobalCacheConfig = {
   disabled?: boolean;
   /* External server url */
   serverUrl?: string;
+  /* Change the size limit for cache values (default is Express' default json limit, currently '100kb') */
+  limit?: number | string;
 };
 
 type GlobalConfigInternal = GlobalCacheConfig & {
@@ -85,6 +87,10 @@ export class GlobalConfig {
 
   get disabled() {
     return Boolean(this.config.disabled);
+  }
+
+  get limit() {
+    return this.config.limit;
   }
 }
 
