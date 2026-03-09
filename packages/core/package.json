@@ -17,6 +17,10 @@
       ]
     }
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vitalets/global-cache.git"
+  },
   "engines": {
     "node": ">=20"
   },
