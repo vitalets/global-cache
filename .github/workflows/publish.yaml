@@ -32,14 +32,14 @@ jobs:
   release:
     runs-on: ubuntu-22.04
     permissions:
-      contents: write
-      id-token: write
+      contents: write # For git operations (commit, tag, push)
+      id-token: write # Required for OIDC trusted publishing
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24 # Use Node.js 24 to have npm 11+ for trusted publishing
           cache: 'pnpm'
           registry-url: 'https://registry.npmjs.org'
 
