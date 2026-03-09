@@ -30,9 +30,10 @@ export default {
     },
   },
   hooks: {
+    // repo level checks
     'before:init': [
       'pnpm i',
-      'pnpm run lint', // prettier-ignore
+      'pnpm run lint',
       'pnpm run prettier',
       'pnpm run tsc',
       'pnpm run build',

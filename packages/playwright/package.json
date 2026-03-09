@@ -17,7 +17,8 @@
     "tsc": "tsc",
     "build": "tsc -p tsconfig.build.json",
     "test": "npx playwright test -c ./test/playwright.config.ts",
-    "test:d": "DEBUG=global-cache* npm t"
+    "test:d": "DEBUG=global-cache* npm t",
+    "toc": "remark README.md --frail -o"
   },
   "dependencies": {
     "@global-cache/core": "workspace:*"

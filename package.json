@@ -13,7 +13,7 @@
     "prettier": "prettier --check --ignore-unknown .",
     "prettier:w": "prettier --write --ignore-unknown .",
     "pw:install": "PLAYWRIGHT_SKIP_BROWSER_GC=1 npx playwright install chromium",
-    "toc": "remark README.md --frail -o",
+    "toc": "turbo toc",
     "release": "release-it --only-version",
     "dev": "turbo watch build",
     "build": "turbo run build",
@@ -37,6 +37,7 @@
     "release-it": "^19.2.4",
     "remark-cli": "^12.0.1",
     "remark-section-toc": "^1.0.0",
+    "remark-toc": "^9.0.0",
     "remark-validate-links": "^13.1.0",
     "turbo": "2.8.14",
     "typescript": "^5.9.3",
@@ -55,6 +56,13 @@
   "remarkConfig": {
     "plugins": [
       "remark-section-toc",
+      [
+        "remark-toc",
+        {
+          "heading": "Index",
+          "maxDepth": 3
+        }
+      ],
       "remark-validate-links"
     ]
   }

@@ -6,6 +6,7 @@
       "outputs": ["dist/**"]
     },
     "test": {},
-    "tsc": {}
+    "tsc": {},
+    "toc": {}
   }
 }
