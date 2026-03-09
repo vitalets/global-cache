@@ -3,6 +3,7 @@
 > This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
 
 ## [Unreleased]
+* Move documentation to packages readme.
 
 ## [0.4.0] - 2025-12-06
 * minor: use live config values to better support VSCode extension.
