@@ -99,16 +99,14 @@ globalCache.config({
 
 ### Basic
 
-In tests and hooks, wrap heavy operations with [`globalCache.get(key, computeFn)`](#globalcachegetkey-params-computefn) to compute the value once and share between workers:
+In any test, hook, or fixture wrap heavy operation with [`globalCache.get(key, computeFn)`](#globalcachegetkey-params-computefn) to compute the value once and share between workers:
 
 ```ts
 import { globalCache } from '@global-cache/playwright';
 
-// ...
-
 const value = await globalCache.get('cache-key', async () => {
-  const value = /* ...heavy operation */
-  return value;
+  /* ...heavy operation */
+  return 'foo';
 });
 ```
 
