@@ -1,0 +1,64 @@
+name: Publish to npm
+
+on:
+  workflow_dispatch:
+    inputs:
+      release-version:
+        description: Release version type
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: patch
+      prerelease:
+        description: Pre-release (beta)
+        required: false
+        type: boolean
+        default: false
+      skip-npm-publish:
+        description: Skip NPM publish
+        required: false
+        type: boolean
+        default: false
+      dry-run:
+        description: Dry run
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  release:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: pnpm i
+      - run: pnpm run lint
+      - run: pnpm run prettier
+      - run: pnpm run tsc
+      - run: pnpm run build
+      - run: pnpm playwright install --with-deps chromium
+      - run: pnpm test
+
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - run: >
+          pnpm exec release-it ${{ inputs.release-version }} --ci
+          ${{ inputs.prerelease && '--preRelease=beta' || '' }}
+          ${{ inputs.skip-npm-publish && '--no-npm' || '' }}
+          ${{ inputs.dry-run && '--dry-run' || '' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

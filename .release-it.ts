@@ -7,20 +7,18 @@
 import type { Config } from 'release-it';
 
 const isDryRun = process.argv.includes('--dry-run');
+const isSkipNpmPublish = process.argv.includes('--no-npm');
 
 export default {
   npm: {
-    // don't publish root package
-    publish: false,
-  },
-  git: {
-    requireCleanWorkingDir: !isDryRun,
-    commitArgs: ['--no-verify'],
-    pushArgs: ['--no-verify'],
+    publish: false, // don't publish root package
   },
   github: {
     release: true,
-    web: true,
+  },
+  git: {
+    commitArgs: ['--no-verify'],
+    pushArgs: ['--no-verify'],
   },
   plugins: {
     '@release-it/keep-a-changelog': {
@@ -30,15 +28,6 @@ export default {
     },
   },
   hooks: {
-    // repo level checks
-    'before:init': [
-      'pnpm i',
-      'pnpm run lint',
-      'pnpm run prettier',
-      'pnpm run tsc',
-      'pnpm run build',
-      'pnpm test',
-    ],
     'before:version:bump': isDryRun
       ? []
       : [
@@ -46,10 +35,12 @@ export default {
           'pnpm -r --filter "./packages/*" exec npm version "${version}"',
           // Publish all packages individually before repo-related steps (git tag, GitHub release)
           // Adjust `--tag` for pre-releases (e.g., 1.0.0-0)
-          [
-            'tag=latest; case "${version}" in *-*) tag=next ;; esac;',
-            'pnpm -r --filter "./packages/*" publish --no-git-checks --tag "$tag"',
-          ].join(' '),
+          isSkipNpmPublish
+            ? 'echo "Skip NPM publishing."'
+            : [
+                'tag=latest; case "${version}" in *-*) tag=next ;; esac;',
+                'pnpm -r --filter "./packages/*" publish --no-git-checks --tag "$tag"',
+              ].join(' '),
         ],
   },
 } satisfies Config;
