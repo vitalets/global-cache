@@ -2,6 +2,7 @@
   "compilerOptions": {
     "target": "es2021",
     "module": "nodenext",
+    "types": ["node"],
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "useUnknownInCatchVariables": false,
@@ -9,6 +10,6 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["**/*.ts"],
+  "include": ["**/*.ts", ".release-it.ts"],
   "exclude": ["node_modules", "packages"]
 }
