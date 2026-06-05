@@ -16,7 +16,7 @@
     "toc": "turbo toc",
     "dev": "turbo watch build",
     "build": "turbo run build",
-    "deps": "npx npm-check-updates -i --packageFile=\"{package.json,packages/*/package.json}\" --format group,dep,repo --cooldown 7",
+    "deps": "npx npm-check-updates -i --packageFile=\"{package.json,packages/*/package.json}\" --format group,dep,repo --cooldown 1",
     "test": "turbo run test --filter='./packages/*'"
   },
   "devDependencies": {
