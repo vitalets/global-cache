@@ -368,35 +368,29 @@ await page.route('/api/cats/**', (route, req) => {
 
 After the test run, you may need to cleanup the created resources. For example, remove the user from the database. It can't be just called in `after / afterAll` hook, because at this point other workers may still need the value.
 
-The solution is to perform cleanup in a custom teardown script..
+The solution is to pass a `cleanup` callback to `globalCache.wrap()` options. It runs after every test-run, reliably — including in VSCode and UI mode (unlike `globalTeardown`, which is not called on every run in those modes, see [playwright#37524](https://github.com/microsoft/playwright/issues/37524)).
 
-1. Define a custom teardown script in the `playwright.config.ts`:
+Use `globalCache.getStale()` inside the callback to access outdated values:
 
 ```ts
 import { defineConfig } from '@playwright/test';
 import { globalCache } from '@global-cache/playwright';
 
 const config = defineConfig({
-  globalTeardown: require.resolve('./cleanup'), // <-- custom teardown script
   // ...
 });
 
-export default globalCache.wrap(config);
-```
-
-2. In the cleanup script use `globalCache.getStale()` method to access outdated values:
-
-```ts
-// cleanup.js
-import { defineConfig } from '@playwright/test';
-import { globalCache } from '@global-cache/playwright';
-
-export default async function() {
+export default globalCache.wrap(config, {
+  cleanup: async () => {
+    // Use dynamic import() for dependencies — this callback only runs in the main
+    // process, but static top-level imports are evaluated in every worker process.
+    const { removeUser } = await import('./db');
     const userId = await globalCache.getStale('user-id'); // <-- get value for cleanup
     if (userId) {
-        /* remove user from database */
+      await removeUser(userId);
     }
-}
+  },
+});
 ```
 
 The result of `globalCache.getStale(key)` is different for non-presistent and persistent keys:
@@ -412,16 +406,17 @@ The result of `globalCache.getStale(key)` is different for non-presistent and pe
 When using dynamic keys, you can use `globalCache.getStaleList(prefix)` to retrieve all values for the provided prefix:
 
 ```ts
-// cleanup.ts
-import { defineConfig } from '@playwright/test';
-import { globalCache } from '@global-cache/playwright';
-
-export default async function() {
+export default globalCache.wrap(config, {
+  cleanup: async () => {
+    // Use dynamic import() for dependencies — this callback only runs in the main
+    // process, but static top-level imports are evaluated in every worker process.
+    const { removeUser } = await import('./db');
     const userIds = await globalCache.getStaleList('user-');
     for (const userId of userIds) {
-      /* remove every created user from database */
+      await removeUser(userId);
     }
-}
+  },
+});
 ```
 
 ## TypeScript
@@ -518,13 +513,15 @@ The following methods are available:
 
 <!-- section-toc end -->
 
-#### `globalCache.wrap(config)`
+#### `globalCache.wrap(config[, options])`
 
 A helper method to adjust Playwright config for global cache usage.
 
 **Parameters**:
 
 * `config: object` - Playwright config
+* `options: object` *(optional)*
+  * `cleanup: async function` - Callback to run after each test-run, before global-cache resets. Runs reliably in VSCode and UI mode (unlike `globalTeardown`). Use `getStale()` inside to access outdated values for cleanup.
 
 **Returns**: `object` - Playwright config with global cache configured.
 
@@ -600,12 +597,6 @@ Returns an absolute path to the file, that performs the global cache setup.
 
 **Returns**: `string`
 
-#### `globalCache.teardown`
-
-Returns an absolute path to the file, that performs the global cache teardown.
-
-**Returns**: `string`
-
 #### `globalCache.reporter`
 
 Returns an absolute path to the global cache Playwright reporter, used for improving user experience with VSCode and UI-mode.
@@ -631,4 +622,4 @@ test.afterAll(async () => {
 });
 ```
 
-**Do this instead:** move any "run-once-after-everything" logic to a global teardown. That guarantees all workers have finished. During the teardown, use Global Cache’s [getStale()](#globalcachegetstalekey) method to access the value and perform the cleanup.
+**Do this instead:** pass a `cleanup` callback to `globalCache.wrap()`. It runs after every test-run once all workers have finished, and works reliably in VSCode and UI mode. Use Global Cache's [getStale()](#globalcachegetstalekey) method to access the value and perform the cleanup.

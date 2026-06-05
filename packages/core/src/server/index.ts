@@ -54,6 +54,11 @@ export class GlobalCacheServer {
     const config = resolveConfig(providedConfig);
     setConfig(this.app, config);
     this.server = await startExpressServer(this.app, config.port);
+    // unref() so the server does not prevent the Node.js process from exiting
+    // naturally when all other work is done (e.g. in CLI mode after tests finish).
+    // In VSCode / UI mode the process is kept alive by Playwright's own IPC
+    // channels, so the server stays up automatically for subsequent runs.
+    this.server.unref();
     debug(`Starting server: done ${this.localUrl}`);
   }
 

@@ -4,6 +4,7 @@
 
 ## [Unreleased]
 * fix race condition when computing values ([#6](https://github.com/vitalets/global-cache/issues/6)).
+* add `cleanup` option to `globalCache.wrap()` for reliable post-run cleanup in VSCode and UI mode ([#4](https://github.com/vitalets/global-cache/issues/4)).
 
 ## [0.4.1] - 2026-03-09
 * Move documentation to packages readme.
