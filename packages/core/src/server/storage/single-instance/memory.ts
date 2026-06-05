@@ -24,7 +24,29 @@ export class MemoryStorage implements ITestRunStorage {
     this.values.clear();
   }
 
-  async wait(key: string) {
+  /**
+   * Atomically claims the key for computing if it is not yet present.
+   *
+   * Concurrent workers all call `await testRunStorage.load(key)`, which yields the event loop,
+   * so all of them can see `undefined` simultaneously. Using async `save()` for the initial
+   * write would let every worker return `cache-miss`, compute in parallel, and collide in
+   * `setter.set()` — which only accepts a single `'computing'` caller.
+   *
+   * Because this method has no `await`, Node.js's single-threaded event loop makes
+   * `Map.has()` + `Map.set()` atomic. Only the first caller gets `true` (proceeds to compute);
+   * all subsequent callers get `false` (and wait).
+   */
+  claimForComputing(valueInfo: TestRunValueInfo): boolean {
+    if (this.values.has(valueInfo.key)) return false;
+    this.values.set(valueInfo.key, valueInfo);
+    return true;
+  }
+
+  async waitForComputed(key: string): Promise<TestRunValueInfo> {
+    // Guard: if notify already fired before we registered, return immediately.
+    const existing = this.values.get(key);
+    if (existing && existing.state !== 'computing') return existing;
+
     return new Promise<TestRunValueInfo>((resolve) => {
       const listeners = this.listeners.get(key) || [];
       listeners.push(resolve);

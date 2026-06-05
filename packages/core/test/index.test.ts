@@ -22,6 +22,20 @@ afterEach(async () => {
 });
 
 describe('get', () => {
+  test('concurrent get calls compute factory exactly once', async () => {
+    let callCount = 0;
+    const fn = () =>
+      globalCache.get('concurrent-key', async () => {
+        await new Promise((r) => setTimeout(r, 50));
+        return ++callCount;
+      });
+
+    const results = await Promise.all([fn(), fn(), fn()]);
+
+    expect(callCount).toEqual(1);
+    expect(results).toEqual([1, 1, 1]);
+  });
+
   test('non-persistent (basic flow)', async () => {
     let callCount = 0;
     const fn = () => globalCache.get(`non-persistent-basic-flow`, async () => ++callCount);

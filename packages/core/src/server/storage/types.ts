@@ -3,7 +3,8 @@ import { TestRunValueInfo } from '../../shared/value-info';
 export type ITestRunStorage = {
   load(key: string): Promise<TestRunValueInfo | undefined>;
   save(valueInfo: TestRunValueInfo, options?: { notify?: boolean }): Promise<void>;
-  wait(key: string): Promise<TestRunValueInfo>;
+  waitForComputed(key: string): Promise<TestRunValueInfo>;
+  claimForComputing(valueInfo: TestRunValueInfo): boolean;
 };
 
 export type IPersistentStorage = {

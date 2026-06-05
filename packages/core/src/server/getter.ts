@@ -33,7 +33,7 @@ export class Getter {
 
     // wait if computing
     if (valueInfo?.state === 'computing') {
-      valueInfo = await this.testRunStorage.wait(key);
+      valueInfo = await this.testRunStorage.waitForComputed(key);
       return valueInfo.state === 'computed'
         ? this.handleComputed(valueInfo)
         : this.handleError(valueInfo);
@@ -111,8 +111,15 @@ export class Getter {
     return { result: 'cache-miss', message: `expired: ${ttl}` };
   }
 
-  private async handleNoValue(key: string, sig: string, ttl?: number): Promise<GetterCacheMiss> {
-    await this.updateValueInfo({ key, state: 'computing', sig, persistent: Boolean(ttl) });
+  private async handleNoValue(key: string, sig: string, ttl?: number): Promise<GetterResult> {
+    const valueInfo: TestRunValueInfo = { key, state: 'computing', sig, persistent: Boolean(ttl) };
+    const claimed = this.testRunStorage.claimForComputing(valueInfo);
+    if (!claimed) {
+      const resolved = await this.testRunStorage.waitForComputed(key);
+      return resolved.state === 'computed'
+        ? this.handleComputed(resolved)
+        : this.handleError(resolved);
+    }
     return { result: 'cache-miss', message: 'no cached value' };
   }
 
