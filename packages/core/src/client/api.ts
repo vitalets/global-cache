@@ -2,6 +2,7 @@ import type { GetValueParams, GetValueResponse } from '../server/routes/get';
 import type { SetValueParams, SetValueResponse } from '../server/routes/set';
 import type { GetStaleParams, SetStaleResponse } from '../server/routes/get-stale';
 import type { GetStaleListParams, SetStaleListResponse } from '../server/routes/get-stale-list';
+import type { DeleteValueParams } from '../server/routes/delete';
 import { TTL } from '../shared/ttl';
 import { HttpClient } from './utils/http-client';
 import { prepareQueryParams } from './utils/http-query';
@@ -50,5 +51,11 @@ export class StorageApi {
   async clearTestRun() {
     const res = await this.http.post('clear');
     await throwIfHttpError(res, 'Failed to clear test run:');
+  }
+
+  async deleteKey(key: string) {
+    const body: DeleteValueParams = { key };
+    const res = await this.http.post('delete', body);
+    await throwIfHttpError(res, `Failed to delete key "${key}":`);
   }
 }

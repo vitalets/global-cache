@@ -15,6 +15,7 @@ import { router as routeSet } from './routes/set';
 import { router as routeGetStale } from './routes/get-stale';
 import { router as routeGetStaleList } from './routes/get-stale-list';
 import { router as routeClearTestRun } from './routes/clear';
+import { router as routeDeleteValue } from './routes/delete';
 import { errorHandler } from './error';
 import { GlobalCacheServerConfig, resolveConfig, setConfig } from './config';
 import { startExpressServer, stopExpressServer } from './utils/express';
@@ -24,13 +25,14 @@ export class GlobalCacheServer {
   private server: http.Server | null = null;
 
   constructor() {
-    this.app.use(express.json());
+    this.app.use(express.json({ limit: '50mb' }));
     this.app.use('/', routeRoot);
     this.app.use('/', routeGet);
     this.app.use('/', routeSet);
     this.app.use('/', routeGetStale);
     this.app.use('/', routeGetStaleList);
     this.app.use('/', routeClearTestRun);
+    this.app.use('/', routeDeleteValue);
     // Must be after all other middleware and routes
     this.app.use(errorHandler);
   }

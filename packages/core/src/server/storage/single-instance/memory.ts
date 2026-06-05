@@ -20,6 +20,10 @@ export class MemoryStorage implements ITestRunStorage {
     if (notify) this.notify(valueInfo);
   }
 
+  async delete(key: string) {
+    this.values.delete(key);
+  }
+
   async clear() {
     this.values.clear();
   }

@@ -317,6 +317,41 @@ describe('Signature mismatch', () => {
   });
 });
 
+describe('delete', () => {
+  test('non-persistent: forces re-computation on next get', async () => {
+    let callCount = 0;
+    const key = 'delete-non-persistent';
+    const fn = () => globalCache.get(key, () => ++callCount);
+
+    const value1 = await fn();
+    expect(value1).toEqual(1);
+
+    // delete the entry
+    await globalCache.delete(key);
+
+    // next call re-computes
+    const value2 = await fn();
+    expect(value2).toEqual(2);
+  });
+
+  test('persistent: removes from fs and forces re-computation on next get', async () => {
+    let callCount = 0;
+    const ttl = 60_000; // long TTL so expiry is not the cause of re-computation
+    const key = 'delete-persistent';
+    const fn = () => globalCache.get(key, { ttl }, () => ++callCount);
+
+    const value1 = await fn();
+    expect(value1).toEqual(1);
+
+    // delete the entry
+    await globalCache.delete(key);
+
+    // next call re-computes even though TTL has not elapsed
+    const value2 = await fn();
+    expect(value2).toEqual(2);
+  });
+});
+
 describe('root', () => {
   test('shows version and config', async () => {
     const html = await fetch(globalCacheServer.localUrl).then((res) => res.text());

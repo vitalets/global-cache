@@ -113,6 +113,15 @@ export class GlobalCacheClient<S extends DefaultKeysSchema = DefaultKeysSchema> 
   }
 
   /**
+   * Delete a cached value by key, forcing re-computation on the next get() call.
+   */
+  async delete<K extends StringKeys<S>>(key: K) {
+    debugKey(key, `Deleting value...`);
+    await this.api.deleteKey(key);
+    debugKey(key, `Deleted.`);
+  }
+
+  /**
    * Reset current test run:
    * - clear all non-persistent values
    * - generate new test run ID

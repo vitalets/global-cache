@@ -19,6 +19,7 @@ Global Cache integration with [Playwright](https://playwright.dev/).
   * [Caching network request](#caching-network-request)
   * [Cleanup (single value)](#cleanup-single-value)
   * [Cleanup (dynamic keys)](#cleanup-dynamic-keys)
+  * [Re-computing a value](#re-computing-a-value)
 * [TypeScript](#typescript)
 * [Debug](#debug)
 * [API](#api)
@@ -419,6 +420,27 @@ export default globalCache.wrap(config, {
 });
 ```
 
+### Re-computing a value
+
+In some scenarios a cached value can become stale mid-run — for example, an auth cookie that expires during the test execution. Use `globalCache.delete(key)` to remove the entry from the cache. The next `get()` call for that key will then re-compute the value from scratch:
+
+```ts
+import { globalCache } from '@global-cache/playwright';
+
+// If the cached auth state has expired, delete it and re-authenticate
+if (await isAuthExpired(page)) {
+  await globalCache.delete('auth-state');
+}
+
+const authState = await globalCache.get('auth-state', { ttl: '1 hour' }, async () => {
+  // ...authenticate user
+  return page.context().storageState();
+});
+```
+
+> [!NOTE]
+> Calling `delete()` removes the key from both in-memory and persistent storage, so the next worker to call `get()` will compute and store a fresh value.
+
 ## TypeScript
 
 You can make keys and values of teh cache strictly typed.
@@ -506,6 +528,7 @@ The following methods are available:
 * [`globalCache.get(key,[ params,] computeFn)`](#globalcachegetkey-params-computefn)
 * [`globalCache.getStale(key)`](#globalcachegetstalekey)
 * [`globalCache.getStaleList(prefix)`](#globalcachegetstalelistprefix)
+* [`globalCache.delete(key)`](#globalcachedeletekey)
 * [`globalCache.clearTestRun()`](#globalcachecleartestrun)
 * [`globalCache.setup`](#globalcachesetup)
 * [`globalCache.teardown`](#globalcacheteardown)
@@ -584,6 +607,16 @@ Get a list of "stale" values by prefix. The result follow the same rules as for 
 * `prefix: string`
 
 **Returns**: `Promise<Array>`
+
+#### `globalCache.delete(key)`
+
+Deletes a cached value by key, forcing re-computation on the next `get()` call. Removes the entry from both in-memory and persistent storage.
+
+**Parameters**:
+
+* `key: string`
+
+**Returns**: `Promise`
 
 #### `globalCache.clearTestRun()`
 
