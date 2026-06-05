@@ -36,7 +36,7 @@
     "test:d": "DEBUG=global-cache* npm t"
   },
   "dependencies": {
-    "@types/debug": "^4.1.12",
+    "@types/debug": "^4.1.13",
     "@types/express": "^5.0.6",
     "@types/ms": "^2.1.0",
     "debug": "^4.4.3",
