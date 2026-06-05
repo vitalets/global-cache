@@ -25,7 +25,7 @@ export class GlobalCacheServer {
   private server: http.Server | null = null;
 
   constructor() {
-    this.app.use(express.json({ limit: '50mb' }));
+    this.app.use(express.json({ limit: '10mb' }));
     this.app.use('/', routeRoot);
     this.app.use('/', routeGet);
     this.app.use('/', routeSet);

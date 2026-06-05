@@ -4,6 +4,7 @@
 
 ## [Unreleased]
 * fix race condition when computing values ([#6](https://github.com/vitalets/global-cache/issues/6)).
+* increase request body size limit from 100kb to 10mb to support larger cached values ([#5](https://github.com/vitalets/global-cache/pull/5)).
 * add `cleanup` option to `globalCache.wrap()` for reliable post-run cleanup in VSCode and UI mode ([#4](https://github.com/vitalets/global-cache/issues/4)).
 * add `globalCache.delete(key)` to remove a cached entry and force re-computation on the next `get()` call ([#3](https://github.com/vitalets/global-cache/issues/3)).
 
