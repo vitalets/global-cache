@@ -3,6 +3,8 @@
 > This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
 
 ## [Unreleased]
+
+## [0.5.0] - 2026-06-05
 * fix race condition when computing values ([#6](https://github.com/vitalets/global-cache/issues/6)).
 * increase request body size limit from 100kb to 10mb to support larger cached values ([#5](https://github.com/vitalets/global-cache/pull/5)).
 * add `cleanup` option to `globalCache.wrap()` for reliable post-run cleanup in VSCode and UI mode ([#4](https://github.com/vitalets/global-cache/issues/4)).
@@ -64,7 +66,9 @@
 [0.2.0]: https://github.com/vitalets/global-cache/compare/0.1.2...0.2.0
 [0.1.2]: https://github.com/vitalets/global-cache/compare/0.1.1...0.1.2
 
-[Unreleased]: https://github.com/vitalets/global-cache/compare/0.4.1...HEAD
+[Unreleased]: https://github.com/vitalets/global-cache/compare/0.5.0...HEAD
 [0.4.0]: https://github.com/vitalets/global-cache/compare/0.4.0-4...0.4.0
 
 [0.4.1]: https://github.com/vitalets/global-cache/releases/tag/0.4.1
+
+[0.5.0]: https://github.com/vitalets/global-cache/releases/tag/0.5.0
