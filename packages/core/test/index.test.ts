@@ -36,6 +36,41 @@ describe('get', () => {
     expect(results).toEqual([1, 1, 1]);
   });
 
+  test('concurrent get calls after signature change on persisted value compute factory exactly once', async () => {
+    const ttl = 1000;
+    const key = 'concurrent-sig-changed-key';
+    let callCount = 0;
+    const fn = (compute: () => unknown) => globalCache.get(key, { ttl }, compute);
+
+    await fn(() => 'v1');
+    await newTestRun(); // clears memory; persisted file on disk still has the old signature
+
+    const compute = () => {
+      callCount++;
+      return 'v2';
+    };
+    const results = await Promise.all([fn(compute), fn(compute)]);
+
+    expect(callCount).toEqual(1);
+    expect(results).toEqual(['v2', 'v2']);
+  });
+
+  test('concurrent get calls after persisted value expires compute factory exactly once', async () => {
+    const ttl = 50;
+    const key = 'concurrent-expired-key';
+    let callCount = 0;
+    const fn = () => globalCache.get(key, { ttl }, async () => ++callCount);
+
+    await fn();
+    await newTestRun(); // clears memory; persisted file on disk remains, signature unchanged
+    await waitForExpire(ttl);
+
+    const results = await Promise.all([fn(), fn()]);
+
+    expect(callCount).toEqual(2);
+    expect(results).toEqual([2, 2]);
+  });
+
   test('non-persistent (basic flow)', async () => {
     let callCount = 0;
     const fn = () => globalCache.get(`non-persistent-basic-flow`, async () => ++callCount);

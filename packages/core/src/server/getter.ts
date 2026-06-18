@@ -39,33 +39,22 @@ export class Getter {
         : this.handleError(valueInfo);
     }
 
-    // load from persistent storage
-    if (!valueInfo && ttl) {
-      valueInfo = await this.persistentStorage.load(key);
-      if (valueInfo) {
-        const signatureMismatch = checkSignature(key, valueInfo.sig, sig);
-        // eslint-disable-next-line max-depth
-        if (signatureMismatch) {
-          return this.handleSignatureChanged(valueInfo, sig, signatureMismatch);
-        }
-      }
+    // no value in memory -- claim the key atomically before touching persistent storage,
+    // so concurrent callers for the same key can't all decide to recompute independently
+    if (!valueInfo) {
+      return this.handleNoValue(key, sig, ttl);
     }
 
     // check expired
-    if (valueInfo?.state === 'computed' && valueInfo.persistent && ttl) {
+    if (valueInfo.state === 'computed' && valueInfo.persistent && ttl) {
       if (isExpired(valueInfo.computedAt, ttl)) {
         return this.handleExpired(valueInfo, ttl);
       }
     }
 
     // normal cache hit
-    if (valueInfo?.state === 'computed') {
+    if (valueInfo.state === 'computed') {
       return this.handleComputed(valueInfo);
-    }
-
-    // no value
-    if (!valueInfo) {
-      return this.handleNoValue(key, sig, ttl);
     }
 
     return this.handleDefault(valueInfo);
@@ -86,21 +75,6 @@ export class Getter {
     return { result: 'error', message: valueInfo.errorMessage || 'Unknown error' };
   }
 
-  private async handleSignatureChanged(
-    loadedValueInfo: TestRunValueInfo,
-    newSig: string,
-    { field }: SignatureMismatch,
-  ): Promise<GetterCacheMiss> {
-    await this.updateValueInfo(loadedValueInfo, {
-      state: 'computing',
-      sig: newSig,
-      prevValue: loadedValueInfo.value,
-      value: undefined,
-      computedAt: undefined,
-    });
-    return { result: 'cache-miss', message: `signature changed: ${field}` };
-  }
-
   private async handleExpired(valueInfo: TestRunValueInfo, ttl: number): Promise<GetterCacheMiss> {
     await this.updateValueInfo(valueInfo, {
       state: 'computing',
@@ -111,16 +85,45 @@ export class Getter {
     return { result: 'cache-miss', message: `expired: ${ttl}` };
   }
 
+  // eslint-disable-next-line visual/complexity, max-statements
   private async handleNoValue(key: string, sig: string, ttl?: number): Promise<GetterResult> {
-    const valueInfo: TestRunValueInfo = { key, state: 'computing', sig, persistent: Boolean(ttl) };
-    const claimed = this.testRunStorage.claimForComputing(valueInfo);
+    const placeholder: TestRunValueInfo = {
+      key,
+      state: 'computing',
+      sig,
+      persistent: Boolean(ttl),
+    };
+    const claimed = this.testRunStorage.claimForComputing(placeholder);
     if (!claimed) {
       const resolved = await this.testRunStorage.waitForComputed(key);
       return resolved.state === 'computed'
         ? this.handleComputed(resolved)
         : this.handleError(resolved);
     }
-    return { result: 'cache-miss', message: 'no cached value' };
+
+    if (!ttl) return { result: 'cache-miss', message: 'no cached value' };
+
+    // We own the 'computing' slot now, so no other concurrent caller can also decide
+    // to recompute this key while we consult persistent storage.
+    const persisted = await this.persistentStorage.load(key);
+    if (!persisted) return { result: 'cache-miss', message: 'no cached value' };
+
+    const signatureMismatch = checkSignature(key, persisted.sig, sig);
+    if (signatureMismatch) {
+      placeholder.prevValue = persisted.value;
+      return { result: 'cache-miss', message: `signature changed: ${signatureMismatch.field}` };
+    }
+
+    if (isExpired(persisted.computedAt, ttl)) {
+      placeholder.prevValue = persisted.value;
+      return { result: 'cache-miss', message: `expired: ${ttl}` };
+    }
+
+    // Persistent value is fresh and valid -- adopt it as computed, update the map entry
+    // (already resident via claimForComputing) and notify any waiters.
+    Object.assign(placeholder, persisted);
+    await this.testRunStorage.save(placeholder, { notify: true });
+    return this.handleComputed(placeholder);
   }
 
   private async handleDefault(valueInfo: TestRunValueInfo): Promise<GetterCacheMiss> {

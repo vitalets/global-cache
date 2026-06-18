@@ -3,6 +3,7 @@
 > This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
 
 ## [Unreleased]
+* fix remaining race condition when a key is recomputed from persistent storage (stale signature or expired TTL) by concurrent callers.
 
 ## [0.5.0] - 2026-06-05
 * fix race condition when computing values ([#6](https://github.com/vitalets/global-cache/issues/6)).
