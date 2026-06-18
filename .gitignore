@@ -16,4 +16,4 @@ test-results
 playwright-report
 /todo.txt
 .global-cache
-
+.claude/settings.local.json	
