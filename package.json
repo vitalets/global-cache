@@ -38,7 +38,7 @@
     "remark-section-toc": "^1.0.0",
     "remark-toc": "^9.0.0",
     "remark-validate-links": "^13.1.0",
-    "turbo": "2.9.16",
+    "turbo": "2.10.9",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.60.1",
     "vitest": "^4.1.8"
