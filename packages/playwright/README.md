@@ -110,17 +110,16 @@ let sharedValue = '';
 
 test.beforeAll(async () => {
   sharedValue = await globalCache.get('cache-key', async () => {
-    /* ...heavy operation */
-    return heavyCalculationOfValue();
+    /* ...heavy calculation */
   });
 });
 
 test('test 1', async () => {
-  // ...test uses 'sharedValue'
+  // ...use 'sharedValue'
 });
 
 test('test 2', async () => {
-  // ...test uses 'sharedValue'
+  // ...use 'sharedValue'
 });
 ```
 
