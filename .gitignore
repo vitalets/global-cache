@@ -9,6 +9,7 @@ npm-debug.log
 .pnp.js
 
 .turbo
+.docusaurus
 
 # my
 dist

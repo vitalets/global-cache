@@ -16,7 +16,9 @@
     "toc": "turbo toc",
     "dev": "turbo watch build",
     "build": "turbo run build",
-    "deps": "npx npm-check-updates -i -p pnpm --packageFile=\"{package.json,packages/*/package.json}\" --format group,dep,repo --cooldown 1",
+    "docs": "pnpm --filter @global-cache/website start",
+    "docs:build": "pnpm --filter @global-cache/website build",
+    "deps": "npx npm-check-updates -i -p pnpm --packageFile=\"{package.json,packages/*/package.json,website/package.json}\" --format group,dep,repo --cooldown 1",
     "test": "turbo run test --filter='./packages/*'"
   },
   "devDependencies": {

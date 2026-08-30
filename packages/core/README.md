@@ -1,5 +1,5 @@
 # @global-cache/core
 
-[![npm version](https://img.shields.io/npm/v/@global-cache/core)](https://www.npmjs.com/package/@global-cache/core)
+Framework-independent server and client for sharing cached data across parallel test workers.
 
-Core Global Cache package. Refer to the main [README](https://github.com/vitalets/global-cache) for setup and examples.
+[Core documentation](https://vitalets.github.io/global-cache/)

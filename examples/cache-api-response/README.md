@@ -29,8 +29,14 @@ Sending real request to: https://jsonplaceholder.typicode.com/users
 ## Running tests (without global cache)
 
 Real request is sent in each worker, 3 times in total:
+Set `disabled: true` before wrapping the Playwright config, then run the tests normally:
+
+```ts
+globalCache.config({ disabled: true });
 ```
-GLOBAL_CACHE_DISABLE=1 npx playwright test
+
+```sh
+npx playwright test
 ```
 Output:
 ```

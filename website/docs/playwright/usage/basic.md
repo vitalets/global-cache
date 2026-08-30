@@ -1,0 +1,50 @@
+---
+title: Basic usage
+---
+
+Call `globalCache.get(key, computeFn)` wherever a Playwright fixture or hook needs shared data:
+
+```ts title="tests/users.spec.ts"
+import { test, expect } from '@playwright/test';
+import { globalCache } from '@global-cache/playwright';
+
+let userId: string;
+
+test.beforeAll(async () => {
+  userId = await globalCache.get('seeded-user-id', async () => {
+    const user = await database.createUser();
+    return user.id;
+  });
+});
+
+test('opens the user', async ({ page }) => {
+  await page.goto(`/users/${userId}`);
+  await expect(page.getByRole('heading')).toBeVisible();
+});
+```
+
+The first worker requesting `seeded-user-id` runs the function. Concurrent workers wait, and all of
+them receive the same stored value. A non-persistent value remains available until the Playwright
+execution ends.
+
+## Where to call `get()`
+
+Common locations include:
+
+- `test.beforeAll()` or `test.beforeEach()` hooks.
+- Worker- or test-scoped fixtures.
+- Helper functions called by tests.
+- Route handlers that need a shared response.
+
+Global Cache coordinates the computation independently of the Playwright hook that calls it.
+
+## Serializable results
+
+Values cross an HTTP boundary. Return primitives, arrays, or plain JSON-compatible objects. Do not
+cache a Playwright `Page`, `BrowserContext`, database connection, or class instance; cache the data
+needed to recreate or configure it instead.
+
+## One computation per key
+
+A key represents one logical computation. Reusing the same key from incompatible call sites causes a
+signature-mismatch warning. See [Core concepts](../../core/concepts.md#keys-and-signatures).

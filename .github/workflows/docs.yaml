@@ -1,0 +1,60 @@
+name: docs
+
+on:
+  push:
+    branches: [docs]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  branch-check:
+    name: Check deployment branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require docs branch
+        run: |
+          if [ "$GITHUB_REF_NAME" != "docs" ]; then
+            echo "::error::Documentation can only be deployed from the docs branch."
+            exit 1
+          fi
+
+  build:
+    name: Build documentation
+    needs: branch-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run docs:build
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: website/dist
+
+  deploy:
+    name: Deploy documentation
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

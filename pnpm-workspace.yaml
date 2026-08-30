@@ -1,7 +1,9 @@
 packages:
   - 'packages/*'
   - 'examples/*'
+  - 'website'
 allowBuilds:
+  core-js: true
   esbuild: true
 # wait 1 day
 minimumReleaseAge: 1440
