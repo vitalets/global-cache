@@ -44,7 +44,7 @@ and then receive the same cached result.
 
 ## Documentation
 
-- [Main documentation website](https://vitalets.github.io/global-cache/)
+- [Core documentation](https://vitalets.github.io/global-cache/)
 - [Playwright integration](https://vitalets.github.io/global-cache/playwright/)
 
 ## License
