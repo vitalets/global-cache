@@ -2,7 +2,8 @@
 title: Debugging
 ---
 
-Enable all Global Cache debug namespaces when running Playwright:
+Debug logs show whether Global Cache computes, reuses, persists, or removes a value. Enable all
+Global Cache debug namespaces when running Playwright:
 
 ```bash
 DEBUG=global-cache* npx playwright test
@@ -14,8 +15,7 @@ Or set it before Playwright loads the configuration:
 process.env.DEBUG = 'global-cache*';
 ```
 
-The output shows when a key is computed, reused, persisted, or removed. It also includes the address
-of the small local cache server. For example:
+The output also includes the address of the small local cache server. For example:
 
 ```text
 global-cache Starting server...

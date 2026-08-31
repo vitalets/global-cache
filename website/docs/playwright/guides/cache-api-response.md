@@ -2,7 +2,8 @@
 title: Cache API responses
 ---
 
-Cache an upstream response inside a Playwright route handler when many workers need the same data:
+You can cache API responses to make tests run faster and avoid sending the same request from every
+worker. For example, cache an upstream response inside a Playwright route handler:
 
 ```ts
 test.use({
@@ -26,7 +27,8 @@ contacting the upstream service again.
 
 ## Dynamic params
 
-If request parameters affect the result, include them in the key:
+Include every request parameter that affects the response in the cache key. This ensures each
+request variant gets the correct cached value:
 
 ```ts
 import { test, expect } from '@playwright/test';

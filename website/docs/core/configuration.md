@@ -2,7 +2,8 @@
 title: Configuration
 ---
 
-Configure a client before its first cache call:
+The default client options work for most local integrations. When you need a different persistence
+path or runtime behavior, configure the client before its first cache call:
 
 ```ts
 cache.config({

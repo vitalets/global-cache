@@ -10,5 +10,4 @@ export type StringKeys<S extends DefaultKeysSchema> = keyof S & string; // strip
 export type ComputeFn<Res> = () => Res | Promise<Res>;
 export type KeyParams = { ttl?: TTL };
 export type GetArgs<K extends StringKeys<S>, S extends DefaultKeysSchema> =
-  | [K, ComputeFn<S[K]>]
-  | [K, KeyParams, ComputeFn<S[K]>];
+  [K, ComputeFn<S[K]>] | [K, KeyParams, ComputeFn<S[K]>];

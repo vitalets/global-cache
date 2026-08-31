@@ -21,7 +21,8 @@ depend on prototypes do not survive serialization.
 
 ## Keys and signatures
 
-A key identifies one logical value. Include every input that can change the result in the key:
+A key identifies one logical value. When a computation depends on parameters, include every
+parameter that can change the result in the key:
 
 ```ts
 const profile = await cache.get(`profile-${userId}`, () => loadProfile(userId));

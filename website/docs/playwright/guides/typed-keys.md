@@ -2,7 +2,8 @@
 title: Typed keys
 ---
 
-Define a schema for cache keys and their values, then re-export a typed cache instance:
+Typed keys catch misspelled keys and mismatched value types before tests run. Define a schema for
+the cache keys and their values, then re-export a typed cache instance:
 
 ```ts title="tests/helpers/global-cache.ts"
 import {

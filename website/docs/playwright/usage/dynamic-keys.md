@@ -2,7 +2,9 @@
 title: Dynamic keys
 ---
 
-Include every input that affects a computation in its key:
+If a computed value depends on one or more parameters, include every parameter in the cache key.
+This gives each parameter combination a separate cache entry, so callers only reuse a value that
+matches their inputs:
 
 ```ts
 async function loadAccount(accountId: string) {
