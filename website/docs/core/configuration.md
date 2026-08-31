@@ -2,12 +2,16 @@
 title: Configuration
 ---
 
-The default client options work for most local integrations. When you need a different persistence
-path or runtime behavior, configure the client before its first cache call:
+Core clients need the URL of a running server. Configure the client before its first cache call and,
+when using child workers, before starting those workers:
 
 ```ts
-cache.config({
-  basePath: '.global-cache',
+import { GlobalCacheClient } from '@global-cache/core';
+
+const globalCache = new GlobalCacheClient();
+
+globalCache.config({
+  serverUrl: 'http://localhost:3000',
   ignoreTTL: Boolean(process.env.CI),
 });
 ```
@@ -16,13 +20,26 @@ cache.config({
 
 | Option | Type | Default | Purpose |
 | --- | --- | --- | --- |
-| `basePath` | `string` | `.global-cache` | Persistent storage directory for a locally managed server. |
 | `ignoreTTL` | `boolean` | `false` | Treat every value as non-persistent. Useful when cross-run persistence has no value in CI. |
 | `disabled` | `boolean` | `false` | Compute every value locally without reading or writing the cache. |
-| `serverUrl` | `string` | — | Connect to an externally managed Core server. |
+| `serverUrl` | `string` | — | URL of the Core server that handles cache operations. Required unless caching is disabled. |
+| `basePath` | `string` | `.global-cache` | Persistence path available to integrations that manage a local server, including the Playwright integration. |
 
-When `serverUrl` is set, the external server controls its own persistence path, so the client's
-`basePath` is ignored.
+For direct Core usage, pass the persistence path to the server when starting it. Setting the client's
+`basePath` alone does not start or configure a Core server:
+
+```ts
+import { GlobalCacheClient } from '@global-cache/core';
+import { globalCacheServer } from '@global-cache/core/server';
+
+const globalCache = new GlobalCacheClient();
+
+await globalCacheServer.start({ basePath: '.global-cache' });
+globalCache.config({ serverUrl: globalCacheServer.localUrl });
+```
+
+See [Architecture](./architecture.md) for the complete startup sequence and how child workers learn
+the selected server port.
 
 ## Shared run IDs
 

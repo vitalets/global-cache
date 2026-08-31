@@ -39,6 +39,8 @@ boundaries themselves.
 
 ## Next steps
 
-- Read [Core concepts](./concepts.md) to understand keys, test runs, and persistence.
+- [Installation](./installation.md) in the project where you are building an integration.
+- Review [configuration](./configuration.md) and the [architecture](./architecture.md) to understand
+  the client-server lifecycle, keys, test runs, and persistence.
 - Use the [Core client](./client.md) when building an integration.
 - See the [Core API reference](./api.md) for the exported classes and methods.

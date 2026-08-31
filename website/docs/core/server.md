@@ -3,7 +3,8 @@ title: Server
 ---
 
 The Core server is a small HTTP service that lets clients in different processes share in-memory and
-persistent values. Run it wherever every participating client can reach it.
+persistent values. Core does not start it automatically: the process coordinating your workers must
+start it somewhere every participating client can reach.
 
 ```ts
 import { globalCacheServer } from '@global-cache/core/server';
@@ -15,6 +16,11 @@ await globalCacheServer.start({
 
 console.log(globalCacheServer.localUrl);
 ```
+
+The default port is `0`, which asks the operating system to choose an available port. Read
+`localUrl` only after `start()` resolves; it then contains the actual selected port. Configure clients
+with that URL before starting worker processes. See [Architecture](./architecture.md) for the full
+startup and discovery flow.
 
 ## Configuration
 

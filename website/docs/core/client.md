@@ -10,44 +10,19 @@ it when building an integration or connecting an application to a Core server yo
 ```ts
 import { GlobalCacheClient } from '@global-cache/core';
 
-const cache = new GlobalCacheClient();
+const globalCache = new GlobalCacheClient();
 
-cache.config({
+globalCache.config({
   serverUrl: 'http://localhost:3000',
 });
 
-const value = await cache.get('expensive-value', async () => {
+const value = await globalCache.get('expensive-value', async () => {
   return performExpensiveWork();
 });
 ```
 
 Configure a reachable server URL before calling `get()`. The Playwright integration handles this
 automatically for Playwright projects.
-
-## Start Core in the same process
-
-For a small custom integration, the exported server can be started alongside the client:
-
-```ts
-import { GlobalCacheClient } from '@global-cache/core';
-import { globalCacheServer } from '@global-cache/core/server';
-
-await globalCacheServer.start({ basePath: '.global-cache' });
-
-const cache = new GlobalCacheClient();
-cache.config({ serverUrl: globalCacheServer.localUrl });
-
-try {
-  const result = await cache.get('seed', () => seedDatabase());
-  // Use result...
-} finally {
-  await cache.resetTestRun();
-  await globalCacheServer.stop();
-}
-```
-
-The direct consumer owns shutdown and run boundaries. Playwright users should use the
-[Playwright integration](../playwright/index.md), which manages those concerns automatically.
 
 ## Typed keys
 
@@ -59,9 +34,9 @@ type CacheSchema = {
   'feature-flags': Record<string, boolean>;
 };
 
-const cache = new GlobalCacheClient<CacheSchema>();
+const globalCache = new GlobalCacheClient<CacheSchema>();
 
-const userId = await cache.get('seeded-user-id', async () => {
+const userId = await globalCache.get('seeded-user-id', async () => {
   return database.createUser().then((user) => user.id);
 });
 ```

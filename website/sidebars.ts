@@ -3,10 +3,11 @@ import type { SidebarsConfig } from '@docusaurus/plugin-content-docs';
 const sidebars: SidebarsConfig = {
   coreSidebar: [
     'core/index',
-    'core/concepts',
+    'core/installation',
+    'core/configuration',
+    'core/architecture',
     'core/client',
     'core/server',
-    'core/configuration',
     {
       type: 'category',
       label: 'API reference',
