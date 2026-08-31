@@ -7,12 +7,12 @@ This gives each parameter combination a separate cache entry, so callers only re
 matches their inputs:
 
 ```ts
-async function loadAccount(accountId: string) {
-  return globalCache.get(`account-${accountId}`, () => api.getAccount(accountId));
-}
+const userData = await globalCache.get(`user-${userId}`, async () => {
+  return api.getUser(userId);
+});
 ```
 
-Without `accountId` in the key, the first loaded account would be returned for every later request.
+Without `userId` in the key, the first loaded account would be returned for every later request.
 
 Use stable, deterministic key parts. Avoid random values, timestamps, or worker indexes unless they
 are genuinely part of the logical identity; those values prevent workers from sharing the entry.
