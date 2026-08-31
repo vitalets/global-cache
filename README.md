@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./website/static/img/logo.png" alt="Global Cache logo" width="128">
+  <img src="https://raw.githubusercontent.com/vitalets/global-cache/main/website/static/img/logo.png" alt="Global Cache logo" width="128">
 </p>
 <h1 align="center">global-cache</h1>
 
