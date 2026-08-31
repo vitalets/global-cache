@@ -3,10 +3,12 @@ title: BeforeAll / BeforeEach
 ---
 
 Global Cache can share expensive setup from either `beforeAll` or `beforeEach`. In both cases, the
-function passed to `globalCache.get()` runs only for the first cache miss; later hooks and workers
-receive the stored result.
+cached value is created once and shared across all tests and workers. The key benefit is that the
+value is reused even in fully parallel mode and when Playwright starts a new worker after a test
+failure. **Global Cache guarantees that the value is computed exactly once during the test run.**
 
-Choose the hook based on the fixture scope you need and when the cached value should be assigned.
+The hook itself still follows Playwright's normal lifecycle, so choose it based on the fixture scope
+you need and when the cached value should be assigned.
 
 ## `beforeAll`
 

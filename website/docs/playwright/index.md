@@ -25,6 +25,10 @@ A tiny local HTTP server coordinates cache access between Playwright workers. Wh
 request the same key, the first worker runs the computation while the others wait. When it finishes,
 every worker receives the same stored value instead of repeating the expensive setup.
 
+## Example
+
+This example creates a test user once and shares its ID across all tests and workers. Even in fully parallel mode or after a test failure, the user is reused rather than created again:
+
 ```ts
 import { test } from '@playwright/test';
 import { globalCache } from '@global-cache/playwright';
@@ -32,13 +36,20 @@ import { globalCache } from '@global-cache/playwright';
 let userId = '';
 
 test.beforeAll(async () => {
-  userId = await globalCache.get('seeded-user-id', async () => {
+  // Create a test user once and cache it for the entire test run.
+  userId = await globalCache.get('test-user', async () => {
     const user = await database.createUser();
     return user.id;
   });
 });
 
-// Every test receives the same user ID.
+test('test 1', async ({ page }) => {
+  // uses 'userId'
+});
+
+test('test 2', async ({ page }) => {
+  // uses the same 'userId'
+});
 ```
 
 Start with [Installation](./installation.md), then learn the [basic usage](./usage/basic.md).
