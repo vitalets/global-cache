@@ -1,9 +1,9 @@
 ---
-title: Persistent values
+title: Persistent keys
 ---
 
-By default, values live in memory for one Playwright execution. Pass a time to live (TTL) to persist a
-value on the filesystem and reuse it in later runs:
+By default, keys live in memory for one Playwright execution. Pass a time to live (TTL) to persist a
+key's value on the filesystem and reuse it in later runs:
 
 ```ts
 const authState = await globalCache.get('auth-state', { ttl: '1 hour' }, async () => {
@@ -31,9 +31,9 @@ Add this directory to `.gitignore`, or choose another path with
 
 ## Recalculation
 
-A persistent value is recalculated when its TTL expires, its computation signature changes, or the key
-is deleted. The first worker to encounter the invalid value performs the new computation while other
-workers wait.
+The value for a persistent key is recalculated when its TTL expires, its computation signature
+changes, or the key is deleted. The first worker to encounter the invalid value performs the new
+computation while other workers wait.
 
 To force recalculation explicitly:
 
@@ -46,7 +46,7 @@ await globalCache.delete('auth-state');
 ## CI
 
 Filesystem persistence often provides no benefit on an ephemeral CI runner. Set `ignoreTTL: true` to
-keep the same application code while treating all values as run-scoped:
+keep the same application code while treating all keys as run-scoped:
 
 ```ts
 globalCache.config({ ignoreTTL: Boolean(process.env.CI) });

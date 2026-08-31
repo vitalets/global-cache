@@ -21,8 +21,8 @@ const config = defineConfig({
 export default globalCache.wrap(config);
 ```
 
-The wrapper preserves existing `globalSetup` and reporters, then adds Global Cache's setup and
-reporter hooks. No `globalTeardown` is installed.
+The wrapper preserves your existing Playwright configuration and enables Global Cache for every test
+run. No additional setup or teardown files are required.
 
 Add the persistent cache directory to source control ignores:
 

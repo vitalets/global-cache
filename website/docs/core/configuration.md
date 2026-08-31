@@ -23,13 +23,10 @@ cache.config({
 When `serverUrl` is set, the external server controls its own persistence path, so the client's
 `basePath` is ignored.
 
-Configuration is serialized into `GLOBAL_CACHE_CONFIG` so child worker processes inherit the same
-settings. Prefer `config()` over writing that internal environment variable yourself.
-
 ## Shared run IDs
 
 Set `GLOBAL_CACHE_RUN_ID` before launching workers when independently started processes or shards
-should address the same in-memory test run:
+should reuse the same run-scoped values:
 
 ```bash
 GLOBAL_CACHE_RUN_ID="$CI_PIPELINE_ID" pnpm test

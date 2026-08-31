@@ -29,4 +29,4 @@ The matching cleanup callback can retrieve all old values:
 const userIds = await globalCache.getStaleList<string>('created-user:');
 ```
 
-See [Cleanup](../guides/cleanup.md) for the complete lifecycle.
+See [Cleanup](../guides/cleanup.md) for a complete cleanup callback.

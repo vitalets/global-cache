@@ -1,5 +1,5 @@
 ---
-title: Cache an API response
+title: Cache API responses
 ---
 
 Cache an upstream response inside a Playwright route handler when many workers need the same data:
@@ -21,20 +21,38 @@ test.use({
 });
 ```
 
-The real request is sent once. Later route handlers receive the serialized response from Core.
+The upstream request is sent once. Later route handlers receive the same cached data without
+contacting the upstream service again.
+
+## Dynamic params
 
 If request parameters affect the result, include them in the key:
 
 ```ts
-const request = route.request();
-const page = request.postDataJSON()?.page ?? 1;
-const id = new URL(request.url()).searchParams.get('id');
-const key = `cats-response:${id}:page-${page}`;
+import { test, expect } from '@playwright/test';
+import { globalCache } from '@global-cache/playwright';
 
-const json = await globalCache.get(key, async () => {
-  const response = await route.fetch();
-  return response.json();
+test.beforeEach(async ({ page }) => {
+  await page.route('https://api.example.com/users/*', async (route) => {
+    const requestUrl = new URL(route.request().url());
+    const userId = requestUrl.pathname.split('/').at(-1)!;
+
+    const user = await globalCache.get(`user-api-response:${userId}`, async () => {
+      const response = await route.fetch();
+      return response.json();
+    });
+
+    await route.fulfill({ json: user });
+  });
+});
+
+test('opens user profile', async ({ page }) => {
+  await page.goto('/users/42');
+  await expect(page.getByTestId('user-id')).toHaveText('42');
 });
 ```
 
-[View the runnable API-response example](https://github.com/vitalets/global-cache/tree/docs/examples/cache-api-response).
+Requests for `/users/42` reuse one cache entry, while `/users/43` uses a separate entry and fetches
+its own response.
+
+[View the runnable API-response example](https://github.com/vitalets/global-cache/tree/main/examples/cache-api-response).

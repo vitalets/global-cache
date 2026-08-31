@@ -52,9 +52,9 @@ test('public flow', { tag: '@no-auth' }, async ({ page }) => {
 });
 ```
 
-[View the complete single-user example](https://github.com/vitalets/global-cache/tree/docs/examples/auth-single-user).
+[View the complete single-user example](https://github.com/vitalets/global-cache/tree/main/examples/auth-single-user).
 
-## Multiple roles
+## Multiple users
 
 Put the role in the key so each identity has its own state:
 
@@ -70,7 +70,7 @@ async function signIn(browser: Browser, role: 'user' | 'admin') {
 
 Only roles requested by the selected tests or shard are authenticated.
 
-[View the complete multi-user example](https://github.com/vitalets/global-cache/tree/docs/examples/auth-multi-user).
+[View the complete multi-user example](https://github.com/vitalets/global-cache/tree/main/examples/auth-multi-user).
 
 ## Authentication through an API
 
@@ -87,4 +87,4 @@ const authState = await globalCache.get('auth-state-via-api', async () => {
 When overriding `storageState`, depend on the `playwright` fixture rather than the `request` fixture to
 avoid a dependency cycle.
 
-[View the complete API authentication example](https://github.com/vitalets/global-cache/tree/docs/examples/auth-via-api).
+[View the complete API authentication example](https://github.com/vitalets/global-cache/tree/main/examples/auth-via-api).

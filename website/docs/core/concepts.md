@@ -33,14 +33,14 @@ overwriting the shared value. Use one canonical computation per key.
 
 ## Test runs
 
-Non-persistent values belong to a **test run**. A run ID lets all workers address the same in-memory
-storage. At the end of a run, an integration calls `resetTestRun()` to clear non-persistent values and
-create a new run ID.
+Non-persistent values belong to a **test run**. Workers using the same run ID share those values;
+workers using different run IDs remain isolated. Start a new run after an execution finishes so the
+next execution recomputes run-scoped values.
 
-An externally supplied `GLOBAL_CACHE_RUN_ID` can make multiple processes or shards share one run.
-Because an external coordinator owns that run ID, `resetTestRun()` does not clear it automatically.
+Set `GLOBAL_CACHE_RUN_ID` when independently launched processes or shards need to share one run. The
+system assigning that ID should use a new value for the next unrelated execution.
 
-## Persistent values
+## Persistent keys
 
 Passing a TTL stores a value on the filesystem as well as in memory:
 
@@ -48,7 +48,8 @@ Passing a TTL stores a value on the filesystem as well as in memory:
 const token = await cache.get('service-token', { ttl: '30 min' }, issueToken);
 ```
 
-Persistent values can survive multiple test runs. They are reused while all of these remain true:
+Values for persistent keys can survive multiple test runs. They are reused while all of these remain
+true:
 
 - The TTL has not expired.
 - The computation signature has not changed.
@@ -64,5 +65,5 @@ Cleanup often needs the value that is about to stop being current:
 - For a persistent key replaced during the run, it returns the previous value while preserving the
   new value for later runs.
 
-`getStaleList(prefix)` applies the same rule to every matching key. Integrations should call cleanup
-before resetting the test run.
+`getStaleList(prefix)` applies the same rule to every matching key, which is useful when cleaning up a
+group of dynamically named resources.

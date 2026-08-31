@@ -4,17 +4,26 @@ sidebar_label: Overview
 slug: /playwright
 ---
 
-`@global-cache/playwright` connects [Global Cache Core](../core/index.md) to Playwright Test. It starts
-the shared server before workers run and uses a reporter to perform cleanup and reset run-scoped data
-after every execution—including runs started from UI mode and the VS Code extension.
+Global Cache provides an integration with [Playwright](https://playwright.dev/) through the dedicated
+[`@global-cache/playwright`](https://www.npmjs.com/package/@global-cache/playwright) package. It makes
+shared cached values available from tests, fixtures, and hooks. Parallel workers can reuse expensive
+setup data instead of repeating it.
 
-Use it to perform expensive work only when a test needs it and share the result across workers:
+Use it to perform expensive work and share the result across workers:
 
 - Authenticate users on demand.
 - Seed a database once.
 - Cache API responses or computed fixtures.
 - Persist reusable values across test runs.
 - Clean up shared resources after all workers finish.
+
+## How it works
+
+![Playwright workers sharing Global Cache](/img/architecture.png)
+
+A tiny local HTTP server coordinates cache access between Playwright workers. When several workers
+request the same key, the first worker runs the computation while the others wait. When it finishes,
+every worker receives the same stored value instead of repeating the expensive setup.
 
 ```ts
 import { test } from '@playwright/test';

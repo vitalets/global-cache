@@ -1,8 +1,8 @@
 ---
-title: Typed cache
+title: Typed keys
 ---
 
-Define a schema and re-export a typed cache instance:
+Define a schema for cache keys and their values, then re-export a typed cache instance:
 
 ```ts title="tests/helpers/global-cache.ts"
 import {
@@ -32,4 +32,4 @@ const userInfo = await globalCache.get('user-info', async () => ({
 TypeScript now checks the key, the computation's return type, and the resolved value. Unknown keys are
 rejected.
 
-[View the runnable typed-cache example](https://github.com/vitalets/global-cache/tree/docs/examples/typed-cache).
+[View the runnable typed-keys example](https://github.com/vitalets/global-cache/tree/main/examples/typed-cache).

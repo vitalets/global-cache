@@ -17,8 +17,8 @@ Global Cache is organized as a framework-independent Core plus test-runner integ
 - **Core** — the HTTP server, storage, and client API in
   [`@global-cache/core`](https://www.npmjs.com/package/@global-cache/core).
 - **Playwright** — the supported integration in
-  [`@global-cache/playwright`](https://www.npmjs.com/package/@global-cache/playwright). It starts
-  Core automatically and connects cache cleanup to Playwright's run lifecycle.
+  [`@global-cache/playwright`](https://www.npmjs.com/package/@global-cache/playwright). It lets
+  Playwright workers share cached setup data and clean up shared resources after a run.
 
 :::tip Using Playwright?
 
@@ -36,8 +36,9 @@ users do not need to configure Core themselves.
 - Stale-value access for safe end-of-run cleanup.
 - Typed key/value schemas for TypeScript consumers.
 
-Core can be used directly to build another test-runner integration. Direct consumers are responsible
-for starting the server and defining when a test run ends; integrations normally own that lifecycle.
+Use Core directly when building another test-runner integration or connecting processes to a shared
+cache server. Playwright users can use the integration instead of managing the server and run
+boundaries themselves.
 
 ## Next steps
 

@@ -2,76 +2,24 @@
 title: API reference
 ---
 
-## `@global-cache/core`
+Core provides a client for requesting shared values and a small HTTP server that coordinates those
+requests across processes. Most code uses the client; use the server API when you need to host the
+cache yourself or build another integration.
 
-### `new GlobalCacheClient<Schema>()`
+## [`GlobalCacheClient`](./api/global-cache-client.md)
 
-Creates a cache client. The optional `Schema` maps string keys to their value types.
+The typed key/value client exported from `@global-cache/core`. Use it to configure the cache, read or
+compute values, retrieve stale values for cleanup, and delete entries.
 
-### `client.config(config)`
+```ts
+import { GlobalCacheClient } from '@global-cache/core';
+```
 
-Updates the global client configuration. See [Configuration](./configuration.md).
+## [`GlobalCacheServer`](./api/global-cache-server.md)
 
-### `client.get(key, computeFn)`
+The HTTP cache server exported from `@global-cache/core/server`. Integrations usually manage it for
+you; import it directly when building an integration or running a standalone server.
 
-### `client.get(key, { ttl }, computeFn)`
-
-Returns the cached value or computes, stores, and returns it. `ttl` accepts milliseconds, an
-[`ms`](https://github.com/vercel/ms)-compatible string such as `'1 hour'`, or `'infinite'`.
-
-### `client.getStale(key)`
-
-Returns the value available for cleanup, or `undefined`. For non-persistent keys this is the current
-value; for replaced persistent keys it is the previous value.
-
-### `client.getStaleList(prefix)`
-
-Returns cleanup values for all keys beginning with `prefix`.
-
-### `client.delete(key)`
-
-Removes a key from both in-memory and persistent storage. The next `get()` recomputes it.
-
-### `client.resetTestRun()`
-
-Clears non-persistent values for the current locally managed run and creates a new run ID. It does
-nothing when there is no server or when the run ID came from `GLOBAL_CACHE_RUN_ID`.
-
-### `globalConfig`
-
-The shared configuration singleton used by integrations. Most consumers should configure a client
-through `client.config()` instead.
-
-### `logger`
-
-The Core logger used for lifecycle warnings and errors.
-
-## `@global-cache/core/server`
-
-### `new GlobalCacheServer()`
-
-Creates an independent server instance.
-
-### `server.start(config?)`
-
-Starts the server. The configuration accepts `port` and `basePath`.
-
-### `server.stop()`
-
-Stops a running server. Calling it when the server is already stopped is safe.
-
-### `server.port`
-
-The resolved listening port, or `0` before the server starts.
-
-### `server.localUrl`
-
-The server URL using `localhost` and the resolved port.
-
-### `server.isRunning`
-
-Whether the underlying HTTP server is listening.
-
-### `globalCacheServer`
-
-The package's default `GlobalCacheServer` instance.
+```ts
+import { GlobalCacheServer } from '@global-cache/core/server';
+```

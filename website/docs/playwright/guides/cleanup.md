@@ -2,15 +2,19 @@
 title: Cleanup
 ---
 
-Do not delete a shared resource in `afterAll`: one worker may finish while another still needs it.
-Instead, pass a cleanup callback to `globalCache.wrap()`:
+Cleaning up shared resources requires more care than cleaning up data created by a single test. A
+Playwright `afterAll` hook runs once per worker, so one worker may delete a cached user, database
+record, or other resource while another worker is still using it.
+
+Global Cache provides a dedicated cleanup callback that runs after all workers have finished. Pass it
+to `globalCache.wrap()` when configuring Playwright:
 
 ```ts title="playwright.config.ts"
 import { defineConfig } from '@playwright/test';
 import { globalCache } from '@global-cache/playwright';
 
 const config = defineConfig({
-  testDir: './tests',
+  // ...your Playwright config
 });
 
 export default globalCache.wrap(config, {
@@ -25,8 +29,7 @@ export default globalCache.wrap(config, {
 });
 ```
 
-Use dynamic imports for cleanup-only dependencies. A top-level import in `playwright.config.ts` is also
-evaluated in worker processes, while the callback runs only in Playwright's main process.
+Keep cleanup-only dependencies inside the callback so test workers do not load code they never use.
 
 ## Which value is stale?
 
@@ -34,7 +37,7 @@ evaluated in worker processes, while the callback runs only in Playwright's main
 - **Persistent key:** when a value was replaced during this run, `getStale()` returns the previous
   value. The new value remains available for later runs.
 
-Cleanup runs before Global Cache resets the test run, so stale values are still available.
+These stale values remain available for the duration of the cleanup callback.
 
 ## Dynamic keys
 
@@ -49,11 +52,4 @@ cleanup: async () => {
 },
 ```
 
-## Why the reporter owns cleanup
-
-Playwright invokes reporter `onEnd()` after every execution in CLI, UI, and VS Code modes. Global setup
-and teardown are not reliably repeated for every execution when the main process remains alive. The
-Global Cache reporter therefore runs cleanup and then resets run-scoped values; it does not stop the
-server.
-
-[View the runnable cleanup example](https://github.com/vitalets/global-cache/tree/docs/examples/cleanup).
+[View the runnable cleanup example](https://github.com/vitalets/global-cache/tree/main/examples/cleanup).

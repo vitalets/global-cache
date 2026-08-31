@@ -2,22 +2,40 @@
 title: Configuration
 ---
 
-Call `globalCache.config()` before wrapping the Playwright config:
+Global Cache can be enabled from the Playwright configuration file. To use it with the default options,
+define your Playwright config as usual and pass it to `globalCache.wrap()`:
 
 ```ts title="playwright.config.ts"
 import { defineConfig } from '@playwright/test';
 import { globalCache } from '@global-cache/playwright';
 
-globalCache.config({
-  basePath: '.global-cache',
-  ignoreTTL: Boolean(process.env.CI),
+const config = defineConfig({
+  // ...your Playwright config
 });
 
-export default globalCache.wrap(
-  defineConfig({
-    testDir: './tests',
-  }),
-);
+export default globalCache.wrap(config);
+```
+
+## Custom options
+
+To customize Global Cache, call `globalCache.config()` with the options you want before wrapping the
+Playwright config:
+
+```ts title="playwright.config.ts"
+import { defineConfig } from '@playwright/test';
+import { globalCache } from '@global-cache/playwright';
+
+const config = defineConfig({
+  // ...your Playwright config
+});
+
+globalCache.config({
+  basePath: '.cache/global-cache',
+  ignoreTTL: Boolean(process.env.CI),
+  disabled: process.env.DISABLE_GLOBAL_CACHE === '1',
+});
+
+export default globalCache.wrap(config);
 ```
 
 ## Options
@@ -29,34 +47,25 @@ export default globalCache.wrap(
 | `disabled` | `boolean` | `false` | Disable reads and writes so every computation runs locally. |
 | `serverUrl` | `string` | — | Use an externally managed Core server instead of starting a local one. |
 
-For example, make cache bypass explicit through your own environment variable:
-
-```ts
-globalCache.config({
-  disabled: process.env.DISABLE_GLOBAL_CACHE === '1',
-});
-```
-
-There is no built-in `GLOBAL_CACHE_DISABLE` variable. Global Cache serializes configured options into
-`GLOBAL_CACHE_CONFIG` for worker processes; call `config()` rather than constructing that internal
-value yourself.
+The `DISABLE_GLOBAL_CACHE` variable in the example is project-defined. There is no built-in
+`GLOBAL_CACHE_DISABLE` variable.
 
 ## Shards and external servers
 
-Set both `serverUrl` and `GLOBAL_CACHE_RUN_ID` when independently launched Playwright processes should
-share the same Core server and test-run state:
+Set both `serverUrl` and `GLOBAL_CACHE_RUN_ID` when independently launched Playwright processes or
+shards should reuse the same run-scoped values:
 
 ```bash
 GLOBAL_CACHE_RUN_ID="$CI_PIPELINE_ID" pnpm playwright test --shard=1/2
 ```
 
-All shards must use the same stable run ID and reachable server URL. With an external run ID, Global
-Cache leaves run cleanup to the external coordinator.
+All participating processes must use the same stable run ID and reachable server URL. The system
+that assigns the run ID should also decide when the shared run has finished and can be cleaned up.
 
 ## Manual Playwright configuration
 
-`wrap()` is preferred because it composes existing hooks safely. If another wrapper makes manual setup
-necessary, add the setup and reporter without adding a teardown:
+Use `wrap()` for normal configuration. If another wrapper requires manual composition, add both
+Global Cache entries:
 
 ```ts title="playwright.config.ts"
 export default defineConfig({
@@ -65,6 +74,5 @@ export default defineConfig({
 });
 ```
 
-The reporter is required: its `onEnd()` hook runs cleanup and resets run-scoped values after every test
-execution. Playwright's `globalSetup` and `globalTeardown` are not re-run reliably for every execution
-in UI mode and the VS Code extension.
+Both entries are required so values are available before tests start and cleanup completes after the
+full execution. Do not add a Global Cache teardown.

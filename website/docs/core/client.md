@@ -3,7 +3,7 @@ title: Client
 ---
 
 `GlobalCacheClient` is the framework-independent API for reading and coordinating cached values. Use
-it when building an integration or when you already control the server lifecycle.
+it when building an integration or connecting an application to a Core server you operate.
 
 ## Connect to a server
 
@@ -21,8 +21,8 @@ const value = await cache.get('expensive-value', async () => {
 });
 ```
 
-Calling `get()` without a server URL throws an error. A test-runner integration normally starts a
-local server and propagates its URL before workers call the client.
+Configure a reachable server URL before calling `get()`. The Playwright integration handles this
+automatically for Playwright projects.
 
 ## Start Core in the same process
 
@@ -66,4 +66,4 @@ const userId = await cache.get('seeded-user-id', async () => {
 });
 ```
 
-See the [API reference](./api.md) for all client methods.
+See the [`GlobalCacheClient` API reference](./api/global-cache-client.md) for all client methods.

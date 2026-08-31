@@ -10,6 +10,18 @@ Playwright E2E test optimization library. Caches shared data (auth sessions, DB 
 
 Package manager: **pnpm 11** with workspaces. Build orchestration: **Turbo**.
 
+## Documentation Style
+
+- Write for package users. Explain the purpose and recommended default approach before
+  showing code.
+- Structure sections as: context, default usage, example, then optional customization.
+- Use smooth explanatory prose. Avoid terse directives, marketing language, and
+  implementation details unless users need them to configure, use, or debug behavior.
+- Make examples resemble real project code. Prefer named intermediate variables when they
+  improve readability, and use public APIs rather than internal mechanisms.
+- Explain when and why to use an option, not only what it does. Keep terminology and heading
+  style consistent across related pages.
+
 ## Lifecycle Architecture (`packages/playwright`)
 
 Playwright's `globalSetup` and `globalTeardown` are **not called reliably** in VSCode

@@ -2,8 +2,8 @@
 title: Server
 ---
 
-The Core server is a small HTTP service that owns the shared in-memory and persistent storage. It is
-exported separately so importing the client in every worker does not also load the server runtime.
+The Core server is a small HTTP service that lets clients in different processes share in-memory and
+persistent values. Run it wherever every participating client can reach it.
 
 ```ts
 import { globalCacheServer } from '@global-cache/core/server';
@@ -26,19 +26,14 @@ console.log(globalCacheServer.localUrl);
 The server accepts JSON request bodies up to 10 MB. Cache values must be serializable across the HTTP
 boundary.
 
-## Lifecycle
+## Starting and stopping
 
-`start()` starts the HTTP server and exposes its resolved address through `localUrl` and `port`.
-`stop()` closes it. The server handle is unreferenced, so it does not keep a Node.js process alive by
-itself; the host integration or application must own the surrounding lifecycle.
-
-In the Playwright integration, global setup starts the server before workers run. The server is not
-stopped by the reporter: it exits naturally with the Playwright process in CLI mode and remains
-available for subsequent executions when Playwright UI mode or the VS Code extension keeps the main
-process alive.
+Call `start()` before clients request values, then use `localUrl` to configure those clients. Call
+`stop()` when the application no longer needs the cache. Test-runner integrations can manage these
+steps for their users; the Playwright integration does so automatically.
 
 ## External servers and shards
 
-Clients can connect through the `serverUrl` client option. To make multiple shards share one in-memory
-run, give them the same `GLOBAL_CACHE_RUN_ID` as well as the same server URL. The process running the
-server is responsible for deciding when shared state may be cleared.
+Clients connect through the `serverUrl` option. To share run-scoped values across shards, give every
+shard the same `GLOBAL_CACHE_RUN_ID` and server URL. The system coordinating those shards should use a
+new run ID for each unrelated execution.

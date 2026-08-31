@@ -17,15 +17,18 @@ test.beforeAll(async () => {
   });
 });
 
-test('opens the user', async ({ page }) => {
-  await page.goto(`/users/${userId}`);
-  await expect(page.getByRole('heading')).toBeVisible();
+test('opens user profile', async ({ page }) => {
+  // uses 'userId'
+});
+
+test('opens user dashboard', async ({ page }) => {
+  // uses the same 'userId'
 });
 ```
 
-The first worker requesting `seeded-user-id` runs the function. Concurrent workers wait, and all of
-them receive the same stored value. A non-persistent value remains available until the Playwright
-execution ends.
+The first worker requesting `seeded-user-id` creates the user. Concurrent workers wait, and every
+worker's `beforeAll()` receives the same stored `userId`, so both tests reuse that user. A
+non-persistent value remains available until the Playwright execution ends.
 
 ## Where to call `get()`
 

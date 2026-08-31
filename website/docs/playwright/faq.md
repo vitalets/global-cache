@@ -28,13 +28,13 @@ Usually not on ephemeral runners. Set `ignoreTTL: true` in CI so values remain s
 are not written for reuse by later runs. If your CI restores `.global-cache` deliberately, keep TTLs
 enabled.
 
-## Why does the server stay alive in UI mode or VS Code?
+## Do I need to stop the local server?
 
-Those modes keep Playwright's main process alive between executions. Global Cache keeps the same local
-server and resets its run-scoped state from reporter `onEnd()` after every execution. In CLI mode, the
-server is unreferenced and exits naturally with the process.
+No. The Playwright integration manages the small local HTTP server in command-line, UI, and VS Code
+runs. Run-scoped values are refreshed between executions even when Playwright keeps its process open.
 
 ## Can multiple shards share values?
 
 Yes, if they can reach the same external Core server and use the same `GLOBAL_CACHE_RUN_ID`. The
-external coordinator then owns cleanup for that shared run.
+system launching the shards should use a new run ID for each unrelated execution and clean shared
+resources only after every shard finishes.
