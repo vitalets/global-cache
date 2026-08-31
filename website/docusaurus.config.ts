@@ -4,7 +4,7 @@ import { themes as prismThemes } from 'prism-react-renderer';
 const config: Config = {
   title: 'Global Cache',
   tagline: 'Share expensive data across parallel test workers',
-  favicon: 'img/favicon.svg',
+  favicon: 'img/favicon.png',
 
   url: 'https://vitalets.github.io',
   baseUrl: '/global-cache/',
@@ -45,7 +45,7 @@ const config: Config = {
       title: 'Global Cache',
       logo: {
         alt: 'Global Cache',
-        src: 'img/logo.svg',
+        src: 'img/logo.png',
       },
       items: [
         {
@@ -98,7 +98,7 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} Global Cache contributors.`,
+      copyright: 'Copyright © 2026 Vitaliy Potapov',
     },
     prism: {
       theme: prismThemes.github,

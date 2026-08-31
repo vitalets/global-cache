@@ -15,11 +15,7 @@ import { globalCache } from '@global-cache/playwright';
 
 export const test = base.extend({
   storageState: async ({ storageState, browser }, use, testInfo) => {
-    if (testInfo.tags.includes('@no-auth')) {
-      await use(storageState);
-      return;
-    }
-
+    // authenticate or use existing auth state
     const authState = await globalCache.get('auth-state', { ttl: '1 hour' }, async () => {
       const page = await browser.newPage();
       await page.goto('/login');
@@ -46,13 +42,39 @@ import { test } from './fixtures';
 test('authenticated flow', async ({ page }) => {
   await page.goto('/dashboard');
 });
+```
 
+[View the complete single-user example](https://github.com/vitalets/global-cache/tree/main/examples/auth-single-user).
+
+## Skip auth
+
+Some tests need the original unauthenticated `storageState`. Mark those tests with `@no-auth` and
+check the tag before requesting the cached authenticated state:
+
+```ts title="tests/fixtures.ts"
+export const test = base.extend({
+  storageState: async ({ storageState }, use, testInfo) => {
+    if (testInfo.tags.includes('@no-auth')) {
+      await use(storageState);
+      return;
+    }
+
+    const authState = await globalCache.get(/* same authentication callback as above */);
+    await use(authState);
+  },
+});
+```
+
+Apply the tag to any test that should skip authentication:
+
+```ts
 test('public flow', { tag: '@no-auth' }, async ({ page }) => {
   await page.goto('/');
 });
 ```
 
-[View the complete single-user example](https://github.com/vitalets/global-cache/tree/main/examples/auth-single-user).
+The fixture returns before calling `globalCache.get()`, so selecting only unauthenticated tests does
+not trigger a login.
 
 ## Multiple users
 

@@ -35,13 +35,14 @@ The value for a persistent key is recalculated when its TTL expires, its computa
 changes, or the key is deleted. The first worker to encounter the invalid value performs the new
 computation while other workers wait.
 
-To force recalculation explicitly:
+To force recalculation you can either:
 
-```ts
-await globalCache.delete('auth-state');
-```
-
-`delete()` removes both the in-memory and filesystem entries.
+- delete the corresponding file in the `.global-cache` directory
+- invoke the `.delete()` method:
+    ```ts
+    await globalCache.delete('auth-state');
+    ```
+    `delete()` removes both the in-memory and filesystem entries.
 
 ## CI
 
@@ -49,5 +50,7 @@ Filesystem persistence often provides no benefit on an ephemeral CI runner. Set 
 keep the same application code while treating all keys as run-scoped:
 
 ```ts
-globalCache.config({ ignoreTTL: Boolean(process.env.CI) });
+globalCache.config({ 
+  ignoreTTL: Boolean(process.env.CI) 
+});
 ```

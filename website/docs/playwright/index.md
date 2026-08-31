@@ -19,7 +19,7 @@ Use it to perform expensive work and share the result across workers:
 
 ## How it works
 
-![Playwright workers sharing Global Cache](/img/architecture.png)
+![Playwright workers sharing Global Cache](/img/how-it-works-pw.png)
 
 A tiny local HTTP server coordinates cache access between Playwright workers. When several workers
 request the same key, the first worker runs the computation while the others wait. When it finishes,

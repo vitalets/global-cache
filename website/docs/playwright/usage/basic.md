@@ -11,6 +11,7 @@ import { globalCache } from '@global-cache/playwright';
 let userId: string;
 
 test.beforeAll(async () => {
+  // create user once and store `userId` in a variable
   userId = await globalCache.get('seeded-user-id', async () => {
     const user = await database.createUser();
     return user.id;
@@ -46,8 +47,3 @@ Global Cache coordinates the computation independently of the Playwright hook th
 Values cross an HTTP boundary. Return primitives, arrays, or plain JSON-compatible objects. Do not
 cache a Playwright `Page`, `BrowserContext`, database connection, or class instance; cache the data
 needed to recreate or configure it instead.
-
-## One computation per key
-
-A key represents one logical computation. Reusing the same key from incompatible call sites causes a
-signature-mismatch warning. See [Core concepts](../../core/concepts.md#keys-and-signatures).

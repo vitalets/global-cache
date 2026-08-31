@@ -1,31 +1,60 @@
 :root {
-  --ifm-color-primary: #b56900;
-  --ifm-color-primary-dark: #a35f00;
-  --ifm-color-primary-darker: #995900;
-  --ifm-color-primary-darkest: #7e4900;
-  --ifm-color-primary-light: #c77300;
-  --ifm-color-primary-lighter: #d17a00;
-  --ifm-color-primary-lightest: #ed8b00;
+  --global-cache-teal: #0f6b66;
+  --global-cache-teal-deep: #0a4541;
+  --global-cache-yellow: #ffd21e;
+  --ifm-color-primary: #0f6b66;
+  --ifm-color-primary-dark: #0e605c;
+  --ifm-color-primary-darker: #0d5b57;
+  --ifm-color-primary-darkest: #0a4b47;
+  --ifm-color-primary-light: #107670;
+  --ifm-color-primary-lighter: #117b75;
+  --ifm-color-primary-lightest: #148c85;
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgb(0 0 0 / 8%);
+  --ifm-navbar-shadow: 0 1px 0 rgb(15 107 102 / 16%);
+  --ifm-footer-background-color: var(--global-cache-teal-deep);
 }
 
 [data-theme='dark'] {
-  --ifm-color-primary: #ffb74d;
-  --ifm-color-primary-dark: #ffaa2b;
-  --ifm-color-primary-darker: #ffa31a;
-  --ifm-color-primary-darkest: #e48600;
-  --ifm-color-primary-light: #ffc46f;
-  --ifm-color-primary-lighter: #ffcb80;
-  --ifm-color-primary-lightest: #ffe0b3;
+  --ifm-color-primary: #ffd21e;
+  --ifm-color-primary-dark: #ffca00;
+  --ifm-color-primary-darker: #f2bf00;
+  --ifm-color-primary-darkest: #c79d00;
+  --ifm-color-primary-light: #ffd83f;
+  --ifm-color-primary-lighter: #ffdb50;
+  --ifm-color-primary-lightest: #ffe582;
+  --ifm-background-color: #0b1413;
+  --ifm-navbar-background-color: #0f1c1a;
+  --ifm-footer-background-color: #081210;
   --docusaurus-highlighted-code-line-bg: rgb(0 0 0 / 30%);
+  --ifm-navbar-shadow: 0 1px 0 rgb(255 210 30 / 18%);
 }
 
 .navbar__logo {
-  height: 1.8rem;
+  height: 2rem;
+  margin-right: 0.65rem;
 }
 
-.theme-doc-markdown img[alt='Global Cache architecture'] {
+.navbar__logo img {
+  height: 2rem;
+  width: 2rem;
+}
+
+.navbar__title {
+  color: var(--global-cache-teal-deep);
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+
+[data-theme='dark'] .navbar__title {
+  color: var(--global-cache-yellow);
+}
+
+.theme-doc-markdown img[alt='Test runner workers sharing Global Cache'],
+.theme-doc-markdown img[alt='Playwright workers sharing Global Cache'] {
   display: block;
   margin: 2rem auto;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background: #fff;
 }

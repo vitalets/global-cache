@@ -4,28 +4,25 @@ sidebar_label: Overview
 slug: /
 ---
 
+:::tip Using Playwright?
+
+Go directly to the [Playwright integration](../playwright/index.md). Most Playwright
+users do not need to configure Core themselves.
+
+:::
+
 Global Cache coordinates expensive setup work across parallel test workers. The first worker to
 request a key computes its value; concurrent workers wait for that computation and then receive the
 same result.
 
-![Global Cache architecture](/img/architecture.png)
+![Test runner workers sharing Global Cache](/img/how-it-works-core.png)
 
 ## Packages
 
 Global Cache is organized as a framework-independent Core plus test-runner integrations:
 
-- **Core** — the HTTP server, storage, and client API in
-  [`@global-cache/core`](https://www.npmjs.com/package/@global-cache/core).
-- **Playwright** — the supported integration in
-  [`@global-cache/playwright`](https://www.npmjs.com/package/@global-cache/playwright). It lets
-  Playwright workers share cached setup data and clean up shared resources after a run.
-
-:::tip Using Playwright?
-
-Go directly to the [Playwright installation guide](../playwright/installation.md). Most Playwright
-users do not need to configure Core themselves.
-
-:::
+- [**Core**](https://www.npmjs.com/package/@global-cache/core) — the code client and server API.
+- [**Playwright**](https://www.npmjs.com/package/@global-cache/playwright) — Playwright integration for easier configuration and sharing data across workers.
 
 ## What Core provides
 
