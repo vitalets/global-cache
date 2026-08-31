@@ -19,6 +19,10 @@ Speed up E2E tests by caching data between workers
 </a>
 </p>
 
+<p align="center">
+  <a href="https://vitalets.github.io/global-cache/">Documentation</a> | <a href="./CHANGELOG.md">Changelog</a>
+</p>
+
 ## Why use it?
 
 When running E2E tests in parallel, you might need to:
