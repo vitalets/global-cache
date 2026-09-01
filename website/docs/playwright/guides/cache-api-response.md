@@ -2,14 +2,15 @@
 title: Cache API responses
 ---
 
-You can cache API responses to make tests run faster and avoid sending the same request from every
-worker. For example, cache an upstream response inside a Playwright route handler:
+You can persist API responses to make tests run faster and avoid repeating an expensive request in
+every worker and test run. For example, cache an upstream response for **1 hour** inside a Playwright
+route handler:
 
 ```ts
 test.use({
   page: async ({ page }, use) => {
     await page.route('https://api.example.com/users', async (route) => {
-      const users = await globalCache.get('users-api-response', async () => {
+      const users = await globalCache.get('users-api-response', { ttl: '1 hour' }, async () => {
         const response = await route.fetch();
         return response.json();
       });
@@ -22,8 +23,9 @@ test.use({
 });
 ```
 
-The upstream request is sent once. Later route handlers receive the same cached data without
-contacting the upstream service again.
+The upstream request is sent once. For the next hour, route handlers in the current run and
+subsequent runs receive the persisted response without contacting the upstream service again. After
+the TTL expires, the first request refreshes the value.
 
 ## Dynamic params
 
@@ -39,7 +41,7 @@ test.beforeEach(async ({ page }) => {
     const requestUrl = new URL(route.request().url());
     const userId = requestUrl.pathname.split('/').at(-1)!;
 
-    const user = await globalCache.get(`user-api-response:${userId}`, async () => {
+    const user = await globalCache.get(`user-api-response:${userId}`, { ttl: '1 hour' }, async () => {
       const response = await route.fetch();
       return response.json();
     });
@@ -54,7 +56,7 @@ test('opens user profile', async ({ page }) => {
 });
 ```
 
-Requests for `/users/42` reuse one cache entry, while `/users/43` uses a separate entry and fetches
-its own response.
+Requests for `/users/42` reuse one persistent cache entry, while `/users/43` uses a separate entry
+and fetches its own response. Each response can be reused by subsequent test runs for up to one hour.
 
 [View the runnable API-response example](https://github.com/vitalets/global-cache/tree/main/examples/cache-api-response).

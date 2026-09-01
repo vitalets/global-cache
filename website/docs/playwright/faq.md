@@ -2,10 +2,11 @@
 title: FAQ
 ---
 
-## Why not clean up in `afterAll`?
+## Why not clean up in `after*` hooks?
 
-`afterAll` runs per worker. The first worker to finish can delete a resource while other workers still
-need it. Use the [`cleanup` callback](./guides/cleanup.md), which runs after the complete execution.
+`afterAll` runs per worker, and `afterEach` runs per test. Either can delete a shared resource while
+other tests or workers still need it. Use the dedicated [`cleanup` callback](./usage/cleanup.md), which
+runs after the complete execution.
 
 ## Why did Global Cache report a signature mismatch?
 

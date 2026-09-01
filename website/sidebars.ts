@@ -28,9 +28,10 @@ const sidebars: SidebarsConfig = {
       label: 'Usage',
       collapsed: false,
       items: [
-        'playwright/usage/basic',
-        'playwright/usage/dynamic-keys',
-        'playwright/usage/persistent-keys',
+        'playwright/usage/basics',
+        'playwright/usage/hooks',
+        'playwright/usage/fixtures',
+        'playwright/usage/cleanup',
       ],
     },
     {
@@ -38,10 +39,8 @@ const sidebars: SidebarsConfig = {
       label: 'Guides',
       collapsed: false,
       items: [
-        'playwright/guides/before-all-before-each',
         'playwright/guides/authentication',
         'playwright/guides/cache-api-response',
-        'playwright/guides/cleanup',
         'playwright/guides/typed-keys',
       ],
     },

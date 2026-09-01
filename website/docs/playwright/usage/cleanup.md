@@ -2,12 +2,13 @@
 title: Cleanup
 ---
 
-Cleaning up shared resources requires more care than cleaning up data created by a single test. A
-Playwright `afterAll` hook runs once per worker, so one worker may delete a cached user, database
-record, or other resource while another worker is still using it.
+Do not clean up shared cached resources in Playwright's `afterAll`, `afterEach`, or other `after*`
+hooks. These hooks follow test and worker lifecycles, so they can delete a cached user, database
+record, or other resource while another test or worker is still using it.
 
-Global Cache provides a dedicated cleanup callback that runs after all workers have finished. Pass it
-to `globalCache.wrap()` when configuring Playwright:
+Instead, follow Global Cache's dedicated cleanup flow. Its cleanup callback runs after all workers
+have finished, when shared resources are no longer in use. Pass the callback to `globalCache.wrap()`
+when configuring Playwright:
 
 ```ts title="playwright.config.ts"
 import { defineConfig } from '@playwright/test';

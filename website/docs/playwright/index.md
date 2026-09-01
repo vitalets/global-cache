@@ -52,4 +52,4 @@ test('test 2', async ({ page }) => {
 });
 ```
 
-Start with [Installation](./installation.md), then learn the [basic usage](./usage/basic.md).
+Start with [Installation](./installation.md), then learn the [basics](./usage/basics.md).
