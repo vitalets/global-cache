@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+* Update dependencies.
+
 ## [0.5.1] - 2026-06-18
 * fix remaining race condition when a key is recomputed from persistent storage (stale signature or expired TTL) by concurrent callers.
 
