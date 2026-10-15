@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-10-15
+
 * Update dependencies.
 
 ## [0.5.1] - 2026-06-18
@@ -71,7 +73,7 @@
 [0.2.0]: https://github.com/vitalets/global-cache/compare/0.1.2...0.2.0
 [0.1.2]: https://github.com/vitalets/global-cache/compare/0.1.1...0.1.2
 
-[Unreleased]: https://github.com/vitalets/global-cache/compare/0.5.1...HEAD
+[Unreleased]: https://github.com/vitalets/global-cache/compare/0.5.2...HEAD
 [0.4.0]: https://github.com/vitalets/global-cache/compare/0.4.0-4...0.4.0
 
 [0.4.1]: https://github.com/vitalets/global-cache/releases/tag/0.4.1
@@ -79,3 +81,5 @@
 [0.5.0]: https://github.com/vitalets/global-cache/releases/tag/0.5.0
 
 [0.5.1]: https://github.com/vitalets/global-cache/releases/tag/0.5.1
+
+[0.5.2]: https://github.com/vitalets/global-cache/releases/tag/0.5.2
